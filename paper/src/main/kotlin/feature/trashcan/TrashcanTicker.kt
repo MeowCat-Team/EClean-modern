@@ -14,28 +14,29 @@ class TrashcanTicker(
     private val snapshots: StatusSnapshotService,
 ) {
     private var task: ScheduledTask? = null
-    private var tick = 0
+    private var lastRefresh = 0L
 
     /** 最早到期条目的剩余秒数, 没有条目或全部永不过期时为 0 */
     var countdown: Long = 0
         private set
 
-    fun start() {
+    fun start(bundle: top.e404.eclean.config.ConfigBundle = Config.current) {
         stop()
-        val trashcanConfig = Config.current.trashcan
+        val trashcanConfig = bundle.trashcan
         val duration = trashcanConfig.clearIntervalSeconds
         if (!trashcanConfig.enabled || duration == null) {
             updateCountdown(0)
             MenuManager.refreshTrashcanMenus()
             return
         }
-        task = Schedulers.scheduleRepeatingGlobal(20, 20) {
-            tick++
+        val period = bundle.advanced.scheduler.trashcanTickIntervalTicks
+        task = Schedulers.scheduleRepeatingGlobal(period, period) {
             val now = System.currentTimeMillis()
             val expired = store.expireEntries(now)
             val showRemaining = Config.current.trashcan.stacking.showRemainingTimeInLore
-            if (expired > 0 || (showRemaining && tick % 5 == 0)) {
+            if (expired > 0 || (showRemaining && now - lastRefresh >= 5000)) {
                 MenuManager.refreshTrashcanMenus()
+                lastRefresh = now
             }
             val remaining = store.earliestDeadline()?.let { maxOf(0, (it - now) / 1000) } ?: 0
             updateCountdown(remaining)

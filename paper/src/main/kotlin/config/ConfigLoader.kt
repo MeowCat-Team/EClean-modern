@@ -2,189 +2,123 @@ package top.e404.eclean.config
 
 import com.charleskorn.kaml.Yaml
 import com.charleskorn.kaml.YamlConfiguration
-import com.charleskorn.kaml.YamlException
 import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.SerializationStrategy
 import top.e404.eclean.PL
-import top.e404.eclean.config.model.AdvancedConfig
-import top.e404.eclean.config.model.ChunkDensityConfig
-import top.e404.eclean.config.model.CleanupConfig
-import top.e404.eclean.config.model.ConfigProfile
-import top.e404.eclean.config.model.DropConfig
-import top.e404.eclean.config.model.GlobalConfig
-import top.e404.eclean.config.model.LivingConfig
-import top.e404.eclean.config.model.NormalConfig
-import top.e404.eclean.config.model.PerWorldConfig
-import top.e404.eclean.config.model.ProfileConfig
-import top.e404.eclean.config.model.TrashcanConfig
+import top.e404.eclean.config.model.*
 import java.io.File
+import java.io.InputStream
 import java.nio.file.Files
-import java.nio.file.StandardCopyOption
+import java.time.Instant
 
 class ConfigLoader(
-    private val yaml: Yaml = Yaml(configuration = YamlConfiguration(strictMode = false))
+    private val yaml: Yaml = Yaml(configuration = YamlConfiguration(strictMode = true)),
+    private val directory: () -> File = { PL.dataFolder },
+    private val resource: (String) -> InputStream? = { PL.getResource(it) },
 ) {
-    fun readProfile(): ConfigProfile {
-        val file = File(PL.dataFolder, ConfigFiles.PROFILE.diskName)
-        if (!file.exists()) ensureRootProfile()
-        return try {
-            val text = file.readText(Charsets.UTF_8)
-            ConfigProfile.fromId(yaml.decodeFromString(ProfileConfig.serializer(), text).profile)
-        } catch (e: Exception) {
-            PL.logger.warning("config.yml profile 解析失败，使用 normal: ${e.message}")
-            ConfigProfile.NORMAL
-        }
+    fun readProfile(createIfMissing: Boolean = false): ConfigProfile {
+        migrateLegacy()
+        if (createIfMissing) ensureCopied(ConfigFiles.PROFILE)
+        val profile = decode(ConfigFiles.PROFILE, ProfileConfig.serializer(), file(ConfigFiles.PROFILE).readText())
+        return ConfigProfile.fromId(profile.profile)
     }
 
     fun writeProfile(profile: ConfigProfile) {
-        val file = File(PL.dataFolder, ConfigFiles.PROFILE.diskName)
-        file.parentFile?.mkdirs()
-        val text = yaml.encodeToString(ProfileConfig.serializer(), ProfileConfig(profile.id))
-        Files.writeString(file.toPath(), text, Charsets.UTF_8)
+        AtomicFiles.write(file(ConfigFiles.PROFILE).toPath(), yaml.encodeToString(ProfileConfig.serializer(), ProfileConfig(profile.id)))
     }
 
     fun ensureDefaults(profile: ConfigProfile) {
-        ensureRootProfile()
-        ensureNormalDefaults()
-        if (profile == ConfigProfile.DEV) {
-            ConfigFiles.DEV_ENTRIES.forEach { ensureCopied(it) }
+        val entries = if (profile == ConfigProfile.NORMAL) listOf(ConfigFiles.NORMAL) else ConfigFiles.DEV_ENTRIES
+        if (file(entries.first()).parentFile.exists()) {
+            entries.forEach { require(file(it).isFile) { "Missing configuration: ${it.diskName}; refusing to recreate safety settings" } }
+            return
         }
+        when (profile) {
+            ConfigProfile.NORMAL -> ensureCopied(ConfigFiles.NORMAL)
+            ConfigProfile.DEV -> ConfigFiles.DEV_ENTRIES.forEach(::ensureCopied)
+        }
+    }
+
+    fun initializeFreshInstall() {
+        if (file(ConfigFiles.PROFILE).exists() || File(directory(), "config").exists() ||
+            ConfigFiles.LEGACY_FILES.any { File(directory(), it).exists() }) return
+        ensureCopied(ConfigFiles.PROFILE)
+        ensureDefaults(ConfigProfile.NORMAL)
     }
 
     fun loadAll(profile: ConfigProfile): ConfigBundle = when (profile) {
-        ConfigProfile.NORMAL -> loadNormal()
-        ConfigProfile.DEV -> loadDev()
+        ConfigProfile.NORMAL -> loadNormalFromText(read(ConfigFiles.NORMAL))
+        ConfigProfile.DEV -> loadDevFromText(
+            read(ConfigFiles.GLOBAL), read(ConfigFiles.CLEANUP), read(ConfigFiles.DROP),
+            read(ConfigFiles.LIVING), read(ConfigFiles.CHUNK_DENSITY), read(ConfigFiles.TRASHCAN),
+            read(ConfigFiles.PER_WORLD), read(ConfigFiles.ADVANCED),
+        )
     }
 
-    fun loadNormalFromText(text: String): ConfigBundle {
-        val normal = try {
-            yaml.decodeFromString(NormalConfig.serializer(), text)
-        } catch (e: YamlException) {
-            PL.logger.warning("config/normal/config.yml 解析失败，使用默认 normal 配置: ${e.message}")
-            loadDefaultNormal()
-        }
-        return normal.toBundle()
-    }
+    fun loadNormalFromText(text: String): ConfigBundle =
+        ConfigValidator.validate(decode(ConfigFiles.NORMAL, NormalConfig.serializer(), text).toBundle())
 
     fun loadDevFromText(
-        globalText: String,
-        cleanupText: String,
-        dropText: String,
-        livingText: String,
-        chunkDensityText: String,
-        trashcanText: String,
-        perWorldText: String,
-        advancedText: String,
-    ): ConfigBundle {
-        return ConfigBundle(
-            global = decodeOrDefault(ConfigFiles.GLOBAL, GlobalConfig.serializer(), globalText),
-            cleanup = decodeOrDefault(ConfigFiles.CLEANUP, CleanupConfig.serializer(), cleanupText),
-            drop = decodeOrDefault(ConfigFiles.DROP, DropConfig.serializer(), dropText),
-            living = decodeOrDefault(ConfigFiles.LIVING, LivingConfig.serializer(), livingText),
-            chunkDensity = decodeOrDefault(ConfigFiles.CHUNK_DENSITY, ChunkDensityConfig.serializer(), chunkDensityText),
-            trashcan = decodeOrDefault(ConfigFiles.TRASHCAN, TrashcanConfig.serializer(), trashcanText),
-            perWorld = decodeOrDefault(ConfigFiles.PER_WORLD, PerWorldConfig.serializer(), perWorldText),
-            advanced = decodeOrDefault(ConfigFiles.ADVANCED, AdvancedConfig.serializer(), advancedText),
-        )
-    }
+        globalText: String, cleanupText: String, dropText: String, livingText: String,
+        chunkDensityText: String, trashcanText: String, perWorldText: String, advancedText: String,
+    ): ConfigBundle = ConfigValidator.validate(ConfigBundle(
+        global = decode(ConfigFiles.GLOBAL, GlobalConfig.serializer(), globalText),
+        cleanup = decode(ConfigFiles.CLEANUP, CleanupConfig.serializer(), cleanupText),
+        drop = decode(ConfigFiles.DROP, DropConfig.serializer(), dropText),
+        living = decode(ConfigFiles.LIVING, LivingConfig.serializer(), livingText),
+        chunkDensity = decode(ConfigFiles.CHUNK_DENSITY, ChunkDensityConfig.serializer(), chunkDensityText),
+        trashcan = decode(ConfigFiles.TRASHCAN, TrashcanConfig.serializer(), trashcanText),
+        perWorld = decode(ConfigFiles.PER_WORLD, PerWorldConfig.serializer(), perWorldText),
+        advanced = decode(ConfigFiles.ADVANCED, AdvancedConfig.serializer(), advancedText),
+    ))
 
-    /** Kept for tests and legacy callers: loads a dev-style bundle without advanced text. */
     fun loadFromText(
-        globalText: String,
-        cleanupText: String,
-        dropText: String,
-        livingText: String,
-        chunkDensityText: String,
-        trashcanText: String,
-        perWorldText: String,
+        globalText: String, cleanupText: String, dropText: String, livingText: String,
+        chunkDensityText: String, trashcanText: String, perWorldText: String,
     ): ConfigBundle = loadDevFromText(
-        globalText = globalText,
-        cleanupText = cleanupText,
-        dropText = dropText,
-        livingText = livingText,
-        chunkDensityText = chunkDensityText,
-        trashcanText = trashcanText,
-        perWorldText = perWorldText,
-        advancedText = "",
+        globalText, cleanupText, dropText, livingText, chunkDensityText, trashcanText, perWorldText, "{}",
     )
 
-    private fun loadNormal(): ConfigBundle {
-        val file = File(PL.dataFolder, ConfigFiles.NORMAL.diskName)
-        if (!file.exists()) ensureNormalDefaults()
-        return loadNormalFromText(file.readText(Charsets.UTF_8))
+    private fun <T> decode(spec: ConfigFiles, serializer: DeserializationStrategy<T>, text: String): T {
+        require(text.isNotBlank()) { "${spec.diskName}: empty configuration is not accepted" }
+        return try { yaml.decodeFromString(serializer, text) }
+        catch (error: Exception) { throw IllegalArgumentException("${spec.diskName}: ${error.message}", error) }
     }
 
-    private fun loadDev(): ConfigBundle {
-        return loadDevFromText(
-            globalText = readDev(ConfigFiles.GLOBAL),
-            cleanupText = readDev(ConfigFiles.CLEANUP),
-            dropText = readDev(ConfigFiles.DROP),
-            livingText = readDev(ConfigFiles.LIVING),
-            chunkDensityText = readDev(ConfigFiles.CHUNK_DENSITY),
-            trashcanText = readDev(ConfigFiles.TRASHCAN),
-            perWorldText = readDev(ConfigFiles.PER_WORLD),
-            advancedText = readDev(ConfigFiles.ADVANCED),
-        )
-    }
-
-    private fun readDev(spec: ConfigFiles): String {
-        val file = File(PL.dataFolder, spec.diskName)
-        if (!file.exists()) {
-            ensureCopied(spec)
-        }
-        return file.readText(Charsets.UTF_8)
-    }
-
-    private fun <T> decodeOrDefault(spec: ConfigFiles, serializer: DeserializationStrategy<T>, text: String): T {
-        return try {
-            yaml.decodeFromString(serializer, text)
-        } catch (e: YamlException) {
-            PL.logger.warning("配置文件 `${spec.diskName}` 解析失败: ${e.message}，将使用默认配置")
-            readDefault(spec, serializer)
-        }
-    }
-
-    private fun loadDefaultNormal(): NormalConfig {
-        val text = PL.getResource(ConfigFiles.NORMAL.resourcePath)
-            ?.bufferedReader(Charsets.UTF_8)
-            ?.use { it.readText() }
-            ?: error("缺少默认配置资源: ${ConfigFiles.NORMAL.resourcePath}")
-        return yaml.decodeFromString(NormalConfig.serializer(), text)
-    }
-
-    private fun <T> readDefault(spec: ConfigFiles, serializer: DeserializationStrategy<T>): T {
-        val defaultText = PL.getResource(spec.resourcePath)
-            ?.bufferedReader(Charsets.UTF_8)
-            ?.use { it.readText() }
-            ?: error("缺少默认配置资源: ${spec.resourcePath}")
-        return yaml.decodeFromString(serializer, defaultText)
-    }
-
-    private fun ensureRootProfile() {
-        val target = File(PL.dataFolder, ConfigFiles.PROFILE.diskName)
-        if (target.exists()) return
-        copyResource(ConfigFiles.PROFILE, target)
-    }
-
-    private fun ensureNormalDefaults() {
-        val target = File(PL.dataFolder, ConfigFiles.NORMAL.diskName)
-        if (target.exists()) return
-        copyResource(ConfigFiles.NORMAL, target)
-    }
+    private fun file(spec: ConfigFiles) = File(directory(), spec.diskName)
+    private fun read(spec: ConfigFiles) = file(spec).readText(Charsets.UTF_8)
 
     private fun ensureCopied(spec: ConfigFiles) {
-        val target = File(PL.dataFolder, spec.diskName)
+        val target = file(spec)
         if (target.exists()) return
-        copyResource(spec, target)
+        val text = resource(spec.resourcePath)?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }
+            ?: error("Missing bundled configuration: ${spec.resourcePath}")
+        target.parentFile.mkdirs()
+        // Never replace a file created by another writer.
+        Files.writeString(target.toPath(), text, Charsets.UTF_8, java.nio.file.StandardOpenOption.CREATE_NEW)
     }
 
-    private fun copyResource(spec: ConfigFiles, target: File) {
-        target.parentFile?.mkdirs()
-        PL.getResource(spec.resourcePath)?.use { input ->
-            Files.copy(input, target.toPath(), StandardCopyOption.REPLACE_EXISTING)
-        } ?: error("缺少默认配置资源: ${spec.resourcePath}")
+    /** Validate the entire old bundle before writing; originals remain in a permanent backup. */
+    private fun migrateLegacy() {
+        val root = file(ConfigFiles.PROFILE)
+        val legacy = ConfigFiles.LEGACY_FILES.filter { it != "config.yml" }.map { File(directory(), it) }
+        if (legacy.none { it.exists() }) return
+        val rootText = root.takeIf { it.exists() }?.readText() ?: "{}"
+        if (runCatching { yaml.decodeFromString(ProfileConfig.serializer(), rootText) }.isSuccess &&
+            rootText.contains(Regex("(?m)^profile:"))) return
+        require(!file(ConfigFiles.NORMAL).exists()) {
+            "Legacy root configuration and config/normal/config.yml both exist; resolve the conflicting profiles before loading"
+        }
+        fun old(name: String, missing: String = "{}") = File(directory(), name).takeIf { it.exists() }?.readText() ?: missing
+        val bundle = loadFromText(rootText, old("cleanup.yml"), old("drop.yml", "enabled: false"), old("living.yml", "enabled: false"),
+            old("chunk-density.yml", "enabled: false"), old("trashcan.yml", "enabled: false"), old("per-world.yml"))
+        val normal = NormalConfig(bundle.global, bundle.cleanup, bundle.drop, bundle.living,
+            bundle.chunkDensity, bundle.trashcan, bundle.perWorld, bundle.advanced)
+        val text = yaml.encodeToString(NormalConfig.serializer(), normal)
+        loadNormalFromText(text)
+        val backup = File(directory(), "config-backup-${Instant.now().toEpochMilli()}")
+        check(backup.mkdir()) { "Cannot create legacy config backup" }
+        (listOf(root) + legacy).filter { it.exists() }.forEach { it.copyTo(File(backup, it.name)) }
+        AtomicFiles.write(file(ConfigFiles.NORMAL).toPath(), text)
+        writeProfile(ConfigProfile.NORMAL)
     }
-
-    private fun <T> encode(value: T, serializer: SerializationStrategy<T>): String =
-        yaml.encodeToString(serializer, value)
 }

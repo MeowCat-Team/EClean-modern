@@ -161,11 +161,12 @@ class CleanupSafetyIntegrationTest {
                 return object : ScheduledTask { override fun cancel() = Unit }
             }
         })
+        var now = java.time.ZonedDateTime.now()
         val ticker = CleanupTickService(
             plugin.services.messages, plugin.services.cleanupCoordinator,
             CleanupAnnouncementService(
                 plugin.services.commonPlatform.messageSender, info, { "" }, { null }, { false },
-            ), plugin.services.statusSnapshots, info,
+            ), plugin.services.statusSnapshots, info, now = { now },
         )
         ticker.start()
         // MockBukkit does not implement the server Audience used by finish broadcasts.
@@ -174,10 +175,12 @@ class CleanupSafetyIntegrationTest {
         try {
             val runTick = assertNotNull(tick)
             val item = drop()
+            now = now.plusSeconds(1)
             runTick()
             server.scheduler.performTicks(8)
             assertTrue(item.isValid, "Automatic cleanup must skip an empty server when configured")
             Config.update { it.copy(cleanup = it.cleanup.copy(cleanWhenNoPlayers = true)) }
+            now = now.plusSeconds(1)
             runTick()
             server.scheduler.performTicks(8)
             assertFalse(item.isValid, "Opting in to offline cleanup must still work")

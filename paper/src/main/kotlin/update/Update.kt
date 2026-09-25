@@ -10,31 +10,37 @@ import java.net.http.HttpResponse
 import java.util.concurrent.TimeUnit
 
 object Update {
-    private const val GITHUB_API = "https://api.github.com/repos/CoffeePopStudio/EClean-modern/releases"
-    private const val GITHUB_URL = "https://github.com/CoffeePopStudio/EClean-modern"
-    private val httpClient = HttpClient.newHttpClient()
+    private const val GITHUB_API = "https://api.github.com/repos/MeowCat-Team/EClean-modern/releases"
+    private const val GITHUB_URL = "https://github.com/MeowCat-Team/EClean-modern"
+    private val httpClient = HttpClient.newBuilder().connectTimeout(java.time.Duration.ofSeconds(10)).build()
+    private var task: io.papermc.paper.threadedregions.scheduler.ScheduledTask? = null
+    @Volatile private var generation = 0L
+
+    fun stop() { generation++; task?.cancel(); task = null }
 
     fun register() {
-        if (!Config.current.global.updateCheck || !Config.current.advanced.update.enabled) return
+        stop()
         val plugin = top.e404.eclean.PL
-        plugin.server.asyncScheduler.runAtFixedRate(
+        val token = generation
+        task = plugin.server.asyncScheduler.runAtFixedRate(
             plugin,
-            { _ -> check() },
+            { _ -> check(token) },
             20L,
-            6L,
-            TimeUnit.HOURS,
+            6L * 60 * 60,
+            TimeUnit.SECONDS,
         )
     }
 
-    private fun check() {
+    private fun check(token: Long) {
         try {
             val request = HttpRequest.newBuilder()
                 .uri(URI.create(GITHUB_API))
                 .header("Accept", "application/vnd.github+json")
+                .timeout(java.time.Duration.ofSeconds(15))
                 .GET()
                 .build()
             val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-            if (response.statusCode() != 200) return
+            if (response.statusCode() != 200 || token != generation) return
             val json = JsonParser.parseString(response.body()).asJsonArray
             if (json.isEmpty) return
             val latest = json[0].asJsonObject.get("tag_name").asString

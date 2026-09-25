@@ -6,8 +6,7 @@ import kotlinx.serialization.Serializable
  * Single-file "normal" profile.
  *
  * The normal preset is intentionally small: it exposes only the settings most
- * server owners need. All advanced fields are omitted from the template and
- * fall back to their defaults.
+ * server owners need. An optional advanced section can override the same options as dev.
  */
 @Serializable
 data class NormalConfig(
@@ -18,4 +17,5 @@ data class NormalConfig(
     val chunkDensity: ChunkDensityConfig = ChunkDensityConfig(),
     val trashcan: TrashcanConfig = TrashcanConfig(),
     val perWorld: PerWorldConfig = PerWorldConfig(),
+    val advanced: AdvancedConfig = AdvancedConfig(),
 )

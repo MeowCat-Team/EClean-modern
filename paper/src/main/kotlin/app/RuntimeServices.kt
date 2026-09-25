@@ -31,6 +31,11 @@ import top.e404.eclean.service.TemporaryReturnEvent
 import top.e404.eclean.service.TemporaryReturnService
 
 class RuntimeServices {
+    @Volatile private var stopped = false
+    private val configExecutor = java.util.concurrent.Executors.newSingleThreadExecutor { work ->
+        Thread(work, "EClean-config").apply { isDaemon = true }
+    }
+    val integrations = OptionalIntegrations()
     val playerSnapshots = top.e404.eclean.platform.PlayerSnapshots()
     val messages = MessageService()
     val language = LanguageManager(
@@ -82,6 +87,7 @@ class RuntimeServices {
     ) { MLang["prefix"] }
 
     init {
+        language.bindSnapshots({ top.e404.eclean.config.ConfigManager.currentLanguage }, top.e404.eclean.config.ConfigManager::updateLanguage)
         MLang.bind(language)
         Schedulers.init(commonPlatform.scheduler)
     }
@@ -89,26 +95,46 @@ class RuntimeServices {
     fun load(sender: CommandSender? = null) {
         commonPlatform.eventBus.register(playerSnapshots)
         playerSnapshots.start()
-        MLang.load(sender)
         Config.load(sender)
-        statsAlertService.start()
     }
 
-    fun reload(sender: CommandSender) {
-        Schedulers.runAsync {
-            MLang.load(sender)
-            Config.reload(sender)
-            Schedulers.runGlobal {
-                messages.send(sender, MLang["command.reload_done"])
+    fun reload(sender: CommandSender, profile: top.e404.eclean.config.model.ConfigProfile? = null) {
+        configExecutor.execute {
+            if (stopped) return@execute
+            try {
+                if (profile != null && profile == Config.profile && top.e404.eclean.config.ConfigManager.ready) {
+                    messages.send(sender, MLang["command.config.already", "profile" to profile.id])
+                    return@execute
+                }
+                val candidate = top.e404.eclean.config.ConfigManager.prepare(profile)
+                commonPlatform.scheduler.submitGlobal {
+                    top.e404.eclean.config.ConfigManager.commit(candidate, persistProfile = profile != null)
+                }.join()
+                messages.send(sender, if (profile == null) MLang["command.reload_done"]
+                    else MLang["command.config.switched", "profile" to profile.id])
+            } catch (failure: Exception) {
+                if (stopped) return@execute
+                val reason = failure.cause?.message ?: failure.message ?: failure.javaClass.simpleName
+                messages.warn("Configuration rejected; previous configuration remains active: $reason", failure)
+                messages.send(sender, MLang["command.reload_failed", "reason" to top.e404.eclean.util.miniMessage.escapeTags(reason)])
             }
         }
     }
 
-    fun shutdown() {
-        playerSnapshots.stop()
+    fun stopConfiguredServices() {
         cleanupTickService.stop()
         trashcanTicker.stop()
         statsAlertService.stop()
+        worldStatsService.stopCache()
+        integrations.stop()
+    }
+
+    fun shutdown() {
+        stopped = true
+        cleanupCoordinator.stop()
+        configExecutor.shutdownNow()
+        playerSnapshots.stop()
+        stopConfiguredServices()
         temporaryReturnService.shutdown()
         playerTeleportService.shutdown()
         commonPlatform.shutdown()

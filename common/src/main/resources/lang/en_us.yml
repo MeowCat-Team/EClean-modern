@@ -1,7 +1,9 @@
 prefix: <gray>[<green>EClean</green>]</gray>
+command.reload_failed: '<red>Configuration rejected; the previous configuration remains active. {reason}</red>'
 command.teleport.failed: '<red>Teleport failed. Check the destination and teleport restrictions.</red>'
 command.teleport.return_failed: '<red>Return teleport failed. The original location is retained for your next login during this server session.</red>'
 command.teleport.busy: '<yellow>A teleport is still in progress. Please try again shortly.</yellow>'
+cleanup.finish.world: '<white>Cleanup in {world}: {drop} drops, {living} living entities, {dense} dense entities.</white>'
 debug_prefix: <gray>[<gold>ECleanDebug</gold>]</gray>
 common.hover.view_distribution: <gray>Click to view chunk distribution</gray>
 common.hover.view_chunk: <gray>Click to view entities in this chunk</gray>

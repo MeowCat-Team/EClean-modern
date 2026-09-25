@@ -9,7 +9,8 @@ enum class ConfigProfile(val id: String) {
 
     companion object {
         fun fromId(value: String?): ConfigProfile =
-            entries.firstOrNull { it.id.equals(value, ignoreCase = true) } ?: NORMAL
+            entries.firstOrNull { it.id.equals(value, ignoreCase = true) }
+                ?: throw IllegalArgumentException("Unknown config profile: $value (expected normal or dev)")
     }
 }
 

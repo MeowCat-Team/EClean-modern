@@ -1,89 +1,69 @@
 package top.e404.eclean.config
 
 import com.charleskorn.kaml.Yaml
-import com.charleskorn.kaml.YamlConfiguration
 import kotlinx.serialization.SerializationStrategy
 import org.bukkit.command.CommandSender
 import top.e404.eclean.PL
-import top.e404.eclean.config.model.ChunkDensityConfig
-import top.e404.eclean.config.model.CleanupConfig
-import top.e404.eclean.config.model.ConfigProfile
-import top.e404.eclean.config.model.DropConfig
-import top.e404.eclean.config.model.GlobalConfig
-import top.e404.eclean.config.model.LivingConfig
-import top.e404.eclean.config.model.PerWorldConfig
-import top.e404.eclean.config.model.TrashcanConfig
-import java.io.File
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
+import top.e404.eclean.config.model.*
+import top.e404.eclean.lang.LanguageSnapshot
+
+data class RuntimeConfiguration(
+    val bundle: ConfigBundle,
+    val profile: ConfigProfile = ConfigProfile.NORMAL,
+    val language: LanguageSnapshot = LanguageSnapshot(),
+    val ready: Boolean = false,
+)
 
 object ConfigManager {
     private val loader = ConfigLoader()
-    private val yaml = Yaml(configuration = YamlConfiguration(strictMode = false))
+    private val yaml = Yaml.default
+    private val disabled = ConfigBundle(
+        drop = DropConfig(enabled = false),
+        living = LivingConfig(enabled = false),
+        chunkDensity = ChunkDensityConfig(enabled = false),
+        trashcan = TrashcanConfig(enabled = false),
+        advanced = AdvancedConfig(
+            papi = PapiAdvancedConfig(false), bStats = BStatsAdvancedConfig(false), update = UpdateAdvancedConfig(false),
+        ),
+    )
+    private val state = ConfigurationStore(RuntimeConfiguration(disabled))
+    val current: ConfigBundle get() = state.current.bundle
+    val currentProfile: ConfigProfile get() = state.current.profile
+    val currentLanguage: LanguageSnapshot get() = state.current.language
+    val ready: Boolean get() = state.current.ready
 
-    @Volatile
-    private var snapshot = ConfigBundle()
+    fun prepare(profile: ConfigProfile? = null): RuntimeConfiguration {
+        val selected = profile ?: loader.readProfile()
+        if (profile != null) loader.ensureDefaults(selected)
+        val bundle = loader.loadAll(selected)
+        val language = PL.services.language.prepare(bundle.global.language)
+        return RuntimeConfiguration(bundle, selected, language, ready = true)
+    }
 
-    @Volatile
-    var currentProfile: ConfigProfile = ConfigProfile.NORMAL
-        private set
-
-    val current: ConfigBundle
-        get() = snapshot
+    /** Called on the global scheduler; background parsing is serialized by RuntimeServices. */
+    fun commit(candidate: RuntimeConfiguration, persistProfile: Boolean = false) {
+        state.commit(candidate, activate = {
+            if (it.ready) ConfigRuntimeApplier.apply(it.bundle) else PL.services.stopConfiguredServices()
+        }, persist = { if (persistProfile) loader.writeProfile(candidate.profile) })
+    }
 
     fun loadAll(sender: CommandSender? = null) {
-        maybeBackupLegacyConfig()
-        currentProfile = loader.readProfile()
-        loader.ensureDefaults(currentProfile)
-        snapshot = loader.loadAll(currentProfile)
-        ConfigRuntimeApplier.apply(snapshot)
-        PL.services.messages.debug { "Config profile ${currentProfile.id} loaded" }
-    }
-
-    fun reloadAll(sender: CommandSender? = null) {
-        val previous = snapshot
-        val previousProfile = currentProfile
-        val candidate = runCatching {
-            maybeBackupLegacyConfig()
-            val profile = loader.readProfile()
-            loader.ensureDefaults(profile)
-            loader.loadAll(profile) to profile
-        }.getOrElse { error ->
-            snapshot = previous
-            currentProfile = previousProfile
-            throw IllegalStateException("Config reload failed: ${error.message}", error)
+        state.update { RuntimeConfiguration(disabled, language = PL.services.language.bundledSnapshot()) }
+        try { loader.initializeFreshInstall(); commit(prepare()) }
+        catch (error: Exception) {
+            PL.logger.severe("Configuration rejected; cleanup and recovery are paused. Fix the files and run /eclean reload: ${error.message}")
         }
-        currentProfile = candidate.second
-        snapshot = candidate.first
-        ConfigRuntimeApplier.apply(snapshot)
-        PL.services.messages.debug { "Config profile ${currentProfile.id} reloaded" }
     }
 
+    fun reloadAll(sender: CommandSender? = null) = commit(prepare())
     fun switchProfile(profile: ConfigProfile): ConfigProfile {
-        val previous = snapshot
-        val previousProfile = currentProfile
-        return try {
-            loader.ensureDefaults(ConfigProfile.NORMAL)
-            loader.ensureDefaults(profile)
-            loader.writeProfile(profile)
-            currentProfile = profile
-            snapshot = loader.loadAll(profile)
-            ConfigRuntimeApplier.apply(snapshot)
-            profile
-        } catch (e: Exception) {
-            snapshot = previous
-            currentProfile = previousProfile
-            throw IllegalStateException("Config switch failed: ${e.message}", e)
-        }
+        commit(prepare(profile), persistProfile = true)
+        return profile
     }
 
-    fun replaceSnapshotForTest(bundle: ConfigBundle) {
-        snapshot = bundle
-    }
-
-    fun update(transform: (ConfigBundle) -> ConfigBundle) {
-        snapshot = transform(snapshot)
-    }
+    fun replaceSnapshotForTest(bundle: ConfigBundle) { state.update { it.copy(bundle = bundle) } }
+    fun update(transform: (ConfigBundle) -> ConfigBundle) { state.update { it.copy(bundle = transform(it.bundle)) } }
+    fun updateLanguage(language: LanguageSnapshot) { state.update { it.copy(language = language) } }
 
     fun reloadFromTextForTest(
         globalText: String = "",
@@ -94,7 +74,7 @@ object ConfigManager {
         trashcanText: String = "",
         perWorldText: String = "",
     ) {
-        val previous = snapshot
+        val previous = current
         val candidate = runCatching {
             loader.loadFromText(
                 globalText = if (globalText.isBlank()) encode(previous.global, GlobalConfig.serializer()) else globalText,
@@ -106,34 +86,11 @@ object ConfigManager {
                 perWorldText = if (perWorldText.isBlank()) encode(previous.perWorld, PerWorldConfig.serializer()) else perWorldText,
             )
         }.getOrElse {
-            snapshot = previous
             throw it
         }
-        snapshot = candidate
+        replaceSnapshotForTest(candidate)
     }
 
-    private fun maybeBackupLegacyConfig() {
-        val dataFolder = PL.dataFolder
-        val hasLegacy = ConfigFiles.LEGACY_FILES
-            .filter { it != "config.yml" }
-            .any { File(dataFolder, it).exists() }
-        if (!hasLegacy) return
 
-        val stamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
-        val backupDir = File(dataFolder, "config-backup-$stamp")
-        backupDir.mkdirs()
-
-        ConfigFiles.LEGACY_FILES.forEach { name ->
-            val file = File(dataFolder, name)
-            if (file.exists()) {
-                file.copyTo(File(backupDir, name), overwrite = false)
-                file.delete()
-            }
-        }
-        PL.services.messages.warn("检测到旧版根目录配置，已备份到 ${backupDir.name}，并生成新的 normal/dev 配置")
-    }
-
-    private fun <T> encode(value: T, serializer: SerializationStrategy<T>): String {
-        return yaml.encodeToString(serializer, value)
-    }
+    private fun <T> encode(value: T, serializer: SerializationStrategy<T>): String = yaml.encodeToString(serializer, value)
 }

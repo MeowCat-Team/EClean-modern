@@ -3,10 +3,7 @@ package top.e404.eclean.config.model
 import kotlinx.serialization.Serializable
 
 /**
- * Advanced options only exposed by the `dev` profile.
- *
- * These give technical server owners complete control. The `normal` profile
- * never shows them and uses the defaults declared here.
+ * Advanced options live in dev/advanced.yml or the optional normal `advanced` section.
  */
 @Serializable
 data class AdvancedConfig(

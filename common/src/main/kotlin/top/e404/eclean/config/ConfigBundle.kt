@@ -29,5 +29,5 @@ fun NormalConfig.toBundle(): ConfigBundle = ConfigBundle(
     chunkDensity = chunkDensity,
     trashcan = trashcan,
     perWorld = perWorld,
-    advanced = AdvancedConfig(),
+    advanced = advanced,
 )

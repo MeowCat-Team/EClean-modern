@@ -10,9 +10,9 @@ import top.e404.eclean.config.model.NormalConfig
 class ConfigProfileTest {
 
     @Test
-    fun `fromId falls back to normal for unknown values`() {
-        assertEquals(ConfigProfile.NORMAL, ConfigProfile.fromId(null))
-        assertEquals(ConfigProfile.NORMAL, ConfigProfile.fromId("unknown"))
+    fun `fromId rejects unknown values instead of selecting a destructive default`() {
+        kotlin.test.assertFailsWith<IllegalArgumentException> { ConfigProfile.fromId(null) }
+        kotlin.test.assertFailsWith<IllegalArgumentException> { ConfigProfile.fromId("unknown") }
         assertEquals(ConfigProfile.DEV, ConfigProfile.fromId("dev"))
         assertEquals(ConfigProfile.DEV, ConfigProfile.fromId("DEV"))
     }

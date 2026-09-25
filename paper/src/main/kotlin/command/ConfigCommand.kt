@@ -37,13 +37,7 @@ object ConfigCommand {
             return
         }
 
-        if (profile == Config.profile) {
-            PL.services.messages.send(sender, MLang["command.config.already", "profile" to profile.id])
-            return
-        }
-
-        Config.switchProfile(profile)
-        PL.services.messages.send(sender, MLang["command.config.switched", "profile" to profile.id])
+        PL.services.reload(sender, profile)
     }
 
     private fun usage(sender: CommandSender) {

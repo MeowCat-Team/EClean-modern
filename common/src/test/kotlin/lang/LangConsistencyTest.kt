@@ -58,7 +58,9 @@ class LangConsistencyTest {
                 .filter { it.isFile && it.extension == "kt" }
                 .forEach { file ->
                     val text = file.readText(Charsets.UTF_8)
-                    for (pattern in patterns) {
+                    // The broad fallback also sees configuration diagnostics, which are not translations.
+                    val filePatterns = if (file.name == "ConfigValidator.kt") patterns.take(2) else patterns
+                    for (pattern in filePatterns) {
                         for (match in pattern.findAll(text)) {
                             keys += match.groupValues[1]
                         }

@@ -43,106 +43,22 @@ object LegacyLangMigrator {
     ): Boolean {
         if (!legacyPattern.containsMatchIn(content)) return false
 
-        val backup = file.parent.resolve("lang.old.yml")
-        try {
-            Files.move(file, backup, StandardCopyOption.REPLACE_EXISTING)
-        } catch (e: Exception) {
-            logger("Failed to backup lang.yml, migration aborted: ${e.message}")
-            return false
+        val yaml = org.yaml.snakeyaml.Yaml(org.yaml.snakeyaml.constructor.SafeConstructor(
+            org.yaml.snakeyaml.LoaderOptions().apply { isAllowDuplicateKeys = false }
+        ))
+        val root = yaml.load<Any?>(content)
+        fun convert(value: Any?): Any? = when (value) {
+            is Map<*, *> -> value.mapValues { convert(it.value) }
+            is List<*> -> value.map(::convert)
+            is String -> legacyToMiniMessage(value)
+            else -> value
         }
-
-        val lines = content.lines()
-        val result = mutableListOf<String>()
-        var i = 0
-
-        while (i < lines.size) {
-            val line = lines[i]
-
-            // Skip comments and lines without ':'
-            val trimmed = line.trimStart()
-            if (trimmed.startsWith("#") || !line.contains(':')) {
-                result.add(line)
-                i++
-                continue
-            }
-
-            val colonIndex = line.indexOf(':')
-            val afterColon = line.substring(colonIndex + 1)
-
-            // Detect block scalar indicator: ": |", ": |-", ": >", ": >-", etc.
-            if (afterColon.trimStart().matches(Regex("[|>][-+]?\\d*\\s*"))) {
-                val keyPart = line.substring(0, colonIndex + 1)
-                val indicator = afterColon.trimStart()
-                val blockLines = mutableListOf<String>()
-                i++
-
-                // Determine base indentation from first non-blank content line
-                var baseIndent = Int.MAX_VALUE
-                var j = i
-                while (j < lines.size) {
-                    val nl = lines[j]
-                    if (nl.isBlank()) {
-                        j++
-                        continue
-                    }
-                    val indent = nl.takeWhile { it == ' ' }.length
-                    if (indent < baseIndent) baseIndent = indent
-                    if (indent == 0 && nl.isNotBlank()) break // back to root level
-                    j++
-                }
-
-                if (baseIndent == Int.MAX_VALUE) baseIndent = 0
-
-                while (i < lines.size) {
-                    val nextLine = lines[i]
-                    if (nextLine.isBlank()) {
-                        blockLines.add(nextLine)
-                        i++
-                        continue
-                    }
-                    val nextIndent = nextLine.takeWhile { it == ' ' }.length
-                    if (nextIndent >= baseIndent) {
-                        blockLines.add(nextLine)
-                        i++
-                    } else {
-                        break
-                    }
-                }
-
-                val blockContent = blockLines.joinToString("\n")
-                if (legacyPattern.containsMatchIn(blockContent)) {
-                    val migratedBlock = blockLines.joinToString("\n") { bl ->
-                        if (bl.isBlank()) bl
-                        else {
-                            val contentStart = bl.indexOfFirst { it != ' ' }
-                            val indent = bl.substring(0, contentStart)
-                            "$indent${legacyToMiniMessage(bl.substring(contentStart))}"
-                        }
-                    }
-                    result.add("$keyPart $indicator\n$migratedBlock")
-                } else {
-                    result.add(line)
-                    result.addAll(blockLines)
-                }
-            } else {
-                // Regular key: value pair
-                val value = afterColon.trim()
-                if (value.isNotEmpty() && legacyPattern.containsMatchIn(value)) {
-                    // Strip existing YAML quotes before converting, then re-quote
-                    val unquoted = value.removeSurrounding("\"").removeSurrounding("'")
-                    val keyStr = line.substring(0, colonIndex)
-                    result.add("$keyStr: \"${legacyToMiniMessage(unquoted)}\"")
-                } else {
-                    result.add(line)
-                }
-                i++
-            }
-        }
-
-        val migrated = result.joinToString("\n")
-        Files.writeString(file, migrated, Charsets.UTF_8)
-        Files.deleteIfExists(backup)
-        logger("lang.yml migrated to MiniMessage format")
+        val migrated = org.yaml.snakeyaml.Yaml().dump(convert(root))
+        yaml.load<Any?>(migrated)
+        val backup = file.resolveSibling("${file.fileName}.${java.util.UUID.randomUUID()}.bak")
+        Files.copy(file, backup)
+        top.e404.eclean.config.AtomicFiles.write(file, migrated)
+        logger("Language migrated; original retained at ${backup.fileName}")
         onMigrated(migrated)
         return true
     }

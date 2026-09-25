@@ -1,7 +1,9 @@
 prefix: <gray>[<green>EClean</green>]</gray>
+command.reload_failed: '<red>配置加载失败，继续保留原配置。{reason}</red>'
 command.teleport.failed: '<red>传送失败，请检查目标位置和传送限制。</red>'
 command.teleport.return_failed: '<red>返回失败，原位置已保留，本次服务器运行期间下次登录会重试。</red>'
 command.teleport.busy: '<yellow>有一项传送正在进行，请稍后重试。</yellow>'
+cleanup.finish.world: '<white>世界 {world} 清理完成：掉落物 {drop}，生物 {living}，密集实体 {dense}。</white>'
 debug_prefix: <gray>[<gold>ECleanDebug</gold>]</gray>
 common.hover.view_distribution: <gray>点击查看区块分布</gray>
 common.hover.view_chunk: <gray>点击查看该区块实体</gray>

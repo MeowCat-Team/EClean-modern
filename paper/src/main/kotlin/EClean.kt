@@ -29,29 +29,11 @@ open class EClean : JavaPlugin {
     }
 
     override fun onEnable() {
-        if (!unit && Config.current.advanced.bStats.enabled) {
-            org.bstats.bukkit.Metrics(this, 33735)
-        }
         services = RuntimeServices()
         services.load()
         Commands.register()
-        Update.register()
         services.commonPlatform.eventBus.register(DespawnListener)
         services.commonPlatform.eventBus.register(MenuManager)
-        if (Config.current.advanced.papi.enabled) {
-            try {
-                val clazz = Class.forName("top.e404.eclean.feature.papi.native.ECleanPapiExpansion")
-                val papi = clazz.getDeclaredConstructor().newInstance()
-                val canRegister = clazz.getMethod("canRegister").invoke(papi) as Boolean
-                if (canRegister) {
-                    clazz.getMethod("register").invoke(papi)
-                }
-            } catch (_: ReflectiveOperationException) {
-                logger.info("PlaceholderAPI not found, skipping PAPI expansion registration")
-            } catch (_: NoClassDefFoundError) {
-                logger.info("PlaceholderAPI not found, skipping PAPI expansion registration")
-            }
-        }
         services.messages.info("EClean-Modern enabled. Author: 404E")
     }
 

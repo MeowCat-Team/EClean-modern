@@ -33,11 +33,11 @@ class ECleanPapiExpansion : PlaceholderExpansion() {
             lower == "trashcan_entries" -> PL.services.trashcanStore.size.toString()
             lower == "trashcan_total" -> PL.services.trashcanStore.totalCount().toString()
             lower == "history_count" -> PL.services.cleanupHistory.count().toString()
-            lower == "total_entities" -> Bukkit.getWorlds().sumOf { it.entities.size }.toString()
-            lower == "total_chunks" -> Bukkit.getWorlds().sumOf { it.loadedChunks.size }.toString()
+            lower == "total_entities" -> PL.services.worldStatsService.cachedStats().values.sumOf { it.totalEntities }.toString()
+            lower == "total_chunks" -> PL.services.worldStatsService.cachedStats().values.sumOf { it.loadedChunks }.toString()
             lower.startsWith("world_") && lower.endsWith("_entities") -> {
-                val worldName = lower.removePrefix("world_").removeSuffix("_entities")
-                Bukkit.getWorld(worldName)?.entities?.size?.toString()
+                val worldName = params.substring(6, params.length - 9)
+                PL.services.worldStatsService.cachedStats()[worldName]?.totalEntities?.toString()
             }
             else -> null
         }
