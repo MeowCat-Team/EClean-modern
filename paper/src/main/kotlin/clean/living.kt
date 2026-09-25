@@ -30,11 +30,14 @@ fun cleanLiving(announce: Boolean = true, dryRun: Boolean = false, onComplete: (
     val time = System.currentTimeMillis()
     service.cleanAllWorlds(dryRun = dryRun) { results ->
         val elapsed = System.currentTimeMillis() - time
-        lastLiving = results.sumOf { it.cleaned }
-        PL.services.statusSnapshots.updateCleanup { it.copy(lastLiving = lastLiving) }
-        PL.services.messages.debug { "Living entity cleanup finished: ${lastLiving} removed, ${elapsed}ms" }
-        if (announce) announceLiving(results)
-        onComplete?.invoke(lastLiving)
+        val cleaned = results.sumOf { it.cleaned }
+        if (!dryRun) {
+            lastLiving = cleaned
+            PL.services.statusSnapshots.updateCleanup { it.copy(lastLiving = cleaned) }
+            if (announce) announceLiving(results)
+        }
+        PL.services.messages.debug { "Living entity cleanup finished: $cleaned selected, dryRun=$dryRun, ${elapsed}ms" }
+        onComplete?.invoke(cleaned)
     }
 }
 

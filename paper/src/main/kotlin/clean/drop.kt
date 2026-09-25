@@ -29,11 +29,14 @@ fun cleanDrop(announce: Boolean = true, dryRun: Boolean = false, onComplete: ((I
     val time = System.currentTimeMillis()
     service.cleanAllWorlds(dryRun = dryRun) { results ->
         val elapsed = System.currentTimeMillis() - time
-        lastDrop = results.sumOf { it.cleaned }
-        PL.services.statusSnapshots.updateCleanup { it.copy(lastDrop = lastDrop) }
-        PL.services.messages.debug { "Drop cleanup finished: ${lastDrop} removed, ${elapsed}ms" }
-        if (announce) announceDrop(results)
-        onComplete?.invoke(lastDrop)
+        val cleaned = results.sumOf { it.cleaned }
+        if (!dryRun) {
+            lastDrop = cleaned
+            PL.services.statusSnapshots.updateCleanup { it.copy(lastDrop = cleaned) }
+            if (announce) announceDrop(results)
+        }
+        PL.services.messages.debug { "Drop cleanup finished: $cleaned selected, dryRun=$dryRun, ${elapsed}ms" }
+        onComplete?.invoke(cleaned)
     }
 }
 

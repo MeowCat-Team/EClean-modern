@@ -4,6 +4,8 @@ import top.e404.eclean.common.api.CommonLocation
 import top.e404.eclean.common.api.Scheduler
 import top.e404.eclean.common.api.WorldAccess
 import top.e404.eclean.config.ConfigBundle
+import top.e404.eclean.config.isCleanupEnabledInWorld
+import top.e404.eclean.config.planEnabledWorlds
 import java.util.concurrent.atomic.AtomicInteger
 
 class LivingCleanupEngine(
@@ -17,7 +19,9 @@ class LivingCleanupEngine(
         dryRun: Boolean = false,
         onComplete: (List<LivingCleanupResult>) -> Unit,
     ) {
-        val worldNames = worldAccess.worldNames()
+        val worldNames = planEnabledWorlds(
+            worldAccess.worldNames(), config.living.disabledWorlds, config.perWorld.worlds, config.living.enabled,
+        )
         if (worldNames.isEmpty()) {
             scheduler.runGlobal { onComplete(emptyList()) }
             return
@@ -40,6 +44,10 @@ class LivingCleanupEngine(
         dryRun: Boolean = false,
         onComplete: (LivingCleanupResult) -> Unit,
     ) {
+        if (!isCleanupEnabledInWorld(worldName, config.living.enabled, config.living.disabledWorlds, config.perWorld.worlds)) {
+            scheduler.runGlobal { onComplete(LivingCleanupResult(0, 0)) }
+            return
+        }
         val chunkRefs = worldAccess.getLoadedChunkRefs(worldName)
         if (chunkRefs.isEmpty()) {
             scheduler.runGlobal { onComplete(LivingCleanupResult(0, 0)) }
@@ -86,7 +94,7 @@ class LivingCleanupEngine(
                                 .size
                         }
                     } else {
-                        decision.total
+                        decision.entityIdsToRemove.size
                     }
                     cleaned.addAndGet(removed)
                     total.addAndGet(decision.total)

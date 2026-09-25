@@ -53,8 +53,9 @@ class CleanupTickService(
             val next = execution.nextExecution(now).orElse(null) ?: return@scheduleRepeatingGlobal
             val remaining = maxOf(0, Duration.between(now, next).seconds)
             snapshots.updateCleanup { it.copy(elapsedSeconds = 0, remainingSeconds = remaining) }
-            announcements.announceCountdown(remaining)
-            if (remaining <= 0) {
+            val mayClean = mayCleanAutomatically()
+            if (mayClean) announcements.announceCountdown(remaining)
+            if (remaining <= 0 && mayClean) {
                 coordinator.cleanNow()
             }
         }
@@ -78,10 +79,11 @@ class CleanupTickService(
             elapsed = e
             val remaining = (interval - e).coerceAtLeast(0)
             snapshots.updateCleanup { it.copy(elapsedSeconds = e, remainingSeconds = remaining) }
-            announcements.announceCountdown(remaining)
+            val mayClean = mayCleanAutomatically()
+            if (mayClean) announcements.announceCountdown(remaining)
             if (e >= interval) {
                 elapsed = 0
-                coordinator.cleanNow()
+                if (mayClean) coordinator.cleanNow()
             }
         }
         messages.info("Cleanup ticker started (interval=${interval}s, ${worlds.size} worlds)")
@@ -89,6 +91,9 @@ class CleanupTickService(
 
     val elapsedSeconds: Long
         get() = elapsed
+
+    private fun mayCleanAutomatically(): Boolean =
+        Config.current.cleanup.cleanWhenNoPlayers || serverInfo.hasOnlinePlayers
 
     fun stop() {
         task?.cancel()

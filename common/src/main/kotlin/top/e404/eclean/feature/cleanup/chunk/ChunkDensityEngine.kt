@@ -4,6 +4,8 @@ import top.e404.eclean.common.api.CommonLocation
 import top.e404.eclean.common.api.Scheduler
 import top.e404.eclean.common.api.WorldAccess
 import top.e404.eclean.config.ConfigBundle
+import top.e404.eclean.config.isCleanupEnabledInWorld
+import top.e404.eclean.config.planEnabledWorlds
 import top.e404.eclean.platform.snapshot.ChunkEntitySnapshot
 import top.e404.eclean.platform.snapshot.ChunkEntityState
 import java.util.concurrent.atomic.AtomicInteger
@@ -22,7 +24,9 @@ class ChunkDensityEngine(
         dryRun: Boolean = false,
         onComplete: (ChunkDensityResult) -> Unit,
     ) {
-        val worldNames = worldAccess.worldNames()
+        val worldNames = planEnabledWorlds(
+            worldAccess.worldNames(), config.chunkDensity.disabledWorlds, config.perWorld.worlds, config.chunkDensity.enabled,
+        )
         if (worldNames.isEmpty()) {
             scheduler.runGlobal { onComplete(ChunkDensityResult(0, emptyList())) }
             return
@@ -47,6 +51,10 @@ class ChunkDensityEngine(
         dryRun: Boolean = false,
         onComplete: (ChunkDensityResult) -> Unit = {},
     ) {
+        if (!isCleanupEnabledInWorld(worldName, config.chunkDensity.enabled, config.chunkDensity.disabledWorlds, config.perWorld.worlds)) {
+            scheduler.runGlobal { onComplete(ChunkDensityResult(0, emptyList())) }
+            return
+        }
         val chunkRefs = worldAccess.getLoadedChunkRefs(worldName)
         if (chunkRefs.isEmpty()) {
             scheduler.runGlobal { onComplete(ChunkDensityResult(0, emptyList())) }

@@ -4,7 +4,6 @@ import top.e404.eclean.config.ModernConfig
 import top.e404.eclean.feature.cleanup.chunk.ChunkAlertService
 import top.e404.eclean.feature.cleanup.chunk.ChunkDensityScanner
 import top.e404.eclean.lang.MLang
-import top.e404.eclean.platform.execution.ChunkRef
 import top.e404.eclean.util.noOnline
 import top.e404.eclean.util.noOnlineMessage
 
@@ -40,12 +39,14 @@ fun cleanDenseEntities(announce: Boolean = true, dryRun: Boolean = false, onComp
     val time = System.currentTimeMillis()
     scanner.cleanAllWorlds(dryRun = dryRun) { result ->
         val elapsed = System.currentTimeMillis() - time
-        lastChunk = result.cleaned
-        PL.services.statusSnapshots.updateCleanup { it.copy(lastChunk = lastChunk) }
-        PL.services.messages.debug { "Chunk density cleanup finished: ${lastChunk} removed, ${elapsed}ms" }
-        chunkAlertService.alert(result.denseEntries)
-        if (announce) announceChunk()
-        onComplete?.invoke(lastChunk)
+        if (!dryRun) {
+            lastChunk = result.cleaned
+            PL.services.statusSnapshots.updateCleanup { it.copy(lastChunk = result.cleaned) }
+            chunkAlertService.alert(result.denseEntries)
+            if (announce) announceChunk()
+        }
+        PL.services.messages.debug { "Chunk density cleanup finished: ${result.cleaned} selected, dryRun=$dryRun, ${elapsed}ms" }
+        onComplete?.invoke(result.cleaned)
     }
 }
 

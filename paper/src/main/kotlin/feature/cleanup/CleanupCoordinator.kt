@@ -44,13 +44,13 @@ class CleanupCoordinator(
                     { next -> cleanDenseEntities(announce = !dryRun, dryRun = dryRun) { next() } },
                 ),
             ) {
-                snapshots.updateCleanup {
-                    it.copy(
-                        elapsedSeconds = 0,
-                        remainingSeconds = Config.current.cleanup.intervalSeconds,
-                    )
-                }
                 if (!dryRun) {
+                    snapshots.updateCleanup {
+                        it.copy(
+                            elapsedSeconds = 0,
+                            remainingSeconds = Config.current.cleanup.intervalSeconds,
+                        )
+                    }
                     history.record(null, lastDrop, lastLiving, lastChunk)
                 }
                 onComplete?.invoke()

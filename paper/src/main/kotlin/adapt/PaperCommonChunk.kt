@@ -1,6 +1,7 @@
 package top.e404.eclean.paper.adapt
 
 import org.bukkit.Chunk
+import org.bukkit.Material
 import org.bukkit.entity.Item
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
@@ -64,8 +65,11 @@ class PaperCommonItem(
     override val hasLore: Boolean
         get() = item.itemStack.itemMeta?.hasLore() == true
     override val isWrittenBook: Boolean
-        get() = item.itemStack.type.name == "WRITABLE_BOOK" &&
-            (item.itemStack.itemMeta as? org.bukkit.inventory.meta.BookMeta)?.hasPages() == true
+        get() = when (item.itemStack.type) {
+            Material.WRITTEN_BOOK -> true
+            Material.WRITABLE_BOOK -> (item.itemStack.itemMeta as? org.bukkit.inventory.meta.BookMeta)?.hasPages() == true
+            else -> false
+        }
     override val distanceToNearestPlayer: Double?
         get() = item.location.distanceToNearestPlayer()
 

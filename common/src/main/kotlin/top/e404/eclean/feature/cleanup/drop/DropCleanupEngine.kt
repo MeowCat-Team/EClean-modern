@@ -4,6 +4,8 @@ import top.e404.eclean.common.api.CommonLocation
 import top.e404.eclean.common.api.Scheduler
 import top.e404.eclean.common.api.WorldAccess
 import top.e404.eclean.config.ConfigBundle
+import top.e404.eclean.config.isCleanupEnabledInWorld
+import top.e404.eclean.config.planEnabledWorlds
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -20,7 +22,9 @@ class DropCleanupEngine(
         dryRun: Boolean = false,
         onComplete: (List<DropCleanupResult>) -> Unit,
     ) {
-        val worldNames = worldAccess.worldNames()
+        val worldNames = planEnabledWorlds(
+            worldAccess.worldNames(), config.drop.disabledWorlds, config.perWorld.worlds, config.drop.enabled,
+        )
         if (worldNames.isEmpty()) {
             scheduler.runGlobal { onComplete(emptyList()) }
             return
@@ -43,6 +47,10 @@ class DropCleanupEngine(
         dryRun: Boolean = false,
         onComplete: (DropCleanupResult) -> Unit,
     ) {
+        if (!isCleanupEnabledInWorld(worldName, config.drop.enabled, config.drop.disabledWorlds, config.perWorld.worlds)) {
+            scheduler.runGlobal { onComplete(DropCleanupResult(0, 0)) }
+            return
+        }
         val chunkRefs = worldAccess.getLoadedChunkRefs(worldName)
         if (chunkRefs.isEmpty()) {
             scheduler.runGlobal { onComplete(DropCleanupResult(0, 0)) }
@@ -87,7 +95,7 @@ class DropCleanupEngine(
                                 .size
                         }
                     } else {
-                        decision.total
+                        decision.itemIdsToRemove.size
                     }
                     cleaned.addAndGet(removed)
                     total.addAndGet(decision.total)
