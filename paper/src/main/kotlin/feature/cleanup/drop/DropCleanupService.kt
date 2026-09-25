@@ -11,6 +11,7 @@ class DropCleanupService(
     private val engine = DropCleanupEngine(
         worldAccess = PL.services.commonPlatform.worldAccess,
         scheduler = PL.services.commonPlatform.scheduler,
+        isCurrentConfig = { Config.current === it },
         cleanupItem = { item, config ->
             try {
                 if (config.trashcan.enabled && config.trashcan.collectFromDropCleanup) {

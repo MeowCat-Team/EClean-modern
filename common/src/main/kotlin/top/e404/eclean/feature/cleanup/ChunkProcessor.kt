@@ -26,34 +26,19 @@ class ChunkProcessor(
     ) {
         val chunkRefs = worldAccess.getLoadedChunkRefs(worldName)
         if (chunkRefs.isEmpty()) {
-            scheduler.runGlobal { onComplete(0, 0) }
+            scheduler.complete { onComplete(0, 0) }
             return
         }
         val cleaned = AtomicInteger(0)
         val total = AtomicInteger(0)
-        val pending = AtomicInteger(chunkRefs.size)
-        chunkRefs.forEach { ref ->
-            val chunk = worldAccess.getChunk(worldName, ref)
-            if (chunk == null) {
-                if (pending.decrementAndGet() == 0) {
-                    scheduler.runGlobal { onComplete(cleaned.get(), total.get()) }
-                }
-                return@forEach
-            }
-            scheduler.runAtRegion(
-                CommonLocation(ref.world, ref.x * 16.0 + 8.0, 64.0, ref.z * 16.0 + 8.0),
-            ) {
-                try {
-                    val outcome = perChunk(chunk)
-                    cleaned.addAndGet(outcome.cleaned)
-                    total.addAndGet(outcome.total)
-                } finally {
-                    if (pending.decrementAndGet() == 0) {
-                        scheduler.runGlobal { onComplete(cleaned.get(), total.get()) }
-                    }
-                }
-            }
-        }
+        top.e404.eclean.platform.dispatch.RegionBatchDispatcher(scheduler).dispatch(
+            chunkRefs, top.e404.eclean.config.model.SchedulerAdvancedConfig(),
+        ) { ref ->
+            val chunk = worldAccess.getChunk(worldName, ref) ?: return@dispatch
+            val outcome = perChunk(chunk)
+            cleaned.addAndGet(outcome.cleaned)
+            total.addAndGet(outcome.total)
+        }.whenComplete { _, _ -> scheduler.complete { onComplete(cleaned.get(), total.get()) } }
     }
 
     fun processAllWorlds(
@@ -62,7 +47,7 @@ class ChunkProcessor(
         onComplete: (List<Pair<String, ChunkCleanupOutcome>>) -> Unit,
     ) {
         if (worldNames.isEmpty()) {
-            scheduler.runGlobal { onComplete(emptyList()) }
+            scheduler.complete { onComplete(emptyList()) }
             return
         }
         val results = mutableListOf<Pair<String, ChunkCleanupOutcome>>()
@@ -71,7 +56,7 @@ class ChunkProcessor(
             processWorld(name, perChunk) { cleaned, total ->
                 synchronized(results) { results += name to ChunkCleanupOutcome(cleaned, total) }
                 if (pending.decrementAndGet() == 0) {
-                    scheduler.runGlobal { onComplete(results.toList()) }
+                    scheduler.complete { onComplete(results.toList()) }
                 }
             }
         }

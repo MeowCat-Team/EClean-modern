@@ -7,6 +7,7 @@ class LivingCleanupService {
     private val engine = LivingCleanupEngine(
         worldAccess = PL.services.commonPlatform.worldAccess,
         scheduler = PL.services.commonPlatform.scheduler,
+        isCurrentConfig = { Config.current === it },
     )
 
     fun cleanAllWorlds(

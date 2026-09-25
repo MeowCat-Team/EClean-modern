@@ -32,6 +32,7 @@ class PaperMessageSender : MessageSender {
     }
 
     override fun broadcast(component: Component) {
-        Bukkit.getServer().sendMessage(component)
+        try { Bukkit.getServer().sendMessage(component) }
+        catch (error: Exception) { top.e404.eclean.PL.logger.warning("Cleanup notification failed: ${error.message}") }
     }
 }

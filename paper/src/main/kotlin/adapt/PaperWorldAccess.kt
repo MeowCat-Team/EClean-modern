@@ -16,6 +16,7 @@ class PaperWorldAccess : WorldAccess {
 
     override fun getChunk(worldName: String, ref: ChunkRef): CommonChunk? {
         val world = Bukkit.getWorld(worldName) ?: return null
+        if (!world.isChunkLoaded(ref.x, ref.z)) return null
         val chunk = world.getChunkAt(ref.x, ref.z)
         return PaperCommonChunk(ref, chunk)
     }

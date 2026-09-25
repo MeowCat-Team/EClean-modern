@@ -10,42 +10,57 @@ class WorldStatsService(
     private val coordinator: ChunkTaskCoordinator = ChunkTaskCoordinator(),
     private val collector: WorldStatsCollector = WorldStatsCollector(),
 ) {
+    private val inFlight = java.util.concurrent.ConcurrentHashMap<String, java.util.concurrent.CompletableFuture<WorldStatsResult?>>()
+    @Volatile private var cached: Map<String, WorldStatsResult> = emptyMap()
+    @Volatile var cachedAtMillis: Long = 0
+        private set
+    private var cacheTask: top.e404.eclean.common.api.ScheduledTask? = null
+    @Volatile private var cacheGeneration = 0L
+
+    fun cachedStats(): Map<String, WorldStatsResult> = cached
+
+    fun startCache() {
+        stopCache()
+        val token = cacheGeneration
+        cacheTask = Schedulers.scheduleRepeatingGlobal(1, 200) {
+            collectAllWorldStats { results ->
+                if (token != cacheGeneration) return@collectAllWorldStats
+                val loaded = Bukkit.getWorlds().map { it.name }.toSet()
+                if (!results.map { it.first }.containsAll(loaded)) return@collectAllWorldStats
+                cached = results.toMap()
+                cachedAtMillis = System.currentTimeMillis()
+            }
+        }
+    }
+
+    fun stopCache() { cacheGeneration++; cacheTask?.cancel(); cacheTask = null }
+
     fun collectWorldStats(worldName: String, onComplete: (WorldStatsResult?) -> Unit) {
-        val world = Bukkit.getWorld(worldName)
-        if (world == null) {
-            Schedulers.runGlobal { onComplete(null) }
-            return
+        val result = java.util.concurrent.CompletableFuture<WorldStatsResult?>()
+        val previous = inFlight.putIfAbsent(worldName, result)
+        (previous ?: result).whenComplete { value, _ ->
+            Schedulers.backend().complete { onComplete(value) }
         }
-        val chunkRefs = coordinator.getLoadedChunkRefs(world)
-        if (chunkRefs.isEmpty()) {
-            Schedulers.runGlobal { onComplete(WorldStatsResult(emptyMap(), 0, 0)) }
-            return
-        }
-        val snapshots = mutableListOf<ChunkSnapshot>()
-        val liveChunks = mutableListOf<org.bukkit.Chunk>()
-        coordinator.dispatchToChunks(
-            chunkRefs = chunkRefs,
-            resolveWorld = { Bukkit.getWorld(it) },
-            perChunk = { w, ref ->
-                val chunk = w.getChunkAt(ref.x, ref.z)
-                synchronized(liveChunks) { liveChunks += chunk }
-                val snap = collector.collectFromChunk(chunk)
-                if (snap.entityCounts.isNotEmpty()) {
+        if (previous != null) return
+        result.whenComplete { _, _ -> inFlight.remove(worldName, result) }
+        try {
+            val world = Bukkit.getWorld(worldName)
+            if (world == null) { result.complete(null); return }
+            val snapshots = mutableListOf<ChunkSnapshot>()
+            val forced = AtomicInteger()
+            coordinator.dispatchToChunks(
+                coordinator.getLoadedChunkRefs(world), Bukkit::getWorld,
+                perChunk = { w, ref ->
+                    val chunk = w.getChunkAt(ref.x, ref.z)
+                    if (chunk.isForceLoaded) forced.incrementAndGet()
+                    val snap = collector.collectFromChunk(chunk)
                     synchronized(snapshots) { snapshots += snap }
-                }
-            },
-            onComplete = {
-                Schedulers.runGlobal {
-                    val forceLoaded = liveChunks.count { it.isForceLoaded }
-                    val result = if (snapshots.isEmpty()) {
-                        WorldStatsResult(emptyMap(), liveChunks.size, forceLoaded)
-                    } else {
-                        ChunkSnapshot.merge(snapshots, forceLoaded)
-                    }
-                    onComplete(result)
-                }
-            },
-        )
+                },
+            ).whenComplete { _, error ->
+                if (error != null) result.complete(null)
+                else result.complete(ChunkSnapshot.merge(snapshots.toList(), forced.get()))
+            }
+        } catch (error: Exception) { result.completeExceptionally(error) }
     }
 
     fun collectEntityStats(
@@ -56,12 +71,12 @@ class WorldStatsService(
     ) {
         val world = Bukkit.getWorld(worldName)
         if (world == null) {
-            Schedulers.runGlobal { onComplete(emptyList()) }
+            Schedulers.backend().complete { onComplete(emptyList()) }
             return
         }
         val chunkRefs = coordinator.getLoadedChunkRefs(world)
         if (chunkRefs.isEmpty()) {
-            Schedulers.runGlobal { onComplete(emptyList()) }
+            Schedulers.backend().complete { onComplete(emptyList()) }
             return
         }
         val entries = mutableListOf<ChunkEntityCount>()
@@ -88,23 +103,24 @@ class WorldStatsService(
         chunkZ: Int,
         onComplete: (List<EntityLocationDetail>) -> Unit,
     ) {
-        val world = Bukkit.getWorld(worldName)
-        if (world == null) {
-            Schedulers.runGlobal { onComplete(emptyList()) }
-            return
-        }
-        val location = Location(world, chunkX * 16.0 + 8.0, 64.0, chunkZ * 16.0 + 8.0)
-        Schedulers.runAtLocation(location) {
-            val chunk = world.getChunkAt(chunkX, chunkZ)
-            val entities = chunk.entities.filter { it.type.name == type }
-            onComplete(entities.map { EntityLocationDetail(it.location.x, it.location.y, it.location.z) })
-        }
+        var snapshot = emptyList<EntityLocationDetail>()
+        coordinator.dispatchToChunks(
+            listOf(top.e404.eclean.platform.execution.ChunkRef(worldName, chunkX, chunkZ)),
+            Bukkit::getWorld,
+            perChunk = { world, ref ->
+                snapshot = world.getChunkAt(ref.x, ref.z).entities.filter { it.type.name == type }.map {
+                    val location = it.location
+                    EntityLocationDetail(location.x, location.y, location.z)
+                }
+            },
+            onComplete = { onComplete(snapshot) },
+        )
     }
 
     fun collectAllWorldStats(onComplete: (List<Pair<String, WorldStatsResult>>) -> Unit) {
         val worldNames = Bukkit.getWorlds().map { it.name }
         if (worldNames.isEmpty()) {
-            Schedulers.runGlobal { onComplete(emptyList()) }
+            Schedulers.backend().complete { onComplete(emptyList()) }
             return
         }
         val results = mutableListOf<Pair<String, WorldStatsResult>>()
@@ -131,7 +147,7 @@ class WorldStatsService(
             Bukkit.getWorlds()
         }
         if (worlds.isEmpty()) {
-            Schedulers.runGlobal { onComplete(emptyList()) }
+            Schedulers.backend().complete { onComplete(emptyList()) }
             return
         }
         val totals = mutableListOf<ChunkTotal>()

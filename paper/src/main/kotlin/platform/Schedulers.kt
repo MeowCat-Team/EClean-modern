@@ -19,6 +19,8 @@ object Schedulers {
 
     private fun ensureScheduler(): Scheduler = scheduler ?: error("Scheduler not initialized")
 
+    fun backend(): Scheduler = ensureScheduler()
+
     fun runGlobal(task: () -> Unit) {
         ensureScheduler().runGlobal(task)
     }
@@ -36,14 +38,29 @@ object Schedulers {
     }
 
     fun runForEntity(entity: Entity, task: () -> Unit) {
-        ensureScheduler().runForEntity(entity.uniqueId.toString(), task)
+        submitForEntity(entity, task)
+    }
+
+    fun submitForEntity(entity: Entity, task: () -> Unit): java.util.concurrent.CompletableFuture<Unit> {
+        val scheduler = ensureScheduler()
+        if (scheduler is top.e404.eclean.paper.adapt.PaperScheduler) return scheduler.submitForEntity(entity, task)
+        val future = java.util.concurrent.CompletableFuture<Unit>()
+        try {
+            scheduler.runForEntity(entity.uniqueId.toString()) {
+                try { task(); future.complete(Unit) } catch (error: Throwable) { future.completeExceptionally(error) }
+            }
+        } catch (error: Throwable) { future.completeExceptionally(error) }
+        return future
     }
 
     fun runLaterGlobal(delayTicks: Long, task: () -> Unit): ScheduledTask? =
         ensureScheduler().runLaterGlobal(delayTicks, task)
 
-    fun runLaterForEntity(entity: Entity, delayTicks: Long, task: () -> Unit): ScheduledTask? =
-        ensureScheduler().runLaterForEntity(entity.uniqueId.toString(), delayTicks, task)
+    fun runLaterForEntity(entity: Entity, delayTicks: Long, task: () -> Unit): ScheduledTask? {
+        val scheduler = ensureScheduler()
+        return if (scheduler is top.e404.eclean.paper.adapt.PaperScheduler) scheduler.runLaterForEntity(entity, delayTicks, task)
+        else scheduler.runLaterForEntity(entity.uniqueId.toString(), delayTicks, task)
+    }
 
     fun scheduleRepeatingGlobal(delayTicks: Long, periodTicks: Long, task: () -> Unit): ScheduledTask? =
         ensureScheduler().scheduleRepeatingGlobal(delayTicks, periodTicks, task)

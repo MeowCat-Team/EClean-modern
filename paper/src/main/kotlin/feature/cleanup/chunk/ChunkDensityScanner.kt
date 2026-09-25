@@ -10,6 +10,7 @@ class ChunkDensityScanner {
     private val engine = ChunkDensityEngine(
         worldAccess = PL.services.commonPlatform.worldAccess,
         scheduler = PL.services.commonPlatform.scheduler,
+        isCurrentConfig = { Config.current === it },
     )
 
     fun cleanAllWorlds(

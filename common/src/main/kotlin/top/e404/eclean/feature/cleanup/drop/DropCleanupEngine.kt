@@ -1,6 +1,6 @@
 package top.e404.eclean.feature.cleanup.drop
 
-import top.e404.eclean.common.api.CommonLocation
+import top.e404.eclean.platform.dispatch.RegionBatchDispatcher
 import top.e404.eclean.common.api.CommonItem
 import top.e404.eclean.common.api.Scheduler
 import top.e404.eclean.common.api.WorldAccess
@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger
 class DropCleanupEngine(
     private val worldAccess: WorldAccess,
     private val scheduler: Scheduler,
+    private val isCurrentConfig: (ConfigBundle) -> Boolean = { true },
     private val policy: DropCleanupPolicy = DropCleanupPolicy(),
     private val executor: DropCleanupExecutor = DropCleanupExecutor(),
     /** Called on the owning region; true means the source was actually removed. */
@@ -32,7 +33,7 @@ class DropCleanupEngine(
             worldAccess.worldNames(), config.drop.disabledWorlds, config.perWorld.worlds, config.drop.enabled,
         )
         if (worldNames.isEmpty()) {
-            scheduler.runGlobal { onComplete(emptyList()) }
+            scheduler.complete { onComplete(emptyList()) }
             return
         }
         val results = mutableListOf<DropCleanupResult>()
@@ -41,76 +42,66 @@ class DropCleanupEngine(
             cleanWorld(worldName, config, dryRun) { result ->
                 synchronized(results) { results += result }
                 if (pending.decrementAndGet() == 0) {
-                    scheduler.runGlobal { onComplete(results.toList()) }
+                    scheduler.complete { onComplete(results.toList()) }
                 }
             }
         }
     }
 
-    fun cleanWorld(
+    fun cleanWorld(worldName: String, config: ConfigBundle, dryRun: Boolean = false, onComplete: (DropCleanupResult) -> Unit) =
+        top.e404.eclean.feature.cleanup.CleanupFlights.run(worldAccess, "drop", worldName, dryRun, DropCleanupResult(0, 0),
+            action = { done -> cleanWorldImpl(worldName, config, dryRun, done) }, onComplete = onComplete)
+
+    private fun cleanWorldImpl(
         worldName: String,
         config: ConfigBundle,
         dryRun: Boolean = false,
         onComplete: (DropCleanupResult) -> Unit,
     ) {
         if (!isCleanupEnabledInWorld(worldName, config.drop.enabled, config.drop.disabledWorlds, config.perWorld.worlds)) {
-            scheduler.runGlobal { onComplete(DropCleanupResult(0, 0)) }
+            scheduler.complete { onComplete(DropCleanupResult(0, 0)) }
             return
         }
         val chunkRefs = worldAccess.getLoadedChunkRefs(worldName)
         if (chunkRefs.isEmpty()) {
-            scheduler.runGlobal { onComplete(DropCleanupResult(0, 0)) }
+            scheduler.complete { onComplete(DropCleanupResult(0, 0)) }
             return
         }
         val rule = DropCleanupRule.fromConfig(config, worldName)
         val matchers = config.drop.matchers
         val cleaned = AtomicInteger(0)
         val total = AtomicInteger(0)
-        val pending = AtomicInteger(chunkRefs.size)
-        chunkRefs.forEach { ref ->
-            val chunk = worldAccess.getChunk(worldName, ref)
-            if (chunk == null) {
-                if (pending.decrementAndGet() == 0) {
-                    scheduler.runGlobal { onComplete(DropCleanupResult(cleaned.get(), total.get())) }
-                }
-                return@forEach
-            }
-            scheduler.runAtRegion(
-                CommonLocation(worldName, ref.x * 16.0 + 8.0, 64.0, ref.z * 16.0 + 8.0)
-            ) {
-                try {
-                    val items = chunk.items()
-                    val collection = DropCleanupCollection(
-                        items.map { item ->
-                            DropCleanupCandidate(
-                                id = item.uniqueId,
-                                type = item.type,
-                                enchanted = item.enchanted,
-                                lore = item.hasLore,
-                                writtenBook = item.isWrittenBook,
-                                distanceToNearestPlayer = item.distanceToNearestPlayer,
-                            )
-                        }
+        RegionBatchDispatcher(scheduler).dispatch(chunkRefs, config.advanced.scheduler) { ref ->
+            if (!isCurrentConfig(config)) return@dispatch
+            val chunk = worldAccess.getChunk(worldName, ref) ?: return@dispatch
+            val items = chunk.items()
+            val collection = DropCleanupCollection(
+                items.map { item ->
+                    DropCleanupCandidate(
+                        id = item.uniqueId,
+                        type = item.type,
+                        enchanted = item.enchanted,
+                        lore = item.hasLore,
+                        writtenBook = item.isWrittenBook,
+                        distanceToNearestPlayer = item.distanceToNearestPlayer,
                     )
-                    if (collection.candidates.isEmpty()) return@runAtRegion
-                    val decision = policy.decide(collection, rule, matchers)
-                    val removed = if (!dryRun) {
-                        executor.execute(collection, decision) { ids ->
-                            items
-                                .filter { it.uniqueId in ids }
-                                .count { cleanupItem(it, config) }
-                        }
-                    } else {
-                        decision.itemIdsToRemove.size
-                    }
-                    cleaned.addAndGet(removed)
-                    total.addAndGet(decision.total)
-                } finally {
-                    if (pending.decrementAndGet() == 0) {
-                        scheduler.runGlobal { onComplete(DropCleanupResult(cleaned.get(), total.get())) }
-                    }
                 }
+            )
+            if (collection.candidates.isEmpty()) return@dispatch
+            val decision = policy.decide(collection, rule, matchers)
+            val removed = if (!dryRun) {
+                executor.execute(collection, decision) { ids ->
+                    items
+                        .filter { it.uniqueId in ids }
+                        .count { cleanupItem(it, config) }
+                }
+            } else {
+                decision.itemIdsToRemove.size
             }
+            cleaned.addAndGet(removed)
+            total.addAndGet(decision.total)
+        }.whenComplete { _, _ ->
+            scheduler.complete { onComplete(DropCleanupResult(cleaned.get(), total.get())) }
         }
     }
 }
