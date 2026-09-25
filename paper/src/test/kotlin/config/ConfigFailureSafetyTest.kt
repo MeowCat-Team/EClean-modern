@@ -50,9 +50,11 @@ class ConfigFailureSafetyTest {
     }
 
     @Test fun `unknown profile is rejected without changing selector`() {
-        Files.writeString(directory.resolve("config.yml"), "profile: prodution")
-        assertFailsWith<IllegalArgumentException> { loader().readProfile() }
-        assertEquals("profile: prodution", Files.readString(directory.resolve("config.yml")))
+        listOf("profile: prodution", "{}").forEach { content ->
+            Files.writeString(directory.resolve("config.yml"), content)
+            assertFailsWith<IllegalArgumentException> { loader().readProfile() }
+            assertEquals(content, Files.readString(directory.resolve("config.yml")))
+        }
     }
 
     @Test fun `legacy migration retains safety rules and original files`() {

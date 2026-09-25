@@ -16,5 +16,5 @@ enum class ConfigProfile(val id: String) {
 
 @Serializable
 data class ProfileConfig(
-    val profile: String = ConfigProfile.NORMAL.id,
+    val profile: String,
 )
