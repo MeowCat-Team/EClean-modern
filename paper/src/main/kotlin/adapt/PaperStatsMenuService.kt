@@ -16,8 +16,8 @@ class PaperStatsMenuService : StatsMenuService {
             ?.let { Bukkit.getPlayer(it) }
             ?: return
         WorldStatsService().collectWorldStats(worldName) { result ->
-            if (result == null || !bukkitPlayer.isOnline) return@collectWorldStats
-            Schedulers.runGlobal {
+            if (result == null) return@collectWorldStats
+            Schedulers.runForEntity(bukkitPlayer) {
                 if (bukkitPlayer.isOnline) {
                     MenuManager.openMenu(StatsMenu(worldName, result.sortedEntries()), bukkitPlayer)
                 }

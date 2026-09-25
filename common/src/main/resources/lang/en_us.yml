@@ -64,7 +64,10 @@ menu.trashcan.sort.count_desc: <white>Count (high to low)</white>
 menu.trashcan.sort.name_asc: <white>Name</white>
 menu.trashcan.sort.time_asc: <white>Time remaining</white>
 menu.trashcan.search.name: <gold>Search</gold>
-menu.trashcan.search.prompt: <white>Type a search keyword in chat. Type cancel to cancel.</white>
+menu.trashcan.search.prompt: <white>Enter an item type keyword within 60 seconds; this message stays private. Type cancel to cancel.</white>
+menu.trashcan.search.timeout: <yellow>Search timed out. Subsequent chat messages will be public.</yellow>
+menu.trashcan.search.cancelled: <yellow>Search cancelled.</yellow>
+menu.trashcan.deposit_failed: <red>Could not deposit the item. Please try again later.</red>
 menu.trashcan.search.reset: '<white>Search: {query} (click to clear)</white>'
 menu.trashcan.title: <gold>Shared Trash Can - First come, first served, cleared regularly</gold>
 command.reload_done: <green>Reload complete</green>

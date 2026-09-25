@@ -64,7 +64,10 @@ menu.trashcan.sort.count_desc: <white>按数量降序</white>
 menu.trashcan.sort.name_asc: <white>按名称排序</white>
 menu.trashcan.sort.time_asc: <white>按剩余时间排序</white>
 menu.trashcan.search.name: <gold>搜索</gold>
-menu.trashcan.search.prompt: <white>请在聊天框输入搜索关键词，输入 cancel 取消</white>
+menu.trashcan.search.prompt: <white>请在 60 秒内输入物品类型关键词；本次输入不会公开发送。输入 cancel 取消。</white>
+menu.trashcan.search.timeout: <yellow>搜索已超时，后续聊天将正常公开发送。</yellow>
+menu.trashcan.search.cancelled: <yellow>已取消搜索。</yellow>
+menu.trashcan.deposit_failed: <red>物品存入失败，请稍后重试。</red>
 menu.trashcan.search.reset: '<white>当前搜索: {query}（点击清除）</white>'
 menu.trashcan.title: <gold>共享垃圾桶 - 先到先得, 定期清空</gold>
 command.reload_done: <green>重载完成</green>

@@ -42,8 +42,9 @@ class UiPager<T : UiDisplayable>(
     }
 
     fun onClick(slot: Int, event: InventoryClickEvent): Boolean {
+        if (slot < startSlot || slot >= startSlot + pagerState.pageSize) return false
         val index = pagerState.page * pagerState.pageSize + (slot - startSlot)
-        if (index < 0 || index >= data.size) return false
+        if (index < pagerState.firstIndex() || index >= pagerState.lastIndex()) return false
         return onClickHandler(index, event)
     }
 

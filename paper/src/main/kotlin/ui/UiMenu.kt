@@ -5,9 +5,12 @@ import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
+import org.bukkit.event.inventory.ClickType
 import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.event.inventory.InventoryDragEvent
 import org.bukkit.inventory.Inventory
 import org.bukkit.plugin.Plugin
+import top.e404.eclean.platform.Schedulers
 import top.e404.eclean.util.miniMessage
 
 open class UiMenu(
@@ -46,7 +49,9 @@ open class UiMenu(
     protected open fun isAllowed(player: Player): Boolean = true
 
     protected open fun onAccessDenied(player: Player) {
-        player.closeInventory()
+        Schedulers.runLaterForEntity(player, 1) {
+            if (player.openInventory.topInventory == inventory) player.closeInventory()
+        }
     }
 
     fun setButton(slot: Int, button: UiButton?) {
@@ -73,6 +78,8 @@ open class UiMenu(
     @EventHandler
     open fun onInventoryClick(event: InventoryClickEvent) {
         if (event.inventory != inventory) return
+        // All menu contents are display-only. Actions explicitly transfer real items.
+        event.isCancelled = true
 
         val viewer = event.whoClicked as? Player
         if (viewer == null) {
@@ -86,10 +93,8 @@ open class UiMenu(
         }
 
         val clickedInventory = event.clickedInventory
-        if (clickedInventory == null) {
-            event.isCancelled = cancelUnmappedClicks
-            return
-        }
+        if (clickedInventory == null) return
+        if (event.click !in setOf(ClickType.LEFT, ClickType.RIGHT, ClickType.SHIFT_LEFT)) return
 
         if (clickedInventory != inventory) {
             event.isCancelled = true
@@ -97,12 +102,10 @@ open class UiMenu(
             return
         }
 
-        event.isCancelled = cancelUnmappedClicks
         val slot = event.slot
         val button = buttons[slot]
         if (button != null) {
-            event.isCancelled = true
-            button.onClick(event)
+            if (!event.isShiftClick) button.onClick(event)
             return
         }
         for (pager in pagers) {
@@ -111,6 +114,18 @@ open class UiMenu(
                 return
             }
         }
+    }
+
+    @EventHandler
+    fun onInventoryDrag(event: InventoryDragEvent) {
+        if (event.inventory != inventory) return
+        val viewer = event.whoClicked as? Player
+        if (viewer == null || !isAllowed(viewer)) {
+            event.isCancelled = true
+            if (viewer != null) onAccessDenied(viewer)
+            return
+        }
+        if (event.rawSlots.any { it in 0 until inventory.size }) event.isCancelled = true
     }
 
     open fun handlePlayerInvClick(event: InventoryClickEvent) {}

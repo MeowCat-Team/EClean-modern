@@ -2,29 +2,42 @@ package top.e404.eclean.menu
 
 import io.papermc.paper.event.player.AsyncChatEvent
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
+import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import top.e404.eclean.PL
 import top.e404.eclean.command.PermissionNode
 import top.e404.eclean.command.hasPermission
+import top.e404.eclean.config.Config
 import top.e404.eclean.lang.MLang
 import top.e404.eclean.menu.trashcan.TrashcanMenu
 import top.e404.eclean.platform.Schedulers
+import top.e404.eclean.platform.runtime.RuntimePlatform
 import top.e404.eclean.ui.UiMenu
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.UUID
 
 object MenuManager : Listener {
     private val openMenus = ConcurrentHashMap<Player, UiMenu>()
+    private class SearchSession(val menu: TrashcanMenu, val expiresAt: Long) {
+        val claimed = AtomicBoolean()
+    }
+    private val searches = ConcurrentHashMap<UUID, SearchSession>()
+    internal const val SEARCH_TIMEOUT_TICKS = 20L * 60
 
     fun openMenu(menu: UiMenu, player: Player) {
-        val previous = openMenus.put(player, menu)
-        if (previous != null && previous !== menu) {
+        searches.remove(player.uniqueId)
+        val previous = openMenus.remove(player)
+        if (previous != null) {
             previous.unregister()
             player.closeInventory()
         }
+        openMenus[player] = menu
         menu.open(player)
     }
 
@@ -40,6 +53,7 @@ object MenuManager : Listener {
         openMenus.entries.toList().forEach { (player, menu) ->
             if (menu is TrashcanMenu) {
                 Schedulers.runForEntity(player) {
+                    if (openMenus[player] !== menu || !player.isOnline) return@runForEntity
                     menu.rebuildDisplayData()
                     menu.updateIcon()
                 }
@@ -48,39 +62,90 @@ object MenuManager : Listener {
     }
 
     fun closeMenus() {
+        searches.clear()
         for ((player, menu) in HashMap(openMenus)) {
-            menu.unregister()
-            player.closeInventory()
+            Schedulers.runForEntity(player) {
+                if (!openMenus.remove(player, menu)) return@runForEntity
+                if (player.openInventory.topInventory == menu.inventory) player.closeInventory()
+                menu.unregister()
+            }
         }
-        openMenus.clear()
     }
 
     fun shutdown() {
-        closeMenus()
+        // onDisable cannot enqueue tasks for the now-disabled plugin. Paper invokes it on
+        // the main thread; Folia only permits direct UI access for regions we currently own.
+        searches.clear()
+        var unownedMenus = 0
+        for ((player, menu) in HashMap(openMenus)) {
+            if (!openMenus.remove(player, menu)) continue
+            if (PL.services.platform == RuntimePlatform.PAPER || Bukkit.isOwnedByCurrentRegion(player)) {
+                if (player.openInventory.topInventory == menu.inventory) player.closeInventory()
+            } else {
+                unownedMenus++
+            }
+            menu.unregister()
+        }
+        if (unownedMenus > 0) {
+            PL.logger.warning("Could not close $unownedMenus menu(s) owned by other Folia regions during disable. " +
+                "Hot-unloading is unsupported; stop the server instead.")
+        }
     }
 
     @EventHandler
     fun onPlayerQuit(event: PlayerQuitEvent) {
+        searches.remove(event.player.uniqueId)
         openMenus.remove(event.player)?.unregister()
         PL.services.temporaryReturnService.handleQuit(event.player)
     }
 
-    @EventHandler
+    internal fun beginSearch(player: Player, menu: TrashcanMenu) {
+        if (openMenus[player] !== menu || !Config.current.trashcan.enabled || !player.hasPermission(PermissionNode.TRASH_OPEN)) return
+        val session = SearchSession(menu, System.currentTimeMillis() + SEARCH_TIMEOUT_TICKS * 50)
+        searches[player.uniqueId] = session
+        // InventoryClickEvent is still dispatching; close on the next player tick.
+        Schedulers.runLaterForEntity(player, 1) {
+            if (searches[player.uniqueId] !== session || !player.isOnline) return@runLaterForEntity
+            player.closeInventory()
+            PL.services.messages.send(player, MLang["menu.trashcan.search.prompt"])
+        }
+        Schedulers.runLaterForEntity(player, SEARCH_TIMEOUT_TICKS) {
+            if (searches.remove(player.uniqueId, session) && player.isOnline) {
+                PL.services.messages.send(player, MLang["menu.trashcan.search.timeout"])
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
     fun onAsyncChat(event: AsyncChatEvent) {
         val player = event.player
-        val menu = openMenus[player]
-        if (menu is TrashcanMenu && menu.isSearching) {
-            event.isCancelled = true
+        val session = searches[player.uniqueId] ?: return
+        // Claim and cancel the private input before scheduling any Bukkit work.
+        event.isCancelled = true
+        if (!session.claimed.compareAndSet(false, true)) return
+        val query = PlainTextComponentSerializer.plainText().serialize(event.message()).trim()
+        Schedulers.runForEntity(player) {
+            if (!searches.remove(player.uniqueId, session)) return@runForEntity
+            if (!player.isOnline) return@runForEntity
+            if (System.currentTimeMillis() >= session.expiresAt) {
+                PL.services.messages.send(player, MLang["menu.trashcan.search.timeout"])
+                return@runForEntity
+            }
             if (!player.hasPermission(PermissionNode.TRASH_OPEN)) {
                 PL.services.messages.send(player, MLang["command.no_permission"])
-                openMenus.remove(player)?.unregister()
-                player.closeInventory()
-                return
+                return@runForEntity
             }
-            val query = PlainTextComponentSerializer.plainText().serialize(event.message())
-            Schedulers.runForEntity(player) {
-                if (query.equals("cancel", true)) menu.applySearchQuery(null) else menu.applySearchQuery(query)
+            if (!Config.current.trashcan.enabled) {
+                PL.services.messages.send(player, MLang["command.trash_disable"])
+                return@runForEntity
             }
+            if (query.equals("cancel", true)) {
+                session.menu.applySearchQuery(null)
+                PL.services.messages.send(player, MLang["menu.trashcan.search.cancelled"])
+            } else {
+                session.menu.applySearchQuery(query.take(128))
+            }
+            openMenu(session.menu, player)
         }
     }
 
@@ -89,8 +154,7 @@ object MenuManager : Listener {
         val player = event.player as? Player ?: return
         val menu = openMenus[player]
         if (menu != null && menu.inventory == event.inventory) {
-            openMenus.remove(player)
-            menu.unregister()
+            if (openMenus.remove(player, menu)) menu.unregister()
         }
     }
 }
