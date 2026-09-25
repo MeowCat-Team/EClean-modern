@@ -26,7 +26,7 @@ menu.dense.item.lore: '<white>{amount}</white>
 
   <green>Left click to teleport</green>
 
-  <dark_red>Right click to remove all of this type in this chunk</dark_red>'
+  <yellow>Right click to preview density cleanup, then confirm</yellow>'
 menu.dense.prev.name: <gold>Previous Page</gold>
 menu.dense.prev.lore: <white>Click to go to the previous page</white>
 menu.dense.next.name: <gold>Next Page</gold>
@@ -40,6 +40,19 @@ menu.dense.temp.lore: '<white>Returns to the original location 30s after telepor
 menu.dense.temp.status.true: <green>Enabled</green>
 menu.dense.temp.status.false: <red>Disabled</red>
 menu.dense.clean: Cleaned {count} {type} in chunk ({chunk})
+menu.dense.confirm.title: <gold>Confirm Density Cleanup</gold>
+menu.dense.confirm.target: <gold>Cleanup Scope</gold>
+menu.dense.confirm.lore: |-
+  <white>Chunk: {chunk}</white>
+  <white>Entity: {type}, currently {total}</white>
+  <red>Selected for cleanup: {selected}</red>
+  <green>Protected or within limit: {retained}</green>
+  <gray>Respects density rules and world settings; confirm within 30 seconds</gray>
+  <gray>Only previewed targets can be removed; protections are checked again</gray>
+menu.dense.confirm.accept: <red>Left click to confirm cleanup</red>
+menu.dense.confirm.cancel: <green>Cancel and Return</green>
+menu.dense.nothing: <green>No entities are selected by the current rules. Nothing was removed.</green>
+menu.dense.unavailable: <yellow>Configuration changed, preview expired, cleanup was disabled, or the chunk unloaded. Preview again.</yellow>
 menu.trashcan.item.lore: '<white>Total: {amount}</white>
 
   <green>Left click to take 1</green>

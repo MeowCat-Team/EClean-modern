@@ -15,7 +15,7 @@ class EntityInfo(
     val chunk: ChunkRef,
 ) : UiDisplayable {
     private companion object {
-        val materials = Material.entries.filter { it.name.contains("WOOL") }
+        val materials = Material.entries.filter { it.name.endsWith("_WOOL") && !it.name.startsWith("LEGACY_") }
     }
 
     override fun update() {}
@@ -27,7 +27,7 @@ class EntityInfo(
             "chunk" to chunk.info(),
         )
         buildItemStack(
-            materials.random(),
+            materials[Math.floorMod(type.hashCode(), materials.size)],
             1,
             MLang.get("menu.dense.item.name", *placeholder),
             MLang["menu.dense.item.lore"].placeholder(*placeholder).lines(),

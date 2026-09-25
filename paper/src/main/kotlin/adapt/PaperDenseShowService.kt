@@ -18,12 +18,9 @@ class PaperDenseShowService : DenseShowService {
             ?: return
         val scanner = ChunkDensityScanner()
         scanner.scanDenseEntries { entries ->
-            if (!bukkitPlayer.isOnline) return@scanDenseEntries
-            val data = entries
-                .map { EntityInfo(it.entityType, it.amount, it.chunk) }
-                .toMutableList()
-            Schedulers.runGlobal {
+            Schedulers.runForEntity(bukkitPlayer) {
                 if (bukkitPlayer.isOnline) {
+                    val data = entries.map { EntityInfo(it.entityType, it.amount, it.chunk) }.toMutableList()
                     MenuManager.openMenu(DenseMenu(data), bukkitPlayer)
                 }
             }

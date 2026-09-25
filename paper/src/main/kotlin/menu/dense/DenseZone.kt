@@ -1,22 +1,23 @@
 package top.e404.eclean.menu.dense
 
 import org.bukkit.Location
-import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
-import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.event.inventory.ClickType
 import top.e404.eclean.PL
 import top.e404.eclean.command.PermissionNode
 import top.e404.eclean.command.hasPermission
 import top.e404.eclean.lang.MLang
+import top.e404.eclean.feature.cleanup.chunk.DenseCleanupService
+import top.e404.eclean.menu.MenuManager
 import top.e404.eclean.platform.Schedulers
 import top.e404.eclean.platform.execution.ChunkRef
-import top.e404.eclean.platform.execution.info
 import top.e404.eclean.ui.UiPager
 
 class DenseZone(
     val menu: DenseMenu,
-    data: MutableList<EntityInfo>,
+    private val data: MutableList<EntityInfo>,
 ) {
+    private val cleanup = DenseCleanupService()
     val pager = UiPager(
         data = data,
         pageSize = 45,
@@ -24,9 +25,9 @@ class DenseZone(
         onClickHandler = { itemIndex, event ->
             val info = data.getOrNull(itemIndex) ?: return@UiPager true
             val player = event.whoClicked as Player
-            if (event.isRightClick) {
-                handleRightClick(player, info.chunk, info.type, itemIndex)
-            } else {
+            if (event.click == ClickType.RIGHT) {
+                handleRightClick(player, info.chunk, info.type)
+            } else if (event.click == ClickType.LEFT) {
                 handleTeleport(player, info.chunk, menu.temp)
             }
             true
@@ -41,31 +42,28 @@ class DenseZone(
     fun nextPage() = pager.nextPage()
     fun render(inv: org.bukkit.inventory.Inventory) = pager.render(inv)
 
-    private fun handleRightClick(player: Player, chunkRef: ChunkRef, type: String, itemIndex: Int) {
+    fun updateEntry(chunk: ChunkRef, type: String, count: Int) {
+        val index = data.indexOfFirst { it.chunk == chunk && it.type == type }
+        if (index < 0) return
+        if (count == 0) data.removeAt(index) else data[index] = EntityInfo(type, count, chunk)
+        pager.clampPage()
+    }
+
+    private fun handleRightClick(player: Player, chunkRef: ChunkRef, type: String) {
         if (!player.hasPermission(PermissionNode.SHOW_CLEAN)) {
             PL.services.messages.send(player, MLang["command.no_permission"])
-            player.closeInventory()
             return
         }
-        val world = player.server.getWorld(chunkRef.world) ?: return
-        val loc = Location(world, chunkRef.x * 16.0 + 8.0, 64.0, chunkRef.z * 16.0 + 8.0)
-        Schedulers.runAtLocation(loc) {
-            val chunk = world.getChunkAt(chunkRef.x, chunkRef.z)
-            val entities = chunk.entities.filter { it.type.name == type }
-            PL.services.messages.send(
-                player,
-                MLang[
-                    "menu.dense.clean",
-                    "chunk" to chunkRef.info(),
-                    "type" to type,
-                    "count" to entities.size
-                ]
-            )
-            entities.forEach(Entity::remove)
-        }
-        pager.removeAt(itemIndex)
-        Schedulers.runGlobal {
-            menu.updateIcon()
+        cleanup.preview(chunkRef, type) { plan ->
+            Schedulers.runForEntity(player) {
+                if (!player.isOnline || MenuManager.getOpenMenu(player) !== menu) return@runForEntity
+                if (!player.hasPermission(PermissionNode.SHOW_CLEAN)) return@runForEntity
+                when {
+                    plan == null -> PL.services.messages.send(player, MLang["menu.dense.unavailable"])
+                    plan.selectedIds.isEmpty() -> PL.services.messages.send(player, MLang["menu.dense.nothing"])
+                    else -> MenuManager.openMenu(DenseCleanupConfirmMenu(player.uniqueId, menu, plan, cleanup), player)
+                }
+            }
         }
     }
 

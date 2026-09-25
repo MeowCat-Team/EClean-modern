@@ -6,8 +6,7 @@ import top.e404.eclean.common.api.WorldAccess
 import top.e404.eclean.config.ConfigBundle
 import top.e404.eclean.config.isCleanupEnabledInWorld
 import top.e404.eclean.config.planEnabledWorlds
-import top.e404.eclean.platform.snapshot.ChunkEntitySnapshot
-import top.e404.eclean.platform.snapshot.ChunkEntityState
+import top.e404.eclean.platform.snapshot.entitySnapshot
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -121,7 +120,7 @@ class ChunkDensityEngine(
                     CommonLocation(worldName, ref.x * 16.0 + 8.0, 64.0, ref.z * 16.0 + 8.0)
                 ) {
                     try {
-                        val snapshot = snapshot(chunk)
+                        val snapshot = chunk.entitySnapshot()
                         if (snapshot.entities.isNotEmpty()) {
                             val decision = policy.decide(snapshot, rule)
                             synchronized(dense) { dense += decision.denseEntries }
@@ -141,7 +140,7 @@ class ChunkDensityEngine(
         rule: ChunkDensityRule,
         dryRun: Boolean,
     ): ChunkDensityChunkReport {
-        val snapshot = snapshot(chunk)
+        val snapshot = chunk.entitySnapshot()
         if (snapshot.entities.isEmpty()) {
             return ChunkDensityChunkReport(cleaned = 0, denseEntries = emptyList())
         }
@@ -161,19 +160,4 @@ class ChunkDensityEngine(
         )
     }
 
-    private fun snapshot(chunk: top.e404.eclean.common.api.CommonChunk): ChunkEntitySnapshot {
-        val entities = chunk.livingEntities().map { entity ->
-            ChunkEntityState(
-                uuid = entity.uniqueId,
-                type = entity.type,
-                named = entity.named,
-                leashed = entity.leashed,
-                mounted = entity.mounted,
-            )
-        }
-        return ChunkEntitySnapshot(
-            chunk = chunk.ref,
-            entities = entities,
-        )
-    }
 }

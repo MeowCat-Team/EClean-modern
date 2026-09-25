@@ -26,7 +26,7 @@ menu.dense.item.lore: '<white>{amount}</white>
 
   <green>左键点击传送</green>
 
-  <dark_red>右键点击清除该区块的所有该实体</dark_red>'
+  <yellow>右键预览按密度规则清理，确认后执行</yellow>'
 menu.dense.prev.name: <gold>上一页</gold>
 menu.dense.prev.lore: <white>点击前往上一页</white>
 menu.dense.next.name: <gold>下一页</gold>
@@ -40,6 +40,19 @@ menu.dense.temp.lore: '<white>传送完成30s后传送回当前位置</white>
 menu.dense.temp.status.true: <green>启用</green>
 menu.dense.temp.status.false: <red>禁用</red>
 menu.dense.clean: 清理区块({chunk})的{type}, 共{count}个
+menu.dense.confirm.title: <gold>确认密集实体清理</gold>
+menu.dense.confirm.target: <gold>本次清理范围</gold>
+menu.dense.confirm.lore: |-
+  <white>区块：{chunk}</white>
+  <white>实体：{type}，当前共 {total} 个</white>
+  <red>预计清理：{selected} 个</red>
+  <green>保护或限额内保留：{retained} 个</green>
+  <gray>遵守密度规则与世界开关；30 秒内确认</gray>
+  <gray>只处理已预览的目标，执行前再次检查保护</gray>
+menu.dense.confirm.accept: <red>左键确认清理</red>
+menu.dense.confirm.cancel: <green>取消并返回</green>
+menu.dense.nothing: <green>当前规则没有选中可清理的实体，未执行删除。</green>
+menu.dense.unavailable: <yellow>配置已变化、预览已过期、清理已禁用或区块已卸载，请重新预览。</yellow>
 menu.trashcan.item.lore: '<white>共{amount}个</white>
 
   <green>左键点击拿取一个</green>
