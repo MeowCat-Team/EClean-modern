@@ -4,6 +4,7 @@ import org.bukkit.Bukkit
 import org.bukkit.permissions.Permission
 import org.bukkit.permissions.PermissionDefault
 import top.e404.eclean.common.api.PermissionService
+import top.e404.eclean.command.hasEcleanPermission
 import java.util.UUID
 
 class PaperPermissionService : PermissionService {
@@ -13,7 +14,7 @@ class PaperPermissionService : PermissionService {
             .getOrNull()
             ?.let { Bukkit.getPlayer(it) }
             ?: return false
-        return player.hasPermission(node)
+        return player.hasEcleanPermission(node)
     }
 
     override fun registerPermission(node: String, default: Boolean, description: String) {

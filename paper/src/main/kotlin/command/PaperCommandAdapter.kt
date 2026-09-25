@@ -11,7 +11,7 @@ import top.e404.eclean.lang.MLang
 
 fun CommandSender.toCommon(): CommonCommandSender = object : CommonCommandSender {
     override val name: String = this@toCommon.name
-    override fun hasPermission(node: String): Boolean = this@toCommon.hasPermission(node)
+    override fun hasPermission(node: String): Boolean = this@toCommon.hasEcleanPermission(node)
     override fun sendMessage(component: Component) {
         (this@toCommon as? Audience)?.sendMessage(component)
             ?: this@toCommon.sendMessage(
@@ -30,7 +30,7 @@ fun Player.toCommonPlayer(): CommonPlayer = object : CommonPlayer {
         y = this@toCommonPlayer.location.y,
         z = this@toCommonPlayer.location.z,
     )
-    override fun hasPermission(node: String): Boolean = this@toCommonPlayer.hasPermission(node)
+    override fun hasPermission(node: String): Boolean = this@toCommonPlayer.hasEcleanPermission(node)
     override fun sendMessage(component: Component) {
         (this@toCommonPlayer as? Audience)?.sendMessage(component)
             ?: this@toCommonPlayer.sendMessage(

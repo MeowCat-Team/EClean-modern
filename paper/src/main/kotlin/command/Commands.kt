@@ -54,7 +54,7 @@ object Commands : CommandExecutor, TabCompleter {
             return specs
                 .filter { spec ->
                     val permission = spec.permission
-                    permission == null || sender.hasPermission(permission)
+                    permission == null || sender.hasEcleanPermission(permission)
                 }
                 .map { it.name }
                 .filter { it.startsWith(root) }
