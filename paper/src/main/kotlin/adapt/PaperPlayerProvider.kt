@@ -7,5 +7,5 @@ import top.e404.eclean.command.toCommonPlayer
 
 class PaperPlayerProvider : PlayerProvider {
     override fun onlinePlayers(): List<CommonPlayer> =
-        Bukkit.getOnlinePlayers().map { it.toCommonPlayer() }
+        top.e404.eclean.PL.services.playerSnapshots.players()
 }

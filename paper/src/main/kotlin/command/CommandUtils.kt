@@ -130,35 +130,20 @@ internal fun CommandSender.sendEntityStats(
 }
 
 internal fun CommandSender.sendPlayersStats() {
-    Schedulers.runGlobal {
-        val players = Bukkit.getOnlinePlayers().toList()
-        if (players.isEmpty()) {
-            PL.services.messages.send(this, MLang["command.stats.empty"])
-            return@runGlobal
-        }
-        val byWorld = players.groupBy { it.world.name to it.world }
-        val pending = AtomicInteger(players.size)
-        val lines = LinkedHashMap<String, MutableList<String>>()
-        byWorld.values.forEach { list ->
-            val worldName = list.first().world.name
-            val worldLines = mutableListOf<String>()
-            synchronized(lines) { lines[worldName] = worldLines }
-            list.forEach { player ->
-                Schedulers.runForEntity(player) {
-                    val loc = player.location
-                    val entry = MLang[
-                        "command.player_location",
-                        "player" to player.name,
-                        "x" to loc.blockX,
-                        "y" to loc.blockY,
-                        "z" to loc.blockZ,
-                    ]
-                    synchronized(worldLines) { worldLines += entry }
-                    if (pending.decrementAndGet() == 0) sendPlayerResult(this@sendPlayersStats, lines)
-                }
-            }
+    val players = PL.services.commonPlatform.playerProvider.onlinePlayers()
+    if (players.isEmpty()) {
+        PL.services.messages.send(this, MLang["command.stats.empty"])
+        return
+    }
+    val lines = players.groupBy { it.worldName }.mapValues { (_, list) ->
+        list.map { player ->
+            val loc = player.location
+            MLang["command.player_location", "player" to player.name,
+                "x" to kotlin.math.floor(loc.x).toInt(), "y" to kotlin.math.floor(loc.y).toInt(),
+                "z" to kotlin.math.floor(loc.z).toInt()]
         }
     }
+    sendPlayerResult(this, lines)
 }
 
 internal fun sendPlayerResult(sender: CommandSender, lines: Map<String, List<String>>) {

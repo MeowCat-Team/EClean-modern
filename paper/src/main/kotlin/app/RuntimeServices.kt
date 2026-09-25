@@ -31,6 +31,7 @@ import top.e404.eclean.service.TemporaryReturnEvent
 import top.e404.eclean.service.TemporaryReturnService
 
 class RuntimeServices {
+    val playerSnapshots = top.e404.eclean.platform.PlayerSnapshots()
     val messages = MessageService()
     val language = LanguageManager(
         dataDirectory = PL.dataFolder.toPath(),
@@ -57,6 +58,9 @@ class RuntimeServices {
             TemporaryReturnEvent.Started -> "command.teleport.temp"
             TemporaryReturnEvent.Returned -> "command.teleport.back"
             TemporaryReturnEvent.ReturnedAfterReplace -> "command.teleport.cover"
+            TemporaryReturnEvent.Failed -> "command.teleport.failed"
+            TemporaryReturnEvent.ReturnFailed -> "command.teleport.return_failed"
+            TemporaryReturnEvent.Busy -> "command.teleport.busy"
         }
         messages.send(player, MLang[key])
     }
@@ -83,6 +87,8 @@ class RuntimeServices {
     }
 
     fun load(sender: CommandSender? = null) {
+        commonPlatform.eventBus.register(playerSnapshots)
+        playerSnapshots.start()
         MLang.load(sender)
         Config.load(sender)
         statsAlertService.start()
@@ -99,10 +105,12 @@ class RuntimeServices {
     }
 
     fun shutdown() {
+        playerSnapshots.stop()
         cleanupTickService.stop()
         trashcanTicker.stop()
         statsAlertService.stop()
         temporaryReturnService.shutdown()
+        playerTeleportService.shutdown()
         commonPlatform.shutdown()
         Schedulers.cancelPluginTasks()
     }

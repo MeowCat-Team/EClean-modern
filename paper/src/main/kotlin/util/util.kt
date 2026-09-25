@@ -13,6 +13,9 @@ fun Collection<Entity>.info(): Map<String, Int> {
 }
 
 fun Location.distanceToNearestPlayer(): Double {
+    if (top.e404.eclean.platform.FoliaDetector.isFolia() || !Bukkit.isPrimaryThread()) {
+        return top.e404.eclean.PL.services.playerSnapshots.nearest(this)
+    }
     val world = world ?: return Double.MAX_VALUE
     return Bukkit.getOnlinePlayers()
         .filter { it.world == world }

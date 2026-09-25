@@ -6,6 +6,7 @@ import org.bukkit.entity.Player
 import top.e404.eclean.platform.Schedulers
 
 class BukkitExecutionGateway : ExecutionGateway {
+    override fun submitForPlayer(player: Player, task: () -> Unit) = Schedulers.submitForEntity(player, task)
     override fun runGlobal(task: () -> Unit) = Schedulers.runGlobal(task)
 
     override fun runAsync(task: () -> Unit) = Schedulers.runAsync(task)

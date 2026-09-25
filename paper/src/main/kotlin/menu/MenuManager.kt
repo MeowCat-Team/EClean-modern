@@ -23,6 +23,10 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.UUID
 
 object MenuManager : Listener {
+    @EventHandler
+    fun onJoin(event: org.bukkit.event.player.PlayerJoinEvent) {
+        PL.services.temporaryReturnService.handleJoin(event.player)
+    }
     private val openMenus = ConcurrentHashMap<Player, UiMenu>()
     private class SearchSession(val menu: TrashcanMenu, val expiresAt: Long) {
         val claimed = AtomicBoolean()

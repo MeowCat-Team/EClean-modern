@@ -1,4 +1,7 @@
 prefix: <gray>[<green>EClean</green>]</gray>
+command.teleport.failed: '<red>Teleport failed. Check the destination and teleport restrictions.</red>'
+command.teleport.return_failed: '<red>Return teleport failed. The original location is retained for your next login during this server session.</red>'
+command.teleport.busy: '<yellow>A teleport is still in progress. Please try again shortly.</yellow>'
 debug_prefix: <gray>[<gold>ECleanDebug</gold>]</gray>
 common.hover.view_distribution: <gray>Click to view chunk distribution</gray>
 common.hover.view_chunk: <gray>Click to view entities in this chunk</gray>

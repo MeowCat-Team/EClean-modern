@@ -10,7 +10,7 @@ import top.e404.eclean.util.miniMessage
 import java.util.logging.Level
 
 class MessageService {
-    val debuggers = mutableSetOf<String>()
+    val debuggers = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
 
     private val miniMessageTagRegex = Regex("<[^>]+>")
     private var lastDebugText: String? = null
@@ -72,7 +72,7 @@ class MessageService {
         }
     }
 
-    private fun emitDebug(text: String) {
+    @Synchronized private fun emitDebug(text: String) {
         val now = System.currentTimeMillis()
         val cooldown = top.e404.eclean.config.Config.current.global.debugCooldownMillis
         if (text == lastDebugText && now - lastDebugTime < cooldown) {
@@ -83,10 +83,14 @@ class MessageService {
         if (plugin.debug) {
             plugin.logger.info(stripMiniMessage("$debugPrefix $display"))
         }
-        debuggers.removeIf { name ->
-            Bukkit.getPlayer(name)?.hasPermission(PermissionNode.DEBUG) != true
+        debuggers.forEach { name ->
+            val player = Bukkit.getPlayer(name)
+            if (player == null) debuggers.remove(name)
+            else top.e404.eclean.platform.Schedulers.runForEntity(player) {
+                if (player.hasPermission(PermissionNode.DEBUG)) player.sendMessage("$debugPrefix $display")
+                else debuggers.remove(name)
+            }
         }
-        debuggers.forEach { Bukkit.getPlayer(it)?.sendMessage("$debugPrefix $display") }
         lastDebugText = text
         lastDebugTime = now
         suppressedDebugCount = 0
