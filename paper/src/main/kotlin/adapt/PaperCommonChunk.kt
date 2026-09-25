@@ -6,6 +6,7 @@ import org.bukkit.entity.Item
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 import org.bukkit.entity.Tameable
+import org.bukkit.inventory.ItemStack
 import top.e404.eclean.common.api.CommonChunk
 import top.e404.eclean.common.api.CommonEntity
 import top.e404.eclean.common.api.CommonItem
@@ -74,6 +75,20 @@ class PaperCommonItem(
         get() = item.location.distanceToNearestPlayer()
 
     override fun remove() = item.remove()
+
+    /** Preserve the exact stack and resolve removal errors before the store commits or rolls back. */
+    fun transferTo(transfer: (ItemStack, () -> Boolean) -> Boolean): Boolean {
+        if (!item.isValid || item.isDead) return false
+        return transfer(item.itemStack.clone()) {
+            try {
+                item.remove()
+            } catch (failure: Exception) {
+                // Some implementations can throw after the removal has already taken effect.
+                if (item.isValid && !item.isDead) throw failure
+            }
+            !item.isValid || item.isDead
+        }
+    }
 }
 
 class PaperCommonLivingEntity(

@@ -1,6 +1,7 @@
 package top.e404.eclean.feature.cleanup.drop
 
 import top.e404.eclean.common.api.CommonLocation
+import top.e404.eclean.common.api.CommonItem
 import top.e404.eclean.common.api.Scheduler
 import top.e404.eclean.common.api.WorldAccess
 import top.e404.eclean.config.ConfigBundle
@@ -16,6 +17,11 @@ class DropCleanupEngine(
     private val scheduler: Scheduler,
     private val policy: DropCleanupPolicy = DropCleanupPolicy(),
     private val executor: DropCleanupExecutor = DropCleanupExecutor(),
+    /** Called on the owning region; true means the source was actually removed. */
+    private val cleanupItem: (CommonItem, ConfigBundle) -> Boolean = { item, _ ->
+        item.remove()
+        true
+    },
 ) {
     fun cleanAllWorlds(
         config: ConfigBundle,
@@ -73,8 +79,9 @@ class DropCleanupEngine(
                 CommonLocation(worldName, ref.x * 16.0 + 8.0, 64.0, ref.z * 16.0 + 8.0)
             ) {
                 try {
+                    val items = chunk.items()
                     val collection = DropCleanupCollection(
-                        chunk.items().map { item ->
+                        items.map { item ->
                             DropCleanupCandidate(
                                 id = item.uniqueId,
                                 type = item.type,
@@ -89,10 +96,9 @@ class DropCleanupEngine(
                     val decision = policy.decide(collection, rule, matchers)
                     val removed = if (!dryRun) {
                         executor.execute(collection, decision) { ids ->
-                            chunk.items()
+                            items
                                 .filter { it.uniqueId in ids }
-                                .also { selected -> selected.forEach { it.remove() } }
-                                .size
+                                .count { cleanupItem(it, config) }
                         }
                     } else {
                         decision.itemIdsToRemove.size

@@ -7,6 +7,7 @@ import org.bukkit.event.Listener
 import org.bukkit.event.entity.ItemDespawnEvent
 import top.e404.eclean.config.Config
 import top.e404.eclean.config.matches
+import top.e404.eclean.paper.adapt.PaperCommonItem
 
 object DespawnListener : Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -21,11 +22,15 @@ object DespawnListener : Listener {
             ) return
         }
         PL.services.messages.debug { "Trashcan recovery: ${item.type.name}, world: ${entity.world.name}" }
-        val accepted = PL.services.trashcanManager.addItem(item.clone())
-        if (!accepted) {
-            PL.services.messages.debug { "Trashcan full, despawn recovery skipped for: ${item.type.name}" }
-            return
+        val accepted = try {
+            PaperCommonItem(entity).transferTo(PL.services.trashcanManager::transferFrom)
+        } catch (failure: Exception) {
+            PL.services.messages.warn("Failed to recover despawning item ${entity.uniqueId}", failure)
+            false
         }
-        entity.remove()
+        if (!accepted) {
+            // Retain the source so a later despawn can retry after a recoverable storage error.
+            isCancelled = true
+        }
     }
 }

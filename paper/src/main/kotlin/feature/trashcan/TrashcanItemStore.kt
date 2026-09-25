@@ -61,37 +61,48 @@ class TrashcanItemStore(
         }
     }
 
-    /** 放入物品: 合并到相似条目(不重置其到期时间), 否则新建条目; 无限容量, 恒为 true */
-    fun addItem(item: ItemStack): Boolean {
+    /** 放入物品: 合并到相似条目(不重置其到期时间), 否则新建条目。 */
+    fun addItem(item: ItemStack): Boolean = transferItem(item) { true }
+
+    /**
+     * Transfer ownership while holding the store write lock. Preparation happens before removing
+     * the source; readers cannot withdraw or expire the pending entry. A false result or exception
+     * rolls back only this deposit. The callback must return true iff its source no longer exists.
+     * This is an in-memory transaction; it does not provide durability across server crashes.
+     */
+    fun transferItem(item: ItemStack, removeSource: () -> Boolean): Boolean {
+        val snapshot = item.clone()
+        val amount = snapshot.amount.toLong()
+        if (amount <= 0 || snapshot.type.isAir) return false
         val stacking = stackingEnabled()
         val lifetime = lifetimeSeconds()
         lock.writeLock().lock()
         try {
-            val amount = item.amount.toLong()
             val now = System.currentTimeMillis()
-            if (stacking) {
-                val iterator = entries.listIterator()
-                while (iterator.hasNext()) {
-                    val entry = iterator.next()
-                    if (entry.deadline <= now) {
-                        iterator.remove()
-                        continue
-                    }
-                    if (entry.prototype.isSimilar(item)) {
-                        entry.count += amount
-                        return true
-                    }
+            entries.removeAll { it.deadline <= now }
+            val existing = if (stacking) entries.firstOrNull {
+                it.deadline > now && it.prototype.isSimilar(snapshot)
+            } else null
+            val previousCount = existing?.count ?: 0L
+            val pending = existing ?: TrashcanEntry(
+                id = idCounter.incrementAndGet(),
+                prototype = snapshot.apply { this.amount = 1 },
+                count = amount,
+                deadline = if (lifetime == null) Long.MAX_VALUE else
+                    Math.addExact(now, Math.multiplyExact(lifetime, 1000L)),
+            )
+            if (existing == null) entries.add(pending)
+            else existing.count = Math.addExact(previousCount, amount)
+            var transferred = false
+            try {
+                transferred = removeSource()
+                return transferred
+            } finally {
+                if (!transferred) {
+                    if (existing == null) entries.remove(pending)
+                    else existing.count = previousCount
                 }
             }
-            entries.add(
-                TrashcanEntry(
-                    id = idCounter.incrementAndGet(),
-                    prototype = item.clone().apply { this.amount = 1 },
-                    count = amount,
-                    deadline = if (lifetime == null) Long.MAX_VALUE else now + lifetime * 1000,
-                )
-            )
-            return true
         } finally {
             lock.writeLock().unlock()
         }

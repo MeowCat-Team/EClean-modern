@@ -38,7 +38,7 @@ class TrashcanManagerTest {
     }
 
     @Test
-    fun `sanitize removes both Chinese and English generated trash lore`() {
+    fun `real lore resembling translated UI text is preserved`() {
         val manager = manager()
         manager.addItem(
             loreItem(
@@ -52,11 +52,11 @@ class TrashcanManagerTest {
 
         val stored = manager.stats().single().prototype
         val lore = stored.itemMeta?.lore()?.map { net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText().serialize(it) }.orEmpty()
-        assertEquals(listOf("Keep this line"), lore)
+        assertEquals(listOf("Keep this line", "共1个", "剩余 5m", "Total: 1", "Expires in 5m"), lore)
     }
 
     @Test
-    fun `sanitize keeps normal lore untouched`() {
+    fun `normal lore is preserved`() {
         val manager = manager()
         val item = loreItem("Custom lore")
         manager.addItem(item)
