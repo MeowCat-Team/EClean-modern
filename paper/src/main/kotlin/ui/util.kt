@@ -14,8 +14,8 @@ fun buildItemStack(
 ): ItemStack {
     val item = ItemStack(material, amount)
     val meta = item.itemMeta ?: return item
-    if (name != null) meta.displayName(miniMessage.deserialize(name))
-    if (lore != null) meta.lore(lore.map { miniMessage.deserialize(it) })
+    if (name != null) meta.displayName(miniMessage.deserialize(menuText(name)))
+    if (lore != null) meta.lore(lore.map { miniMessage.deserialize(menuText(it)) })
     block?.invoke(meta)
     item.itemMeta = meta
     return item

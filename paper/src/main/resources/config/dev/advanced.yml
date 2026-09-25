@@ -7,20 +7,20 @@
 
 # 菜单 UI 高级设置（菜单标题在 lang 文件中）
 menu:
-  # 主题色
+  # 分别替换默认菜单中的 gold 标题、gray 说明、yellow 操作提示；支持单个颜色标签
   primaryColor: "<gold>"
   secondaryColor: "<gray>"
   accentColor: "<yellow>"
 
 # 调度与性能参数
 scheduler:
-  # 清理 tick 服务的运行间隔（tick）
+  # 清理计时器检查间隔（1..1200 tick），不会改变 intervalSeconds 的实际秒数
   cleanupTickIntervalTicks: 20
-  # 垃圾桶 tick 服务的运行间隔（tick）
+  # 垃圾桶过期检查间隔（1..1200 tick），不会改变条目的实际到期时间
   trashcanTickIntervalTicks: 20
-  # 区块扫描每批处理数量
+  # 每次扫描每批最多提交的区块数量（1..1000）
   chunkScanBatchSize: 100
-  # 区块扫描间隔（tick）
+  # 上一批完成后到下一批提交的等待 tick（1..1200）
   chunkScanIntervalTicks: 10
 
 # PlaceholderAPI

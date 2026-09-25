@@ -35,7 +35,7 @@ class TrashcanDisplayItem(
                 add(MLang.get("menu.trashcan.item.expire", "expire" to remainingSeconds.parseSecondAsDuration()))
             }
         }
-        existingLore.addAll(newLines.map { miniMessage.deserialize(it) })
+        existingLore.addAll(newLines.map { miniMessage.deserialize(top.e404.eclean.ui.menuText(it)) })
         lore(existingLore)
     }.apply { amount = 1 }
 

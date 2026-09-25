@@ -2,10 +2,10 @@
 # EClean Normal 配置
 # ============================================
 # 此配置适合大多数服务器，只提供常用基础项。
-# 高级项全部隐藏，使用插件内置默认值。
+# 可添加 advanced 节点覆盖高级项；未填写时使用内置默认值。
 # 需要完整高级配置时，请把根目录 config.yml 的 profile 改为 dev。
 #
-# 修改后重启生效；也可以使用：
+# 修改后使用 /eclean reload；也可以切换预设：
 #   /eclean config profile dev
 # ============================================
 
@@ -22,8 +22,9 @@ global:
 cleanup:
   # 自动清理间隔（秒）
   intervalSeconds: 600
-  # Cron 表达式，例如每天 3:00: "0 0 3 * * *"；留空则使用 intervalSeconds
-  cron: ""
+  # Quartz Cron，例如每天 3:00: "0 0 3 * * ?"；null 或空字符串使用 intervalSeconds
+  # 启用 Cron 时不能同时设置 perWorld 中的 intervalSeconds
+  cron: null
   # 没有玩家在线时也照常清理
   cleanWhenNoPlayers: true
   # 没有玩家在线时也广播清理公告

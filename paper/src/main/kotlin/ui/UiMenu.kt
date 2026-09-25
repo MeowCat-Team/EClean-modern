@@ -22,7 +22,7 @@ open class UiMenu(
     val inventory: Inventory = Bukkit.createInventory(
         null,
         rows * 9,
-        miniMessage.deserialize(title),
+        miniMessage.deserialize(menuText(title)),
     )
     protected val buttons = mutableMapOf<Int, UiButton>()
     private val pagers = mutableListOf<UiPager<*>>()
