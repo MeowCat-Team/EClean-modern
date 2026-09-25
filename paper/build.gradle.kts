@@ -59,10 +59,6 @@ tasks {
         }
     }
 
-    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        dependsOn(clean)
-    }
-
     processResources {
         filteringCharset = Charsets.UTF_8.name()
         val pluginVersion = project.version
