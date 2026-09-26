@@ -69,3 +69,13 @@ object Schedulers {
         ensureScheduler().cancelAll()
     }
 }
+
+/** Detects Folia when choosing native scheduling and ownership rules. */
+object FoliaDetector {
+    fun isFolia(): Boolean = try {
+        Class.forName("io.papermc.paper.threadedregions.RegionizedServer")
+        true
+    } catch (_: ClassNotFoundException) {
+        false
+    }
+}
