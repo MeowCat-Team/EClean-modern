@@ -35,14 +35,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Internal structure**: separate platform-independent code into `common` and the server implementation into `paper`, share command/permission definitions, inject adapter dependencies explicitly, and remove superseded cleanup planners and helpers.
 - **Build reproducibility**: require JDK 25, pin Paper API to `26.1.2.build.74-stable`, commit Gradle dependency locks and SHA-256 verification metadata, verify the wrapper download, and pin CI Actions to commits.
 
-### Upgrade notes and limitations
+### Upgrade notes
 
 - The root `config.yml` must explicitly select `profile: normal` or `profile: dev`. Profiles do not inherit from each other; switching profiles replaces the complete rule set. Back up existing configuration and review `config validate`, `config diff`, and `config effective` before applying changes.
 - Explicit `mode` takes precedence over legacy `blacklistMode`. An empty matcher list removes nothing with `remove-matching` and selects all unprotected candidates with `keep-matching`. Density cleanup now protects tamed mobs and allays by default.
 - Cross-world statistics menus require both `eclean.command.stats.gui` and `eclean.command.stats.world`. Configuration diagnostics and profile switching require `eclean.command.config`.
 - Trash-can contents, cleanup history/cumulative counters, and temporary-return locations remain in memory and do not survive restart. Adding items to an existing trash entry does not extend its expiry.
-- Plugin messages still use one global language, and trash-can search uses English Material IDs. Per-player message languages and translated-name search are not included.
-- Replace the plugin with a full server shutdown; Folia hot unloading is unsupported. Live Folia multi-region acceptance, real PlaceholderAPI/bStats integration, and load testing remain pending. Fabric/NeoForge modules are experimental placeholders outside the supported build target.
+- Replace the plugin with a full server shutdown; Folia hot unloading is unsupported.
 
 ## 0.2.9
 

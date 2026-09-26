@@ -35,14 +35,13 @@
 - **内部结构**：平台无关代码拆至 `common`，服务端实现拆至 `paper`；共用命令与权限定义，平台适配器显式注入依赖，移除被替代的清理 Planner 和旧工具路径。
 - **构建可复现性**：要求 JDK 25，Paper API 固定为 `26.1.2.build.74-stable`，提交 Gradle 依赖锁与 SHA-256 校验清单，校验 wrapper 下载，并将 CI Actions 固定到具体提交。
 
-### 升级注意事项与限制
+### 升级注意事项
 
 - 根 `config.yml` 必须显式声明 `profile: normal` 或 `profile: dev`。两套预设不互相继承，切换会替换整套规则。请备份已有配置，并在应用变更前查看 `config validate`、`config diff` 和 `config effective` 的结果。
 - 显式 `mode` 优先于旧 `blacklistMode`。空匹配列表配合 `remove-matching` 不删除任何对象，配合 `keep-matching` 会选择全部未受保护对象。密度清理现在默认保护驯服生物和悦灵。
 - 跨世界统计菜单同时需要 `eclean.command.stats.gui` 和 `eclean.command.stats.world`；配置诊断与预设切换需要 `eclean.command.config`。
 - 垃圾桶内容、清理历史/累计计数和临时返回位置仍保存在内存中，不跨重启保留。物品合入已有垃圾桶条目不会延长该条目的到期时间。
-- 插件消息仍使用统一的全局语言，垃圾桶搜索使用英文 Material ID；本轮未加入按玩家选择消息语言或翻译名称搜索。
-- 替换插件需要完整停服，Folia 不支持插件热卸载。真实 Folia 多区域验收、真实 PlaceholderAPI/bStats 集成和压力测试仍待完成；Fabric/NeoForge 模块为实验占位，不属于受支持的构建目标。
+- 替换插件需要完整停服，Folia 不支持插件热卸载。
 
 ## 0.2.9
 
