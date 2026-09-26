@@ -2,13 +2,12 @@ package config
 
 import java.nio.file.Files
 import java.nio.file.Path
-import org.junit.jupiter.api.io.TempDir
 import kotlin.test.*
 import top.e404.eclean.config.*
 import top.e404.eclean.config.model.ConfigProfile
 
 class ConfigFailureSafetyTest {
-    @TempDir lateinit var directory: Path
+    private val directory: Path = Files.createTempDirectory("eclean-config-safety")
     private fun loader() = ConfigLoader(directory = { directory.toFile() }, resource = { javaClass.classLoader.getResourceAsStream(it) })
 
     @Test fun `diagnostic profile read cannot migrate legacy files`() {

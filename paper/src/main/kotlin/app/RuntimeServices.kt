@@ -4,8 +4,10 @@ import org.bukkit.command.CommandSender
 import top.e404.eclean.PL
 import top.e404.eclean.common.api.Platform
 import top.e404.eclean.config.Config
-import top.e404.eclean.config.diff
-import top.e404.eclean.config.sections
+import top.e404.eclean.config.ConfigurationJobs
+import top.e404.eclean.config.ConfigurationReloadResult
+import top.e404.eclean.config.ConfiguredServiceLifecycle
+import top.e404.eclean.config.ManagedConfiguredService
 import top.e404.eclean.feature.cleanup.CleanupAnnouncementService
 import top.e404.eclean.feature.cleanup.CleanupCoordinator
 import top.e404.eclean.feature.cleanup.CleanupHistoryService
@@ -34,15 +36,19 @@ import top.e404.eclean.service.TemporaryReturnService
 
 class RuntimeServices {
     @Volatile private var stopped = false
-    private val configExecutor = java.util.concurrent.Executors.newSingleThreadExecutor { work ->
-        Thread(work, "EClean-config").apply { isDaemon = true }
-    }
     val integrations = OptionalIntegrations()
     val playerSnapshots = top.e404.eclean.platform.PlayerSnapshots()
     val messages = MessageService()
     val language = LanguageManager(
         dataDirectory = PL.dataFolder.toPath(),
         logger = { PL.logger.info(it) },
+    )
+    val configuration = top.e404.eclean.config.ConfigurationManager(
+        loader = top.e404.eclean.config.ConfigLoader(directory = { PL.dataFolder }, resource = PL::getResource),
+        language = language,
+        activate = { configuredServices.activate(it) },
+        deactivate = { configuredServices.stop() },
+        onLoadFailure = { PL.logger.severe("Configuration rejected; cleanup and recovery are paused. Fix the files and run /eclean reload: ${it.message}") },
     )
     val platform: RuntimePlatform = RuntimePlatformFactory.create(FoliaDetector.isFolia())
     val execution: ExecutionGateway = BukkitExecutionGateway()
@@ -99,9 +105,19 @@ class RuntimeServices {
         commonPlatform.permissionService,
         commonPlatform.messageSender,
     ) { MLang["prefix"] }
+    val configuredServices = ConfiguredServiceLifecycle(listOf(
+        ManagedConfiguredService(cleanupTickService::start, cleanupTickService::stop),
+        ManagedConfiguredService(trashcanTicker::start, trashcanTicker::stop),
+        ManagedConfiguredService(statsAlertService::start, statsAlertService::stop),
+        ManagedConfiguredService(
+            { if (it.advanced.papi.enabled) worldStatsService.startCache() else worldStatsService.stopCache() },
+            worldStatsService::stopCache,
+        ),
+        ManagedConfiguredService(integrations::configure, integrations::stop),
+    ))
+    val configJobs = ConfigurationJobs(configuration, commonPlatform.scheduler)
 
     init {
-        language.bindSnapshots({ top.e404.eclean.config.ConfigManager.currentLanguage }, top.e404.eclean.config.ConfigManager::updateLanguage)
         MLang.bind(language)
         Schedulers.init(commonPlatform.scheduler)
     }
@@ -113,66 +129,50 @@ class RuntimeServices {
     }
 
     fun reload(sender: CommandSender, profile: top.e404.eclean.config.model.ConfigProfile? = null) {
-        configExecutor.execute {
-            if (stopped) return@execute
-            try {
-                if (profile != null && profile == Config.profile && top.e404.eclean.config.ConfigManager.ready) {
-                    messages.send(sender, MLang["command.config.already", "profile" to profile.id])
-                    return@execute
+        configJobs.reload(profile) { outcome ->
+            if (!stopped) when (outcome) {
+                is ConfigurationReloadResult.AlreadyActive ->
+                    messages.send(sender, MLang["command.config.already", "profile" to outcome.profile.id])
+                is ConfigurationReloadResult.Applied -> {
+                    val appliedProfile = outcome.profile
+                    messages.send(sender, if (appliedProfile == null) MLang["command.reload_done"]
+                        else MLang["command.config.switched", "profile" to appliedProfile.id])
                 }
-                val candidate = top.e404.eclean.config.ConfigManager.prepare(profile)
-                commonPlatform.scheduler.submitGlobal {
-                    top.e404.eclean.config.ConfigManager.commit(candidate, persistProfile = profile != null)
-                }.join()
-                messages.send(sender, if (profile == null) MLang["command.reload_done"]
-                    else MLang["command.config.switched", "profile" to profile.id])
-            } catch (failure: Exception) {
-                if (stopped) return@execute
-                val reason = failure.cause?.message ?: failure.message ?: failure.javaClass.simpleName
-                messages.warn("Configuration rejected; previous configuration remains active: $reason", failure)
-                messages.send(sender, MLang["command.reload_failed", "reason" to reason])
+                is ConfigurationReloadResult.Failed -> {
+                    val failure = outcome.error
+                    val reason = failure.cause?.message ?: failure.message ?: failure.javaClass.simpleName
+                    messages.warn("Configuration rejected; previous configuration remains active: $reason", failure)
+                    messages.send(sender, MLang["command.reload_failed", "reason" to reason])
+                }
             }
         }
     }
 
     fun inspectConfig(sender: CommandSender, diff: Boolean) {
-        configExecutor.execute {
-            if (stopped) return@execute
-            try {
-                val candidate = top.e404.eclean.config.ConfigManager.inspect()
-                if (stopped) return@execute
-                if (!diff) messages.send(sender, MLang["command.config.valid", "profile" to candidate.profile.id])
+        configJobs.inspect(diff) { result ->
+            if (stopped) return@inspect
+            result.onSuccess { report ->
+                if (!diff) messages.send(sender, MLang["command.config.valid", "profile" to report.profile.id])
                 else {
-                    val changed = Config.current.diff(candidate.bundle).map { it.displayName }.toMutableList()
-                    if (candidate.profile != Config.profile) changed.add("profile")
-                    if (candidate.language != top.e404.eclean.config.ConfigManager.currentLanguage) changed.add("language")
-                    messages.send(sender, MLang["command.config.diff", "changes" to changed.joinToString(", ").ifEmpty { "-" }])
-                    val before = Config.current.sections()
-                    val after = candidate.bundle.sections()
-                    for (section in Config.current.diff(candidate.bundle)) {
-                        messages.send(sender, MLang["command.config.diff_section", "section" to section.displayName])
-                        before.getValue(section).lines().forEach { messages.send(sender, MLang["command.config.line", "line" to "- $it"]) }
-                        after.getValue(section).lines().forEach { messages.send(sender, MLang["command.config.line", "line" to "+ $it"]) }
+                    messages.send(sender, MLang["command.config.diff", "changes" to report.changes.joinToString(", ").ifEmpty { "-" }])
+                    for (change in report.sections) {
+                        messages.send(sender, MLang["command.config.diff_section", "section" to change.section.displayName])
+                        change.before.lines().forEach { messages.send(sender, MLang["command.config.line", "line" to "- $it"]) }
+                        change.after.lines().forEach { messages.send(sender, MLang["command.config.line", "line" to "+ $it"]) }
                     }
                 }
-            } catch (failure: Exception) {
-                if (!stopped) messages.send(sender, MLang["command.config.invalid", "reason" to (failure.message ?: failure.javaClass.simpleName)])
+            }.onFailure { failure ->
+                messages.send(sender, MLang["command.config.invalid", "reason" to (failure.message ?: failure.javaClass.simpleName)])
             }
         }
     }
 
-    fun stopConfiguredServices() {
-        cleanupTickService.stop()
-        trashcanTicker.stop()
-        statsAlertService.stop()
-        worldStatsService.stopCache()
-        integrations.stop()
-    }
+    fun stopConfiguredServices() = configuredServices.stop()
 
     fun shutdown() {
         stopped = true
         cleanupCoordinator.stop()
-        configExecutor.shutdownNow()
+        configJobs.shutdown()
         playerSnapshots.stop()
         stopConfiguredServices()
         temporaryReturnService.shutdown()

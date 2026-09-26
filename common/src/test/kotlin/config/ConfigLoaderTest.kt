@@ -8,7 +8,7 @@ import kotlin.test.assertTrue
 class ConfigLoaderTest {
     @Test
     fun `bundle loads all config files`() {
-        val loader = ConfigLoader()
+        val loader = ConfigLoader(directory = { java.nio.file.Files.createTempDirectory("eclean-loader").toFile() })
         val bundle = loader.loadFromText(
             globalText = "debug: true\nupdateCheck: false",
             cleanupText = "intervalSeconds: 120",

@@ -3,7 +3,6 @@ package top.e404.eclean.config
 import com.charleskorn.kaml.Yaml
 import com.charleskorn.kaml.YamlConfiguration
 import kotlinx.serialization.DeserializationStrategy
-import top.e404.eclean.PL
 import top.e404.eclean.config.model.*
 import java.io.File
 import java.io.InputStream
@@ -12,8 +11,8 @@ import java.time.Instant
 
 class ConfigLoader(
     private val yaml: Yaml = Yaml(configuration = YamlConfiguration(strictMode = true)),
-    private val directory: () -> File = { PL.dataFolder },
-    private val resource: (String) -> InputStream? = { PL.getResource(it) },
+    private val directory: () -> File,
+    private val resource: (String) -> InputStream? = { ConfigLoader::class.java.classLoader.getResourceAsStream(it) },
 ) {
     fun readProfile(createIfMissing: Boolean = false, migrate: Boolean = true): ConfigProfile {
         if (migrate) migrateLegacy()
