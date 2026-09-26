@@ -7,6 +7,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.3.2
+
+### Changed
+
+- **Shared platform logic**: move more configuration lifecycle, command routing, cleanup orchestration and auditing, world statistics, alerts, and trash-can services into `common` for reuse by future platform adapters. Paper retains platform operations and UI interactions; superseded entry points and wrappers have been removed.
+- **Update checks**: move GitHub release requests and parsing, version selection, notice deduplication, and failure throttling into `common`. Paper retains the existing asynchronous schedule and console messages.
+- **Menu themes**: move menu color-tag substitution into `common` while keeping the existing theme settings.
+
 ## 0.3.1
 
 ### Changed
