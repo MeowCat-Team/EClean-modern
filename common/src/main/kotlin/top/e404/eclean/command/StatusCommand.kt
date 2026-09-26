@@ -2,6 +2,8 @@ package top.e404.eclean.command
 
 import top.e404.eclean.common.api.CommonCommandSender
 import top.e404.eclean.feature.stats.WorldStatsProvider
+import top.e404.eclean.util.richText
+import top.e404.eclean.util.commandLink
 import top.e404.eclean.util.miniMessage
 
 /**
@@ -19,6 +21,10 @@ fun statusCommandHandler(
                     return true
                 }
                 worldStatsProvider.collectAllWorldStats { results ->
+                    if (results == null) {
+                        sender.sendMessage(miniMessage.deserialize(messageProvider.get("command.stats_collect_failed")))
+                        return@collectAllWorldStats
+                    }
                     if (results.isEmpty()) {
                         sender.sendMessage(miniMessage.deserialize(messageProvider.get("command.stats.empty")))
                         return@collectAllWorldStats
@@ -34,7 +40,7 @@ fun statusCommandHandler(
                         )
                         val message = if (sender.hasPermission(Permissions.STATUS_WORLD)) {
                             val command = "/eclean status $worldName"
-                            "<click:run_command:'$command'><hover:show_text:'${messageProvider.get("common.hover.view_distribution")}'>$content</hover></click>"
+                            commandLink(content, command, messageProvider.get("common.hover.view_distribution"))
                         } else content
                         sender.sendMessage(miniMessage.deserialize(message))
                     }
@@ -55,7 +61,7 @@ fun statusCommandHandler(
                     if (result == null) {
                         sender.sendMessage(
                             miniMessage.deserialize(
-                                messageProvider.get("command.invalid.world", "world" to worldName)
+                                messageProvider.get(if (worldStatsProvider.worldExists(worldName)) "command.stats_collect_failed" else "command.invalid.world", "world" to worldName)
                             )
                         )
                         return@collectWorldStats

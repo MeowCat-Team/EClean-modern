@@ -20,35 +20,13 @@ fun cleanCommandHandler(
             return true
         }
 
-        val target = when (cleanArgs.size) {
-            1 -> CleanTarget.ALL
-            2 -> when (cleanArgs[1].lowercase()) {
-                "a", "all" -> CleanTarget.ALL
-                "e", "entity" -> CleanTarget.ENTITY
-                "d", "drop" -> CleanTarget.DROP
-                "c", "chunk" -> CleanTarget.CHUNK
-                "t", "trash" -> CleanTarget.TRASH
-                else -> null
-            }
-            else -> when (cleanArgs[1].lowercase()) {
-                "e", "entity" -> CleanTarget.ENTITY
-                "d", "drop" -> CleanTarget.DROP
-                "c", "chunk" -> CleanTarget.CHUNK
-                else -> null
-            }
-        }
-        if (target == null) {
+        val target = if (cleanArgs.size == 1) CleanTarget.ALL else CleanTarget.find(cleanArgs[1])
+        if (target == null || cleanArgs.size == 3 && !target.acceptsWorld) {
             sender.sendMessage(miniMessage.deserialize(messageProvider.get("command.usage.clean")))
             return true
         }
 
-        val permission = when (target) {
-            CleanTarget.ALL -> Permissions.CLEAN_ALL
-            CleanTarget.ENTITY -> Permissions.CLEAN_ENTITY
-            CleanTarget.DROP -> Permissions.CLEAN_DROP
-            CleanTarget.CHUNK -> Permissions.CLEAN_CHUNK
-            CleanTarget.TRASH -> Permissions.CLEAN_TRASH
-        }
+        val permission = target.permission.node
         if (!sender.hasPermission(permission)) {
             sender.sendMessage(miniMessage.deserialize(messageProvider.get("command.no_permission")))
             return true
@@ -59,8 +37,13 @@ fun cleanCommandHandler(
         }
 
         val worldName = cleanArgs.getOrNull(2)
+        if (worldName != null && !cleanupService.worldExists(worldName)) {
+            sender.sendMessage(miniMessage.deserialize(messageProvider.get("command.invalid.world", "world" to worldName)))
+            return true
+        }
         when (target) {
-            CleanTarget.ALL -> cleanupService.cleanAll(sender, hasPreview)
+            CleanTarget.ALL -> if (worldName == null) cleanupService.cleanAll(sender, hasPreview)
+                else cleanupService.cleanAllInWorld(sender, worldName, hasPreview)
             CleanTarget.ENTITY -> cleanupService.cleanEntity(sender, worldName, hasPreview)
             CleanTarget.DROP -> cleanupService.cleanDrop(sender, worldName, hasPreview)
             CleanTarget.CHUNK -> cleanupService.cleanChunk(sender, worldName, hasPreview)
@@ -69,8 +52,4 @@ fun cleanCommandHandler(
         return true
     }
     return { sender, args -> execute(sender, args) }
-}
-
-private enum class CleanTarget {
-    ALL, ENTITY, DROP, CHUNK, TRASH
 }

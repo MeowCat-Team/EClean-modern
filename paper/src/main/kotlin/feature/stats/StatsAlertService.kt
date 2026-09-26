@@ -40,7 +40,7 @@ class StatsAlertService(
         val config = Config.current.cleanup
         if (!config.alertEnabled) return
         top.e404.eclean.PL.services.worldStatsService.collectAllWorldStats { results ->
-            if (token != generation) return@collectAllWorldStats
+            if (token != generation || results == null) return@collectAllWorldStats
             results.forEach { (worldName, result) ->
                 result.entityCounts
                     .filter { it.value >= config.alertEntityThreshold }

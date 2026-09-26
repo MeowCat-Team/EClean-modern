@@ -18,9 +18,13 @@ fun topCommandHandler(
             return true
         }
         val sub = args[1].lowercase()
-        val rest = args.drop(2)
-        val rawLimit = rest.firstNotNullOfOrNull { it.toIntOrNull() } ?: 10
-        val world = rest.firstOrNull { it.toIntOrNull() == null }
+        // Fixed positions: [amount] [world]. Numeric world names are unambiguous in position 4.
+        val rawLimit = args.getOrNull(2)?.toIntOrNull() ?: if (args.size == 2) 10 else -1
+        val world = args.getOrNull(3)
+        if (world != null && !worldStatsProvider.worldExists(world)) {
+            sender.sendMessage(miniMessage.deserialize(messageProvider.get("command.invalid.world", "world" to world)))
+            return true
+        }
         if (rawLimit !in 1..100) {
             sender.sendMessage(
                 miniMessage.deserialize(messageProvider.get("command.invalid.number", "number" to rawLimit))
@@ -34,7 +38,11 @@ fun topCommandHandler(
                     sender.sendMessage(miniMessage.deserialize(messageProvider.get("command.no_permission")))
                     return true
                 }
-                val onResult: (List<Pair<String, WorldStatsResult>>) -> Unit = { results ->
+                val onResult: (List<Pair<String, WorldStatsResult>>?) -> Unit = result@{ results ->
+                    if (results == null) {
+                        sender.sendMessage(miniMessage.deserialize(messageProvider.get("command.stats_collect_failed")))
+                        return@result
+                    }
                     val merged = mutableMapOf<String, Int>()
                     results.forEach { (_, result) ->
                         result.entityCounts.forEach { (type, count) ->
@@ -45,14 +53,14 @@ fun topCommandHandler(
                         messageProvider.get(
                             "command.top_entity",
                             "rank" to index + 1,
-                            "type" to entry.key,
+                            "type" to messageProvider.entityName(entry.key),
                             "count" to entry.value,
                         )
                     }
                 }
                 if (world != null) {
                     worldStatsProvider.collectWorldStats(world) { result ->
-                        onResult(if (result == null) emptyList() else listOf(world to result))
+                        onResult(result?.let { listOf(world to it) })
                     }
                 } else {
                     worldStatsProvider.collectAllWorldStats(onResult)
@@ -64,6 +72,10 @@ fun topCommandHandler(
                     return true
                 }
                 worldStatsProvider.collectChunkTotals(world) { totals ->
+                    if (totals == null) {
+                        sender.sendMessage(miniMessage.deserialize(messageProvider.get("command.stats_collect_failed")))
+                        return@collectChunkTotals
+                    }
                     sendTop(sender, messageProvider, "chunk", totals.take(rawLimit)) { (index, total) ->
                         messageProvider.get(
                             "command.top_chunk",

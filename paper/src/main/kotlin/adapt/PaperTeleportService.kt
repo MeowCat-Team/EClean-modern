@@ -11,12 +11,12 @@ import java.util.UUID
 class PaperTeleportService(
     private val delegate: PlayerTeleportService,
 ) : TeleportService {
-    override fun teleport(player: CommonPlayer, target: CommonLocation) {
+    override fun teleport(player: CommonPlayer, target: CommonLocation): java.util.concurrent.CompletableFuture<Boolean> {
         val bukkitPlayer = runCatching { UUID.fromString(player.uniqueId) }
             .getOrNull()
             ?.let { Bukkit.getPlayer(it) }
-            ?: return
-        val world = Bukkit.getWorld(target.worldName) ?: return
-        delegate.teleport(bukkitPlayer, Location(world, target.x, target.y, target.z))
+            ?: return java.util.concurrent.CompletableFuture.completedFuture(false)
+        val world = Bukkit.getWorld(target.worldName) ?: return java.util.concurrent.CompletableFuture.completedFuture(false)
+        return delegate.teleport(bukkitPlayer, Location(world, target.x, target.y, target.z))
     }
 }

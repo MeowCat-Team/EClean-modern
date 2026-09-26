@@ -81,8 +81,12 @@ class DenseZone(
             val y = world.getHighestBlockYAt(x, z)
             val target = Location(world, x + 0.5, y + 1.0, z + 0.5)
             if (!temp) {
-                PL.services.playerTeleportService.teleport(player, target)
-                PL.services.messages.send(player, MLang["command.teleport.done"])
+                PL.services.playerTeleportService.teleport(player, target).whenComplete { success, error ->
+                    Schedulers.runForEntity(player) {
+                        if (player.isOnline) PL.services.messages.send(player, MLang[
+                            if (success == true && error == null) "command.teleport.done" else "command.teleport.failed"])
+                    }
+                }
             } else {
                 PL.services.temporaryReturnService.teleportWithReturn(player, target, 600)
             }

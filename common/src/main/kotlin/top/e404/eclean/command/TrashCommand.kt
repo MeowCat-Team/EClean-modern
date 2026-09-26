@@ -3,8 +3,9 @@ package top.e404.eclean.command
 import top.e404.eclean.common.api.CommonCommandSender
 import top.e404.eclean.common.api.CommonPlayer
 import top.e404.eclean.feature.trashcan.TrashcanService
+import top.e404.eclean.util.richText
+import top.e404.eclean.util.commandLink
 import top.e404.eclean.util.miniMessage
-import top.e404.eclean.util.parseSecondAsDuration
 
 /**
  * Platform-agnostic `/eclean trash` command handler.
@@ -35,15 +36,15 @@ fun trashCommandHandler(
                     messageProvider.get("command.trash_never_expire")
                 } else {
                     val seconds = maxOf(0, (entry.deadline - now) / 1000)
-                    seconds.parseSecondAsDuration()
+                    messageProvider.duration(seconds)
                 }
                 sender.sendMessage(
                     miniMessage.deserialize(
                         messageProvider.get(
                             "command.trash_stats_line",
-                            "item" to entry.type,
+                            "item" to messageProvider.itemName(entry.type),
                             "amount" to entry.count,
-                            "expire" to expire,
+                            "expire" to expire.richText(),
                         )
                     )
                 )
@@ -51,7 +52,7 @@ fun trashCommandHandler(
             return true
         }
 
-        if (args.size != 1) {
+        if (!(args.size == 1 || args.size == 2 && args[1].equals("open", true))) {
             sender.sendMessage(miniMessage.deserialize(messageProvider.get("command.usage.trash")))
             return true
         }

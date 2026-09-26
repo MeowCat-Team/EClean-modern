@@ -5,6 +5,8 @@ import top.e404.eclean.common.api.CommonPlayer
 import top.e404.eclean.feature.stats.StatsMenuService
 import top.e404.eclean.feature.stats.WorldStatsProvider
 import top.e404.eclean.feature.stats.WorldStatsResult
+import top.e404.eclean.util.richText
+import top.e404.eclean.util.commandLink
 import top.e404.eclean.util.miniMessage
 import top.e404.eclean.util.withColor
 
@@ -59,6 +61,14 @@ fun statsCommandHandler(
                     sender.sendMessage(miniMessage.deserialize(messageProvider.get("command.no_permission")))
                     return true
                 }
+                if (args[2] != player.worldName && !sender.hasPermission(Permissions.STATS_WORLD)) {
+                    sender.sendMessage(miniMessage.deserialize(messageProvider.get("command.no_permission")))
+                    return true
+                }
+                if (!worldStatsProvider.worldExists(args[2])) {
+                    sender.sendMessage(miniMessage.deserialize(messageProvider.get("command.invalid.world", "world" to args[2])))
+                    return true
+                }
                 statsMenuService.openStatsGui(player, args[2])
             }
             else -> {
@@ -79,18 +89,14 @@ private fun sendWorldStats(
     worldStatsProvider.collectWorldStats(worldName) { result ->
         if (result == null) {
             sender.sendMessage(
-                miniMessage.deserialize(messageProvider.get("command.invalid.world", "world" to worldName))
+                miniMessage.deserialize(messageProvider.get(if (worldStatsProvider.worldExists(worldName)) "command.stats_collect_failed" else "command.invalid.world", "world" to worldName))
             )
-            return@collectWorldStats
-        }
-        if (result.totalEntities == 0) {
-            sender.sendMessage(miniMessage.deserialize(messageProvider.get("command.stats.empty")))
             return@collectWorldStats
         }
         val entity = result.sortedEntries().joinToString(messageProvider.get("command.stats.spacing")) { (type, count) ->
             val command = "/eclean entity $type $worldName"
-            val content = messageProvider.get("command.stats.content", "type" to type, "count" to count.withColor())
-            "<click:run_command:'$command'><hover:show_text:'${messageProvider.get("common.hover.view_distribution")}'>$content</hover></click>"
+            val content = messageProvider.get("command.stats.content", "type" to messageProvider.entityName(type), "count" to count.withColor())
+            commandLink(content, command, messageProvider.get("common.hover.view_distribution"))
         }
         sender.sendMessage(
             miniMessage.deserialize(
@@ -99,7 +105,7 @@ private fun sendWorldStats(
                     "world" to worldName,
                     "count" to result.loadedChunks,
                     "force" to result.forceLoadedChunks,
-                    "entity" to entity,
+                    "entity" to entity.richText(),
                 )
             )
         )

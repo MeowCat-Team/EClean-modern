@@ -2,6 +2,8 @@ package top.e404.eclean.command
 
 import top.e404.eclean.common.api.CommonCommandSender
 import top.e404.eclean.common.api.PlayerProvider
+import top.e404.eclean.util.richText
+import top.e404.eclean.util.commandLink
 import top.e404.eclean.util.miniMessage
 
 /**
@@ -28,7 +30,7 @@ fun playersCommandHandler(
                     messageProvider.get(
                         "command.players_header",
                         "world" to worldName,
-                        "lines" to worldPlayers.joinToString("") { p ->
+                        "lines" to worldPlayers.joinToString("\n", prefix = "\n") { p ->
                             messageProvider.get(
                                 "command.player_location",
                                 "player" to p.name,
@@ -36,7 +38,7 @@ fun playersCommandHandler(
                                 "y" to p.location.y.toInt(),
                                 "z" to p.location.z.toInt(),
                             )
-                        }
+                        }.richText()
                     )
                 )
             )

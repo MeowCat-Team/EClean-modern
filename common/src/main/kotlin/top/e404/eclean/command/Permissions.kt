@@ -2,40 +2,40 @@ package top.e404.eclean.command
 
 object Permissions {
     // Core
-    const val DEBUG = "eclean.command.debug"
-    const val RELOAD = "eclean.command.reload"
-    const val CONFIG = "eclean.command.config"
+    val DEBUG: String get() = PermissionNode.DEBUG.node
+    val RELOAD: String get() = PermissionNode.RELOAD.node
+    val CONFIG: String get() = PermissionNode.CONFIG.node
 
     // Clean
-    const val CLEAN_ALL = "eclean.command.clean.all"
-    const val CLEAN_ENTITY = "eclean.command.clean.entity"
-    const val CLEAN_DROP = "eclean.command.clean.drop"
-    const val CLEAN_CHUNK = "eclean.command.clean.chunk"
-    const val CLEAN_TRASH = "eclean.command.clean.trash"
-    const val CLEAN_PREVIEW = "eclean.command.clean.preview"
+    val CLEAN_ALL: String get() = PermissionNode.CLEAN_ALL.node
+    val CLEAN_ENTITY: String get() = PermissionNode.CLEAN_ENTITY.node
+    val CLEAN_DROP: String get() = PermissionNode.CLEAN_DROP.node
+    val CLEAN_CHUNK: String get() = PermissionNode.CLEAN_CHUNK.node
+    val CLEAN_TRASH: String get() = PermissionNode.CLEAN_TRASH.node
+    val CLEAN_PREVIEW: String get() = PermissionNode.CLEAN_PREVIEW.node
 
     // Stats
-    const val STATS_SELF = "eclean.command.stats.self"
-    const val STATS_GUI = "eclean.command.stats.gui"
-    const val STATS_WORLD = "eclean.command.stats.world"
+    val STATS_SELF: String get() = PermissionNode.STATS_SELF.node
+    val STATS_GUI: String get() = PermissionNode.STATS_GUI.node
+    val STATS_WORLD: String get() = PermissionNode.STATS_WORLD.node
 
     // Entity
-    const val ENTITY_SELF = "eclean.command.entity.self"
-    const val ENTITY_WORLD = "eclean.command.entity.world"
-    const val ENTITY_CHUNK = "eclean.command.entity.chunk"
+    val ENTITY_SELF: String get() = PermissionNode.ENTITY_SELF.node
+    val ENTITY_WORLD: String get() = PermissionNode.ENTITY_WORLD.node
+    val ENTITY_CHUNK: String get() = PermissionNode.ENTITY_CHUNK.node
 
     // Trash
-    const val TRASH_STATS = "eclean.command.trash.stats"
-    const val TRASH_OPEN = "eclean.command.trash.open"
+    val TRASH_STATS: String get() = PermissionNode.TRASH_STATS.node
+    val TRASH_OPEN: String get() = PermissionNode.TRASH_OPEN.node
 
     // Other
-    const val PLAYERS = "eclean.command.players"
-    const val SHOW = "eclean.command.show"
-    const val HISTORY = "eclean.command.history"
-    const val TELEPORT = "eclean.command.teleport"
-    const val TOP_ENTITY = "eclean.command.top.entity"
-    const val TOP_CHUNK = "eclean.command.top.chunk"
-    const val STATUS_ALL = "eclean.command.status.all"
-    const val STATUS_WORLD = "eclean.command.status.world"
-    const val ALERTS = "eclean.command.alerts"
+    val PLAYERS: String get() = PermissionNode.PLAYERS.node
+    val SHOW: String get() = PermissionNode.SHOW.node
+    val HISTORY: String get() = PermissionNode.HISTORY.node
+    val TELEPORT: String get() = PermissionNode.TELEPORT.node
+    val TOP_ENTITY: String get() = PermissionNode.TOP_ENTITY.node
+    val TOP_CHUNK: String get() = PermissionNode.TOP_CHUNK.node
+    val STATUS_ALL: String get() = PermissionNode.STATUS_ALL.node
+    val STATUS_WORLD: String get() = PermissionNode.STATUS_WORLD.node
+    val ALERTS: String get() = PermissionNode.ALERTS.node
 }

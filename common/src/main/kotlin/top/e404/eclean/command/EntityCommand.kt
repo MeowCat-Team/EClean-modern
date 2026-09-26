@@ -4,6 +4,8 @@ import top.e404.eclean.common.api.CommonCommandSender
 import top.e404.eclean.common.api.CommonPlayer
 import top.e404.eclean.feature.stats.WorldStatsProvider
 import top.e404.eclean.util.formatAsConst
+import top.e404.eclean.util.richText
+import top.e404.eclean.util.commandLink
 import top.e404.eclean.util.miniMessage
 import top.e404.eclean.util.withColor
 
@@ -86,13 +88,21 @@ private fun sendEntityStats(
     messageProvider: MessageProvider,
     worldStatsProvider: WorldStatsProvider,
 ) {
+    if (!worldStatsProvider.worldExists(worldName)) {
+        sender.sendMessage(miniMessage.deserialize(messageProvider.get("command.invalid.world", "world" to worldName)))
+        return
+    }
     val type = typeName.formatAsConst()
     if (!worldStatsProvider.isValidEntityType(type)) {
-        sender.sendMessage(miniMessage.deserialize(messageProvider.get("command.invalid.entity_type")))
+        sender.sendMessage(miniMessage.deserialize(messageProvider.get("command.invalid.entity_type", "type" to typeName)))
         return
     }
     if (chunkX != null && chunkZ != null) {
         worldStatsProvider.collectChunkEntities(worldName, type, chunkX, chunkZ) { details ->
+            if (details == null) {
+                sender.sendMessage(miniMessage.deserialize(messageProvider.get("command.stats_collect_failed")))
+                return@collectChunkEntities
+            }
             if (details.isEmpty()) {
                 sender.sendMessage(miniMessage.deserialize(messageProvider.get("command.stats.empty")))
                 return@collectChunkEntities
@@ -100,17 +110,21 @@ private fun sendEntityStats(
             val entity = details.joinToString(messageProvider.get("command.stats.spacing")) { detail ->
                 val command = "/eclean tp $worldName ${detail.x} ${detail.y} ${detail.z}"
                 val hover = messageProvider.get("common.hover.tp")
-                "<click:run_command:'$command'><hover:show_text:'$hover'><white>$typeName @ ${detail.x}, ${detail.y}, ${detail.z}</white></hover></click>"
+                commandLink(miniMessage.escapeTags("$typeName @ ${detail.x}, ${detail.y}, ${detail.z}"), command, hover)
             }
             sender.sendMessage(
                 miniMessage.deserialize(
-                    messageProvider.get("command.stats.entity", "type" to typeName, "entity" to entity)
+                    messageProvider.get("command.stats.entity", "type" to messageProvider.entityName(type), "entity" to entity.richText())
                 )
             )
         }
         return
     }
     worldStatsProvider.collectEntityStats(worldName, type, min) { entries ->
+        if (entries == null) {
+            sender.sendMessage(miniMessage.deserialize(messageProvider.get("command.stats_collect_failed")))
+            return@collectEntityStats
+        }
         if (entries.isEmpty()) {
             sender.sendMessage(miniMessage.deserialize(messageProvider.get("command.stats.empty")))
             return@collectEntityStats
@@ -120,11 +134,11 @@ private fun sendEntityStats(
             val label = "x: ${entry.chunkX * 16}..${entry.chunkX * 16 + 15}, z: ${entry.chunkZ * 16}..${entry.chunkZ * 16 + 15}"
             val hover = messageProvider.get("common.hover.view_chunk")
             val content = messageProvider.get("command.stats.content", "type" to label, "count" to entry.count.withColor())
-            "<click:run_command:'$command'><hover:show_text:'$hover'>$content</hover></click>"
+            commandLink(content, command, hover)
         }
         sender.sendMessage(
             miniMessage.deserialize(
-                messageProvider.get("command.stats.entity", "type" to typeName, "entity" to entity)
+                messageProvider.get("command.stats.entity", "type" to messageProvider.entityName(type), "entity" to entity.richText())
             )
         )
     }

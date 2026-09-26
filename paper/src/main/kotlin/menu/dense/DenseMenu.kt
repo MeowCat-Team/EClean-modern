@@ -80,7 +80,7 @@ class DenseMenu(data: MutableList<EntityInfo>) : UiMenu(PL, MLang["menu.dense.ti
         Material.PAPER,
         1,
         MLang["menu.dense.temp.name"],
-        MLang["menu.dense.temp.lore", "status" to MLang["menu.dense.temp.status.$temp"]].lines(),
+        MLang["menu.dense.temp.lore", "status" to top.e404.eclean.util.RichText(MLang["menu.dense.temp.status.$temp"])].lines(),
     ) {
         if (temp) {
             addEnchant(Enchantment.UNBREAKING, 1, true)

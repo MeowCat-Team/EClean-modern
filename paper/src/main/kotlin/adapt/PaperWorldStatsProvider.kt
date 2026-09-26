@@ -11,15 +11,16 @@ import top.e404.eclean.feature.stats.WorldStatsService
 class PaperWorldStatsProvider(
     private val delegate: WorldStatsService,
 ) : WorldStatsProvider {
+    override fun worldExists(worldName: String): Boolean = org.bukkit.Bukkit.getWorld(worldName) != null
     override fun collectWorldStats(worldName: String, onComplete: (WorldStatsResult?) -> Unit) {
         delegate.collectWorldStats(worldName, onComplete)
     }
 
-    override fun collectAllWorldStats(onComplete: (List<Pair<String, WorldStatsResult>>) -> Unit) {
+    override fun collectAllWorldStats(onComplete: (List<Pair<String, WorldStatsResult>>?) -> Unit) {
         delegate.collectAllWorldStats(onComplete)
     }
 
-    override fun collectChunkTotals(worldName: String?, onComplete: (List<ChunkTotal>) -> Unit) {
+    override fun collectChunkTotals(worldName: String?, onComplete: (List<ChunkTotal>?) -> Unit) {
         delegate.collectChunkTotals(worldName, onComplete)
     }
 
@@ -27,7 +28,7 @@ class PaperWorldStatsProvider(
         worldName: String,
         type: String,
         minCount: Int,
-        onComplete: (List<ChunkEntityCount>) -> Unit,
+        onComplete: (List<ChunkEntityCount>?) -> Unit,
     ) {
         delegate.collectEntityStats(worldName, type, minCount, onComplete)
     }
@@ -37,7 +38,7 @@ class PaperWorldStatsProvider(
         type: String,
         chunkX: Int,
         chunkZ: Int,
-        onComplete: (List<EntityLocationDetail>) -> Unit,
+        onComplete: (List<EntityLocationDetail>?) -> Unit,
     ) {
         delegate.collectChunkEntities(worldName, type, chunkX, chunkZ, onComplete)
     }

@@ -15,8 +15,9 @@ class ChunkTaskCoordinator {
     ): CompletableFuture<Unit> {
         val scheduler = Schedulers.backend()
         val future = RegionBatchDispatcher(scheduler).dispatch(chunkRefs, Config.current.advanced.scheduler) { ref ->
-            val world = resolveWorld(ref.world) ?: return@dispatch
-            if (world.isChunkLoaded(ref.x, ref.z)) perChunk(world, ref)
+            val world = resolveWorld(ref.world) ?: error("World unloaded during statistics: ${ref.world}")
+            check(world.isChunkLoaded(ref.x, ref.z)) { "Chunk unloaded during statistics: $ref" }
+            perChunk(world, ref)
         }
         future.whenComplete { _, _ -> scheduler.complete(onComplete) }
         return future

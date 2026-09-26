@@ -24,7 +24,7 @@ class WorldStatsService(
         val token = cacheGeneration
         cacheTask = Schedulers.scheduleRepeatingGlobal(1, 200) {
             collectAllWorldStats { results ->
-                if (token != cacheGeneration) return@collectAllWorldStats
+                if (token != cacheGeneration || results == null) return@collectAllWorldStats
                 val loaded = Bukkit.getWorlds().map { it.name }.toSet()
                 if (!results.map { it.first }.containsAll(loaded)) return@collectAllWorldStats
                 cached = results.toMap()
@@ -67,11 +67,11 @@ class WorldStatsService(
         worldName: String,
         type: String,
         minCount: Int,
-        onComplete: (List<ChunkEntityCount>) -> Unit,
+        onComplete: (List<ChunkEntityCount>?) -> Unit,
     ) {
         val world = Bukkit.getWorld(worldName)
         if (world == null) {
-            Schedulers.backend().complete { onComplete(emptyList()) }
+            Schedulers.backend().complete { onComplete(null) }
             return
         }
         val chunkRefs = coordinator.getLoadedChunkRefs(world)
@@ -90,10 +90,9 @@ class WorldStatsService(
                     synchronized(entries) { entries += ChunkEntityCount(ref.x, ref.z, count) }
                 }
             },
-            onComplete = {
-                onComplete(entries.sortedByDescending { it.count })
-            },
-        )
+        ).whenComplete { _, error ->
+            Schedulers.backend().complete { onComplete(if (error == null) entries.sortedByDescending { it.count } else null) }
+        }
     }
 
     fun collectChunkEntities(
@@ -101,7 +100,7 @@ class WorldStatsService(
         type: String,
         chunkX: Int,
         chunkZ: Int,
-        onComplete: (List<EntityLocationDetail>) -> Unit,
+        onComplete: (List<EntityLocationDetail>?) -> Unit,
     ) {
         var snapshot = emptyList<EntityLocationDetail>()
         coordinator.dispatchToChunks(
@@ -113,25 +112,27 @@ class WorldStatsService(
                     EntityLocationDetail(location.x, location.y, location.z)
                 }
             },
-            onComplete = { onComplete(snapshot) },
-        )
+        ).whenComplete { _, error ->
+            Schedulers.backend().complete { onComplete(if (error == null) snapshot else null) }
+        }
     }
 
-    fun collectAllWorldStats(onComplete: (List<Pair<String, WorldStatsResult>>) -> Unit) {
+    fun collectAllWorldStats(onComplete: (List<Pair<String, WorldStatsResult>>?) -> Unit) {
         val worldNames = Bukkit.getWorlds().map { it.name }
         if (worldNames.isEmpty()) {
             Schedulers.backend().complete { onComplete(emptyList()) }
             return
         }
         val results = mutableListOf<Pair<String, WorldStatsResult>>()
+        val failed = java.util.concurrent.atomic.AtomicBoolean(false)
         val pending = AtomicInteger(worldNames.size)
         worldNames.forEach { name ->
             collectWorldStats(name) { result ->
                 if (result != null) {
                     synchronized(results) { results += name to result }
-                }
+                } else failed.set(true)
                 if (pending.decrementAndGet() == 0) {
-                    onComplete(results.toList())
+                    onComplete(if (failed.get()) null else results.toList())
                 }
             }
         }
@@ -139,7 +140,7 @@ class WorldStatsService(
 
     fun collectChunkTotals(
         worldName: String?,
-        onComplete: (List<ChunkTotal>) -> Unit,
+        onComplete: (List<ChunkTotal>?) -> Unit,
     ) {
         val worlds = if (worldName != null) {
             listOfNotNull(Bukkit.getWorld(worldName))
@@ -147,15 +148,16 @@ class WorldStatsService(
             Bukkit.getWorlds()
         }
         if (worlds.isEmpty()) {
-            Schedulers.backend().complete { onComplete(emptyList()) }
+            Schedulers.backend().complete { onComplete(if (worldName == null) emptyList() else null) }
             return
         }
         val totals = mutableListOf<ChunkTotal>()
+        val failed = java.util.concurrent.atomic.AtomicBoolean(false)
         val pending = AtomicInteger(worlds.size)
         worlds.forEach { world ->
             val chunkRefs = coordinator.getLoadedChunkRefs(world)
             if (chunkRefs.isEmpty()) {
-                if (pending.decrementAndGet() == 0) onComplete(totals.sortedByDescending { it.count })
+                if (pending.decrementAndGet() == 0) onComplete(if (failed.get()) null else totals.sortedByDescending { it.count })
                 return@forEach
             }
             coordinator.dispatchToChunks(
@@ -165,10 +167,12 @@ class WorldStatsService(
                     val chunk = w.getChunkAt(ref.x, ref.z)
                     synchronized(totals) { totals += ChunkTotal(world.name, ref.x, ref.z, chunk.entities.size) }
                 },
-                onComplete = {
-                    if (pending.decrementAndGet() == 0) onComplete(totals.sortedByDescending { it.count })
-                },
-            )
+            ).whenComplete { _, error ->
+                if (error != null) failed.set(true)
+                if (pending.decrementAndGet() == 0) Schedulers.backend().complete {
+                    onComplete(if (failed.get()) null else totals.sortedByDescending { it.count })
+                }
+            }
         }
     }
 }

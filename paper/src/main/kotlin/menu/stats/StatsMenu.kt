@@ -17,11 +17,13 @@ import top.e404.eclean.ui.buildItemStack
 class StatsMenu(
     private val worldName: String,
     entries: List<Pair<String, Int>>,
+    private val canInspect: Boolean = true,
 ) : UiMenu(PL, MLang["menu.stats.title", "world" to worldName], 6, true) {
 
-    override fun isAllowed(player: Player): Boolean = player.hasPermission(PermissionNode.STATS_GUI)
+    override fun isAllowed(player: Player): Boolean = player.hasPermission(PermissionNode.STATS_GUI) &&
+        (player.world.name == worldName || player.hasPermission(PermissionNode.STATS_WORLD))
 
-    private val data = entries.map { StatsEntry(it.first, it.second, worldName) }.toMutableList()
+    private val data = entries.map { StatsEntry(it.first, it.second, worldName, canInspect) }.toMutableList()
 
     private val pager = UiPager(
         data = data,
@@ -58,6 +60,7 @@ private class StatsEntry(
     val type: String,
     val count: Int,
     val world: String,
+    val canInspect: Boolean,
 ) : UiDisplayable {
     override var needUpdate = true
     override lateinit var item: ItemStack
@@ -66,8 +69,8 @@ private class StatsEntry(
         item = buildItemStack(
             Material.PAPER,
             1,
-            MLang["menu.stats.item.name", "type" to type],
-            MLang["menu.stats.item.lore", "world" to world, "count" to count].lines(),
+            MLang["menu.stats.item.name", "type" to top.e404.eclean.command.PaperMessageProvider().entityName(type)],
+            MLang[if (canInspect) "menu.stats.item.lore" else "menu.stats.item.lore_blocked", "world" to world, "count" to count].lines(),
         )
         needUpdate = false
     }

@@ -39,15 +39,22 @@ fun teleportCommandHandler(
         val x = args[2].toDoubleOrNull()
         val y = args[3].toDoubleOrNull()
         val z = args[4].toDoubleOrNull()
-        if (x == null || y == null || z == null) {
-            val invalid = listOf(args[2], args[3], args[4]).firstOrNull { it.toDoubleOrNull() == null } ?: ""
+        if (x == null || y == null || z == null || !x.isFinite() || !y.isFinite() || !z.isFinite() ||
+            kotlin.math.abs(x) > 30_000_000 || kotlin.math.abs(z) > 30_000_000 || kotlin.math.abs(y) > 20_000_000) {
+            val invalid = listOf(args[2], args[3], args[4]).firstOrNull { it.toDoubleOrNull()?.let { n -> n.isFinite() && kotlin.math.abs(n) <= 30_000_000 } != true } ?: args[3]
             sender.sendMessage(
                 miniMessage.deserialize(messageProvider.get("command.invalid.number", "number" to invalid))
             )
             return true
         }
-        teleportService.teleport(player, CommonLocation(worldName, x, y, z))
-        sender.sendMessage(miniMessage.deserialize(messageProvider.get("command.teleport.done")))
+        try {
+            teleportService.teleport(player, CommonLocation(worldName, x, y, z)).whenComplete { success, error ->
+                val key = if (success == true && error == null) "command.teleport.done" else "command.teleport.failed"
+                sender.sendMessage(miniMessage.deserialize(messageProvider.get(key)))
+            }
+        } catch (_: Exception) {
+            sender.sendMessage(miniMessage.deserialize(messageProvider.get("command.teleport.failed")))
+        }
         return true
     }
     return { sender, args -> execute(sender, args) }
