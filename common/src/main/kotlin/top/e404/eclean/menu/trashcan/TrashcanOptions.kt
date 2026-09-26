@@ -1,6 +1,7 @@
 package top.e404.eclean.menu.trashcan
 
-import org.bukkit.Material
+/** Loaders supply a vanilla-style type name and native block/food properties. */
+data class TrashcanItemKind(val name: String, val isBlock: Boolean, val isFood: Boolean)
 
 enum class TrashcanCategory(val key: String) {
     ALL("all"),
@@ -10,13 +11,13 @@ enum class TrashcanCategory(val key: String) {
     TOOL("tool"),
     MISC("misc");
 
-    fun matches(material: Material): Boolean = when (this) {
+    fun matches(item: TrashcanItemKind): Boolean = when (this) {
         ALL -> true
-        BLOCK -> material.isBlock
-        EQUIPMENT -> EQUIPMENT_MATERIALS.contains(material.name)
-        FOOD -> material.isEdible()
-        TOOL -> TOOL_MATERIALS.any { material.name.contains(it) }
-        MISC -> !BLOCK.matches(material) && !EQUIPMENT.matches(material) && !FOOD.matches(material) && !TOOL.matches(material)
+        BLOCK -> item.isBlock
+        EQUIPMENT -> EQUIPMENT_MATERIALS.contains(item.name)
+        FOOD -> item.isFood
+        TOOL -> TOOL_MATERIALS.any { item.name.contains(it) }
+        MISC -> !BLOCK.matches(item) && !EQUIPMENT.matches(item) && !FOOD.matches(item) && !TOOL.matches(item)
     }
 
     private companion object {

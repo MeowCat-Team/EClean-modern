@@ -115,7 +115,10 @@ open class TrashcanMenu(
     internal fun rebuildDisplayData() {
         val query = searchQuery
         val entries = store.getEntries()
-            .filter { category == TrashcanCategory.ALL || category.matches(it.prototype.type) }
+            .filter { entry ->
+                val material = entry.prototype.type
+                category.matches(TrashcanItemKind(material.name, material.isBlock, material.isEdible()))
+            }
             .filter { entry -> query == null || entry.prototype.type.name.contains(query, true) }
         val sorted = when (sort) {
             TrashcanSort.COUNT_DESC -> entries.sortedByDescending { it.count }
