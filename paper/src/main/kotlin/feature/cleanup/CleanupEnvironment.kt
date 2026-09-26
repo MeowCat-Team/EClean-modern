@@ -18,4 +18,6 @@ data class CleanupEnvironment(
     val trashcan: TrashcanManager,
     val trashStore: TrashcanItemStore,
     val messages: MessageService,
-)
+) {
+    fun common() = CleanupRuntimeEnvironment(worldAccess, scheduler, config, audit, snapshots)
+}
