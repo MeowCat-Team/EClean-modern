@@ -5,6 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+
+- **Configuration profiles and diagnostics**: independent `normal` and `dev` profiles, `/eclean config profile <normal|dev>`, read-only `config validate` and `config diff`, and `config effective [world]` to show active defaults and world overrides with their sources.
+- **Explicit matching modes**: `drop.mode` and `living.mode` accept `remove-matching` or `keep-matching`. Density cleanup has independent `protectTamed` and `protectAllay` options, both enabled by default.
+- **Scoped commands**: `/eclean clean all <world> [--preview]`, `--preview` anywhere after `clean`, and `/eclean trash open`.
+- **Cleanup audit details**: source, actor, world/scope, configuration revision, duration, actual removals, failed removals, skipped chunks, and interrupted execution. Concurrent requests sharing one execution produce one record; previews produce none.
+- **PlaceholderAPI counters**: `%eclean_total_removed_entities%` and `%eclean_last_removal_time%` expose process-lifetime actual entity removals and the latest removal time.
+
+### Fixed
+
+- **Cleanup boundaries**: automatic cleanup, manual commands, previews, and density-menu cleanup respect module switches, disabled worlds, per-world switches, and applicable protection rules. Previews no longer update history, counts, or timers, recover items, or broadcast cleanup results.
+- **Item recovery**: preserve stack amounts, custom names, lore, enchantments, and persistent metadata. Failed recovery retains the source; failed source removal rolls back the pending store transfer. Genuine lore is no longer stripped by matching translated display text.
+- **Menu interactions**: block unsafe drag/click transfers and invalid slot mappings; handle pagination, expiry, and custom stack limits. Search sessions survive inventory closure, support cancellation and timeout, and keep search input out of public chat.
+- **Density-menu deletion**: show a scoped preview and require confirmation within 30 seconds. Execution rechecks configuration and protections and only considers entities present in the preview; repeated confirmation cannot submit twice.
+- **Permissions and teleport results**: preserve explicit permission denials, recheck menu access, and require world-statistics permission for cross-world statistics menus. Teleports report the actual asynchronous outcome, reject non-finite/out-of-range coordinates, and start temporary-return timers only after success.
+- **Scheduling and statistics**: access chunks on their owning regions, avoid loading unloaded chunks, scan in bounded batches, and complete pending operations on cancellation or scheduling failure. Failed statistics scans no longer publish partial caches; empty loaded chunks are included.
+- **Configuration reloads**: reject malformed or unknown fields, invalid ranges, regexes, and Cron expressions; retain the previous configuration on reload failure. Validate legacy configuration before migration and preserve backups. Configuration, profile, and language are published together, and configured services are reapplied on reload.
+- **Messages and translations**: escape ordinary message arguments, avoid recursive placeholder substitution, and construct click actions as components. Missing translations or incompatible custom placeholders fall back per key. Localize durations, display Minecraft entity names with exact IDs, and correct ambiguous help/menu text.
+
+### Changed
+
+- **Command syntax**: `top` now uses fixed positions: `/eclean top <entity|chunk> [amount] [world]`. Specifying a world requires an amount from 1 to 100; `/eclean top entity 10 123` queries the world named `123`. Unknown worlds report an error.
+- **Cleanup counters**: `last_drop`, `last_living`, and `last_chunk` describe the most recently completed corresponding cleanup request; server-wide requests sum their world results. One dropped stack counts as one entity. Trash-can totals and trash-clear audit counts use item amounts.
+- **History semantics**: keep the latest 100 records. `history_count` is the retained record count, `last_clean_time` is the latest recorded execution end, including zero-removal or failed executions, and `last_removal_time` only advances after actual entity removal.
+- **Update checks**: use SemVer precedence, ignore draft releases, keep stable installations on stable releases, deduplicate update notices, and throttle failure messages. `advanced.update.enabled` is the recommended switch; legacy `global.updateCheck: false` still disables checking.
+- **Internal structure**: separate platform-independent code into `common` and the server implementation into `paper`, share command/permission definitions, inject adapter dependencies explicitly, and remove superseded cleanup planners and helpers.
+- **Build reproducibility**: require JDK 25, pin Paper API to `26.1.2.build.74-stable`, commit Gradle dependency locks and SHA-256 verification metadata, verify the wrapper download, and pin CI Actions to commits.
+
+### Upgrade notes and limitations
+
+- The root `config.yml` must explicitly select `profile: normal` or `profile: dev`. Profiles do not inherit from each other; switching profiles replaces the complete rule set. Back up existing configuration and review `config validate`, `config diff`, and `config effective` before applying changes.
+- Explicit `mode` takes precedence over legacy `blacklistMode`. An empty matcher list removes nothing with `remove-matching` and selects all unprotected candidates with `keep-matching`. Density cleanup now protects tamed mobs and allays by default.
+- Cross-world statistics menus require both `eclean.command.stats.gui` and `eclean.command.stats.world`. Configuration diagnostics and profile switching require `eclean.command.config`.
+- Trash-can contents, cleanup history/cumulative counters, and temporary-return locations remain in memory and do not survive restart. Adding items to an existing trash entry does not extend its expiry.
+- Plugin messages still use one global language, and trash-can search uses English Material IDs. Per-player message languages and translated-name search are not included.
+- Replace the plugin with a full server shutdown; Folia hot unloading is unsupported. Live Folia multi-region acceptance, real PlaceholderAPI/bStats integration, and load testing remain pending. Fabric/NeoForge modules are experimental placeholders outside the supported build target.
+
 ## 0.2.9
 
 ### Added
