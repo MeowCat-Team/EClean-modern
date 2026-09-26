@@ -7,6 +7,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.3.1
+
+### Changed
+
+- **Trash-can layout**: center category, sort, and search controls in a symmetrical footer. Page buttons remain visible when disabled, show the current page in their tooltips, and use a consistent icon size. Empty results now include guidance, and filtering and deposit controls have clearer descriptions.
+- **Menu styling**: use consistent footers across trash, statistics, and density menus, remove default italics from menu controls, and match cleanup confirmation colors to their actions.
+- **Cleanup summaries**: manual and scheduled cleanup share the same colored format. Worlds due in the same scheduled batch produce one combined summary; partial results include failure counts and a history command hint. Previews show their selected counts without broadcasting a real cleanup result.
+- **Language upgrades**: refresh unchanged older default menu titles and cleanup messages automatically while preserving customized translations. English and Simplified Chinese are both updated.
+- **Update diagnostics**: identify GitHub API rate limits explicitly in the configured language and retain automatic retries.
+
+### Fixed
+
+- **Statistics during chunk unloading**: skip chunks unloaded after discovery without reloading them, aborting later scan batches, or printing exception stacks. Genuine collection failures remain failures, and a query for an unloaded chunk is reported as unavailable.
+- **Countdown announcements**: prevent duplicate cleanup-start messages during the final fractional second and repeated countdown messages when polling more than once per second.
+
 ## 0.3.0
 
 ### Added
@@ -32,9 +47,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Menu presentation**: center trash-can controls, keep disabled page buttons visible, add a consistent footer and empty-state hints, and clarify filtering and deposit actions.
-- **Cleanup messages**: manual and scheduled cleanup share a colored summary, with one combined result for worlds due in the same batch. Countdown starts are no longer announced twice, and failures include a concise history hint.
-- **Runtime diagnostics**: statistics safely skip chunks unloaded after discovery without logging an exception; GitHub API rate limits receive an explicit localized explanation.
 - **Command syntax**: `top` now uses fixed positions: `/eclean top <entity|chunk> [amount] [world]`. Specifying a world requires an amount from 1 to 100; `/eclean top entity 10 123` queries the world named `123`. Unknown worlds report an error.
 - **Cleanup counters**: `last_drop`, `last_living`, and `last_chunk` describe the most recently completed corresponding cleanup request; server-wide requests sum their world results. One dropped stack counts as one entity. Trash-can totals and trash-clear audit counts use item amounts.
 - **History semantics**: keep the latest 100 records. `history_count` is the retained record count, `last_clean_time` is the latest recorded execution end, including zero-removal or failed executions, and `last_removal_time` only advances after actual entity removal.
