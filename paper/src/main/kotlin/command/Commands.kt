@@ -27,7 +27,7 @@ object Commands : CommandExecutor, TabCompleter {
         "reload" to { sender, _ ->
             reloadCommandHandler(PaperMessageProvider(), { PL.services.reload(sender) })(sender.toCommon(), emptyArray())
         },
-        "config" to { sender, args -> ConfigCommand.handle(sender, args) },
+        "config" to { sender, args -> handleConfig(sender, args) },
         "clean" to { sender, args ->
             cleanCommandHandler(PaperMessageProvider(), PL.services.commonPlatform.cleanupCommandService)(sender.toCommon(), args)
         },
@@ -66,6 +66,18 @@ object Commands : CommandExecutor, TabCompleter {
         val cmd = Bukkit.getPluginCommand("eclean") ?: return
         cmd.setExecutor(this)
         cmd.tabCompleter = this
+    }
+
+    private fun handleConfig(sender: CommandSender, args: Array<out String>) {
+        ConfigCommandHandler(
+            configuration = PL.services.configuration,
+            worldExists = { Bukkit.getWorld(it) != null },
+            normalPath = { PL.dataFolder.resolve("config/normal/config.yml").absolutePath },
+            devPath = { PL.dataFolder.resolve("config/dev").absolutePath },
+            inspect = { PL.services.inspectConfig(sender, it) },
+            reload = { PL.services.reload(sender, it) },
+            feedback = { key, values -> PL.services.messages.send(sender, MLang.get(key, *values.toTypedArray())) },
+        ).handle(sender.toCommon(), args)
     }
 
     override fun onCommand(sender: CommandSender, cmd: Command, label: String, args: Array<out String>): Boolean {
