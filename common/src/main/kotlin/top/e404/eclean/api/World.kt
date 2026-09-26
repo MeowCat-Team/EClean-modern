@@ -15,6 +15,7 @@ interface CommonWorld {
 
 interface CommonChunk {
     val ref: top.e404.eclean.platform.execution.ChunkRef
+    val forceLoaded: Boolean get() = false
     fun entities(): List<top.e404.eclean.common.api.CommonEntity>
     fun items(): List<top.e404.eclean.common.api.CommonItem>
     fun livingEntities(): List<top.e404.eclean.common.api.CommonLivingEntity>

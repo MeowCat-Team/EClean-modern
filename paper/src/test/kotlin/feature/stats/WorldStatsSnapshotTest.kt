@@ -22,7 +22,7 @@ class WorldStatsSnapshotTest {
         val expected = world.loadedChunks.size
         var result: WorldStatsResult? = null
         try {
-            WorldStatsService().collectWorldStats(world.name) { result = it }
+            plugin.services.worldStatsService.collectWorldStats(world.name) { result = it }
             server.scheduler.performTicks(10)
             assertEquals(expected, assertNotNull(result).loadedChunks)
             assertEquals(1, result!!.entityCounts["ITEM"])

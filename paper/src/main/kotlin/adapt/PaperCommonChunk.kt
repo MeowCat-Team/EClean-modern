@@ -19,6 +19,8 @@ class PaperCommonChunk(
     override val ref: ChunkRef,
     private val chunk: Chunk,
 ) : CommonChunk {
+    override val forceLoaded: Boolean get() = chunk.isForceLoaded
+
     override fun entities(): List<CommonEntity> =
         chunk.entities.map { PaperCommonEntity(it) }
 

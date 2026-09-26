@@ -21,7 +21,6 @@ import top.e404.eclean.lang.MLang
 import top.e404.eclean.paper.adapt.PaperPlatform
 import top.e404.eclean.paper.adapt.PaperTeleportService
 import top.e404.eclean.paper.adapt.PaperTrashcanService
-import top.e404.eclean.paper.adapt.PaperWorldStatsProvider
 import top.e404.eclean.feature.stats.WorldStatsService
 import top.e404.eclean.platform.FoliaDetector
 import top.e404.eclean.platform.Schedulers
@@ -59,11 +58,16 @@ class RuntimeServices {
         stackingEnabled = { Config.current.trashcan.stacking.enabled },
     )
     val trashcanManager = TrashcanManager(trashcanStore, messages)
-    val worldStatsService = WorldStatsService()
-    val cleanupHistory = CleanupHistoryService()
-    val cleanupAudit = top.e404.eclean.feature.cleanup.CleanupAudit(cleanupHistory, statusSnapshots)
     private val commonScheduler = top.e404.eclean.paper.adapt.PaperScheduler(PL)
     private val worldAccess = top.e404.eclean.paper.adapt.PaperWorldAccess()
+    val worldStatsService = WorldStatsService(
+        worldAccess = worldAccess,
+        scheduler = commonScheduler,
+        schedulerOptions = { Config.current.advanced.scheduler },
+        isValidEntityType = { runCatching { org.bukkit.entity.EntityType.valueOf(it) }.isSuccess },
+    )
+    val cleanupHistory = CleanupHistoryService()
+    val cleanupAudit = top.e404.eclean.feature.cleanup.CleanupAudit(cleanupHistory, statusSnapshots)
     val cleanupEnvironment = top.e404.eclean.feature.cleanup.CleanupEnvironment(
         worldAccess, commonScheduler, { Config.current }, cleanupAudit, statusSnapshots, trashcanManager, trashcanStore, messages,
     )
@@ -71,7 +75,7 @@ class RuntimeServices {
         PL,
         PaperTeleportService(playerTeleportService),
         trashcanService = PaperTrashcanService(trashcanManager),
-        worldStatsProvider = PaperWorldStatsProvider(worldStatsService),
+        worldStatsProvider = worldStatsService,
         playerProvider = top.e404.eclean.paper.adapt.PaperPlayerProvider(playerSnapshots::players),
         statsMenuService = top.e404.eclean.paper.adapt.PaperStatsMenuService(worldStatsService),
         denseShowService = top.e404.eclean.paper.adapt.PaperDenseShowService(cleanupEnvironment),
