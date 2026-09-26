@@ -16,7 +16,9 @@ class ChunkTaskCoordinator {
         val scheduler = Schedulers.backend()
         val future = RegionBatchDispatcher(scheduler).dispatch(chunkRefs, Config.current.advanced.scheduler) { ref ->
             val world = resolveWorld(ref.world) ?: error("World unloaded during statistics: ${ref.world}")
-            check(world.isChunkLoaded(ref.x, ref.z)) { "Chunk unloaded during statistics: $ref" }
+            // The loaded-chunk list is a snapshot; unloading before this region task runs is normal.
+            // Never reload a chunk just to include it in statistics.
+            if (!world.isChunkLoaded(ref.x, ref.z)) return@dispatch
             perChunk(world, ref)
         }
         future.whenComplete { _, _ -> scheduler.complete(onComplete) }

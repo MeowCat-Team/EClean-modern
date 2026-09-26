@@ -102,7 +102,8 @@ class WorldStatsService(
         chunkZ: Int,
         onComplete: (List<EntityLocationDetail>?) -> Unit,
     ) {
-        var snapshot = emptyList<EntityLocationDetail>()
+        // A skipped, unloaded target is unavailable, not a successfully scanned empty chunk.
+        var snapshot: List<EntityLocationDetail>? = null
         coordinator.dispatchToChunks(
             listOf(top.e404.eclean.platform.execution.ChunkRef(worldName, chunkX, chunkZ)),
             Bukkit::getWorld,
