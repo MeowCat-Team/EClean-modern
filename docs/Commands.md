@@ -1,69 +1,69 @@
-# 命令与菜单
+# Commands and menus
 
-[返回首页](../README.md)
+[Home](../README.md) · English | [简体中文](Commands-zh.md)
 
-> 插件主命令为`/eclean`，包括缩写`/ecl`，如果`/ecl`与其他插件冲突，请使用`/eclean`
+The main command is `/eclean`, with `/ecl` as an alias. Use `/eclean` if another plugin also uses `/ecl`.
 
-- `/eclean debug` 切换 Debug 消息
-- `/eclean players` 查看在线玩家及坐标
-- `/eclean clean trash` 清空共享垃圾桶中的物品
-- `/eclean reload` 重载插件, 重载后计划清理的任务将重新开始计时
-- `/eclean clean` 立刻执行一次清理(不显示清理前提示，在有玩家的服务器中慎用)
-- `/eclean clean --preview` 预览一次清理，不真正删除实体
-- `/eclean clean all <世界名> [--preview]` 清理或预演指定世界的全部清理模块
-- `/eclean clean entity` 立刻执行一次实体清理(不显示清理前提示)
-- `/eclean clean entity <世界名>` 立刻在指定世界执行一次实体清理(不显示清理前提示)
-- `/eclean clean drop` 立刻执行一次掉落物清理(不显示清理前提示)
-- `/eclean clean drop <世界名>` 立刻在指定世界执行一次掉落物清理(不显示清理前提示)
-- `/eclean clean chunk` 立刻执行一次密集实体清理(不显示清理前提示)
-- `/eclean clean chunk <世界名>` 立刻在指定世界执行一次密集实体清理(不显示清理前提示)
-- `/eclean entity <实体名>` 统计当前世界每个区块的指定实体
-- `/eclean entity <实体名> <世界名>` 统计指定世界每个区块的指定实体
-- `/eclean entity <实体名> <世界名> <纳入统计所需数量>` 统计指定世界每个区块的指定实体并隐藏不超过指定数量的内容
-- `/eclean entity <实体名> <世界名> <区块X> <区块Z>` 查看指定区块内该类型的实体列表
-- `/eclean stats` 统计当前所在世界的实体和区块统计
-- `/eclean stats <世界名>` 统计实体和区块统计
-- `/eclean stats gui [世界名]` 打开统计 GUI
-- `/eclean status all` 统计全服所有世界的实体/区块
-- `/eclean status <世界名>` 查看单个世界状态
-- `/eclean history [数量]` 查看最近清理记录
-- `/eclean top entity [数量] [世界名]` 查看实体数量最多的类型
-- `/eclean top chunk [数量] [世界名]` 查看实体数量最多的区块
-- `/eclean trash [open]` 打开垃圾桶（支持分类、搜索、排序）
-- `/eclean trash stats` 查看垃圾桶统计信息(每个聚合条目的类型/数量/剩余时间)
-- `/eclean show` 打开密集实体统计信息菜单
-- `/eclean tp <世界名> <x> <y> <z>` 直接传送到指定坐标(管理员)
+- `/eclean debug` toggles debug messages.
+- `/eclean players` lists online players and their coordinates.
+- `/eclean clean trash` clears all items from the shared trash can.
+- `/eclean reload` reloads configuration and language files and restarts scheduled cleanup timers.
+- `/eclean clean` runs cleanup immediately, without a countdown announcement.
+- `/eclean clean --preview` previews cleanup without removing entities.
+- `/eclean clean all <world> [--preview]` runs or previews all cleanup modules in one world.
+- `/eclean clean entity` runs living-entity cleanup without a countdown announcement.
+- `/eclean clean entity <world>` runs living-entity cleanup in one world.
+- `/eclean clean drop` runs dropped-item cleanup without a countdown announcement.
+- `/eclean clean drop <world>` runs dropped-item cleanup in one world.
+- `/eclean clean chunk` runs dense-entity cleanup without a countdown announcement.
+- `/eclean clean chunk <world>` runs dense-entity cleanup in one world.
+- `/eclean entity <type>` shows the distribution of an entity type across chunks in your current world.
+- `/eclean entity <type> <world>` shows that distribution in the specified world.
+- `/eclean entity <type> <world> <minimum>` only includes chunks with a count strictly greater than the specified minimum.
+- `/eclean entity <type> <world> <chunkX> <chunkZ>` lists matching entities in one chunk.
+- `/eclean stats` shows entity and loaded-chunk statistics for your current world.
+- `/eclean stats <world>` shows statistics for the specified world.
+- `/eclean stats gui [world]` opens the statistics menu.
+- `/eclean status all` shows entity/chunk statistics for all worlds.
+- `/eclean status <world>` shows one world's status.
+- `/eclean history [amount]` shows recent cleanup records.
+- `/eclean top entity [amount] [world]` ranks entity types by count.
+- `/eclean top chunk [amount] [world]` ranks chunks by entity count.
+- `/eclean trash [open]` opens the trash can, with category, search, and sorting controls.
+- `/eclean trash stats` shows the type, amount, and remaining lifetime of each stored entry.
+- `/eclean show` opens the dense-entity statistics menu.
+- `/eclean tp <world> <x> <y> <z>` teleports you to the specified coordinates.
 
-## 参数与清理规则
+## Arguments and cleanup rules
 
-`top` 的参数位置固定为“类型 → 数量 → 世界”。指定世界时必须先写数量，例如 `/eclean top entity 10 123` 查询名为 `123` 的世界；不再靠参数能否解析为数字猜测世界。数量范围为 1–100。未知世界明确报错。`--preview` 可以放在 `clean` 之后的任意参数位置。
+`top` uses fixed positions: type, amount, then world. Specifying a world requires an amount, for example `/eclean top entity 10 123` for the world named `123`. Amounts must be between 1 and 100. Unknown worlds produce an error. `--preview` can appear anywhere after `clean`.
 
-自动清理和 `/eclean clean ...`（包括指定世界与 `--preview`）均遵守对应功能的 `enabled`、`disabledWorlds` 和 `perWorld.worlds.<世界名>.enabled`，指定世界不会绕过这些限制。`--preview` 统计实际规则选中的对象，不更新上次清理计数、历史或倒计时，也不广播清理完成消息和密集区警报。
+Automatic cleanup and `/eclean clean ...`, including world-specific commands and previews, respect the relevant module's `enabled`, `disabledWorlds`, and `perWorld.worlds.<world>.enabled` settings. Specifying a world does not bypass these rules. Previews count selected entities without changing the last cleanup counts, history, or timers, and without broadcasting completion messages or density alerts.
 
-`cleanup.cleanWhenNoPlayers: false` 仅限制无人在线时的自动清理；管理员仍可通过命令手动执行清理。
+`cleanup.cleanWhenNoPlayers: false` only restricts automatic cleanup when nobody is online. Administrators can still run manual cleanup.
 
-## 菜单与回收
+## Menus and item recovery
 
-密集实体菜单右键先预览，显示区块、实体类型、预计清理和保留数量；30 秒内确认后才执行。它与自动密度清理共用规则和世界开关，保护对象及限额内对象会保留。确认前配置变化需要重新预览，后来出现的实体不会被加入本次删除范围。
+Right-clicking in the dense-entity menu first shows a preview with the chunk, entity type, and expected removal/retention counts. Confirm within 30 seconds to proceed. The menu uses the same density rules and world switches as automatic cleanup, retaining protected entities and those within configured limits. Configuration changes require a new preview; newly appearing entities are excluded from an existing preview.
 
-掉落物清理仅在 `trashcan.enabled` 和 `trashcan.collectFromDropCleanup` 都开启时回收入垃圾桶；关闭任一项表示直接删除。回收保留完整数量和元数据，回收失败保留原实体。垃圾桶仍为内存存储，重启后内容不会保留。
+Dropped-item cleanup sends items to the trash can only when both `trashcan.enabled` and `trashcan.collectFromDropCleanup` are enabled. Otherwise, selected drops are deleted directly. Recovery preserves complete stack amounts and metadata; recovery failures leave the source entity intact. Trash-can contents are held in memory and do not survive server restarts.
 
-垃圾桶前五行是物品，第六行是翻页、分类、排序、搜索控件。顶部拖拽、数字键换物和双击归集不会转移展示物品；下方背包左键存入一个、右键存入一半、Shift+左键存入整组。搜索会关闭菜单，并在 60 秒内接收一次英文物品 ID 关键词；输入 `cancel` 返回菜单，超时后会提示恢复正常聊天。统计 GUI 支持翻页。
+The first five rows of the trash-can menu display items; the sixth row contains pagination, category, sorting, and search controls. Dragging into the top inventory, hotbar swaps, and double-click collection cannot transfer display items. In your own inventory, left-click deposits one item, right-click deposits half, and Shift+left-click deposits the stack. Search closes the inventory and accepts one English Material ID keyword within 60 seconds. Enter `cancel` to return to the menu; a timeout message indicates that normal chat has resumed. The statistics menu also supports pagination.
 
-> 统计功能支持聊天栏点击：
->
-> - `/eclean stats` 里的实体类型可点击，查看该类型在各个区块的分布
-> - `/eclean entity` 里的区块行可点击，查看该区块内该类型的所有实体
-> - 实体坐标可点击，点击后直接传送
+Chat statistics are clickable:
 
-垃圾桶的“无定时过期”只适用于当前服务进程，不保证重启恢复；新物品合入旧条目不会延长该条目的到期时间。
+- Click an entity type in `/eclean stats` to view its chunk distribution.
+- Click a chunk row in `/eclean entity` to list matching entities in that chunk.
+- Click entity coordinates to teleport, subject to permission checks.
 
-跨世界统计 GUI 同时需要 `eclean.command.stats.gui` 与 `eclean.command.stats.world`。查看实体分布、查看区块详情和传送仍分别检查对应权限。普通传送及菜单传送等待平台实际结果，失败不会提示成功；临时传送开关在当前菜单会话中持续生效，关闭并重新打开菜单后恢复默认关闭。
+A trash entry with no timed expiry still exists only for the current server process. Adding items to an existing entry does not extend its expiry.
 
-Folia 不支持插件热卸载；关闭服务器后再替换插件。临时传送在传送成功后开始倒计时，退出后会在本次服务进程中的下次登录尝试返回；返回位置不跨服务器重启保存。
+Cross-world statistics menus require both `eclean.command.stats.gui` and `eclean.command.stats.world`. Entity distribution, chunk details, and teleport actions each check their respective permissions. Normal and menu teleports report the actual asynchronous result. Temporary teleport mode stays enabled for the current menu session; closing and reopening the menu resets it to off.
 
-## 清理历史
+Folia does not support plugin hot unloading; shut down the server before replacing the plugin. Temporary-return timers start after a successful teleport. If a player disconnects, the plugin attempts the return on their next login during the same server process. Return locations do not survive restarts.
 
-历史按“实际执行的世界与模块”记录，包含来源、操作者、范围、配置版本、耗时、实际删除数、失败删除数、跳过区块数和执行中断标记。自动、命令和菜单入口共用记录；合并的并发请求只记一次实际执行，预览不记历史。所有实体清理数量均按实体计数，垃圾桶数量按物品件数计数。历史和累计计数在重启后重置。
+## Cleanup history
 
-配置诊断与预设切换见[配置说明](Configuration.md)，访问控制见[权限列表](Permissions.md)。
+History records each actual world/module execution, including source, actor, scope, configuration revision, duration, actual removals, removal failures, skipped chunks, and interrupted execution. Scheduled cleanup, commands, and menu actions share this audit path. Concurrent requests sharing an execution produce one record; previews produce none. Entity cleanup counts entities, while trash-can amounts count individual items. History and cumulative counters reset on restart.
+
+See [Configuration](Configuration.md) for diagnostics and profiles, and [Permissions](Permissions.md) for access control.

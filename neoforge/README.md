@@ -1,15 +1,11 @@
-# NeoForge Loader (预留)
+# NeoForge module
 
-本模块当前仅为占位，**不参与默认构建**。
+[Project](../README.md) · English | [简体中文](README-zh.md)
 
-启用方式（开发阶段）：
-```bash
+This directory contains an experimental build scaffold. It does not produce a usable EClean NeoForge mod and is excluded from the default Paper build.
+
+To include the module in a development build:
+
+```shell
 ./gradlew -PincludeExperimentalLoaders=true :neoforge:build
 ```
-
-尚未实现内容：
-- `NeoForgePlatform` 实现
-- NeoForge mod 入口
-- Brigadier 命令注册
-- NeoForge 事件监听
-- NeoForge Adventure Audience 接入

@@ -1,36 +1,36 @@
 # EClean Modern
 
-简体中文 | [English](README-en.md)
+English | [简体中文](README-zh.md)
 
-面向 Paper / Folia 的实体清理插件，基于 [EClean](https://github.com/4o4E/EClean) 开发。支持定时清理、规则保护、清理预览、共享垃圾桶和可视化统计。
+An entity cleanup plugin for Paper / Folia, based on [EClean](https://github.com/4o4E/EClean). Supports scheduled cleanup, protection rules, cleanup previews, a shared trash can, and visual statistics.
 
-[下载](https://github.com/MeowCat-Team/EClean-modern/releases/latest) · [更新日志](docs/Changelog-zh.md) · [English changelog](docs/Changelog.md)
+[Download](https://github.com/MeowCat-Team/EClean-modern/releases/latest) · [Changelog](docs/Changelog.md)
 
-## 安装
+## Installation
 
-1. 使用 Java 25，将插件 JAR 放入服务器的 `plugins/` 目录。
-2. 启动服务器生成配置，按需调整 `plugins/EClean-Modern/config/normal/config.yml`。
-3. 执行 `/eclean reload`，再用 `/eclean clean --preview` 确认清理范围。
+1. Use Java 25 and place the plugin JAR in your server's `plugins/` directory.
+2. Start the server to generate configuration, then adjust `plugins/EClean-Modern/config/normal/config.yml` as needed.
+3. Run `/eclean reload`, then `/eclean clean --preview` to check what would be removed.
 
-垃圾桶内容不跨重启保留。更新插件时请完整停服后替换 JAR。
+Trash-can contents do not survive server restarts. Shut down the server completely before replacing the plugin JAR.
 
-## 常用命令
+## Common commands
 
-主命令为 `/eclean`，别名 `/ecl`；默认需要 OP 权限。
+The main command is `/eclean`, with `/ecl` as an alias. Commands require OP permissions by default.
 
-| 命令 | 用途 |
+| Command | Purpose |
 | --- | --- |
-| `/eclean clean --preview` | 预览清理范围 |
-| `/eclean clean` | 立即执行清理 |
-| `/eclean trash` | 打开共享垃圾桶 |
-| `/eclean stats gui` | 打开统计菜单 |
-| `/eclean config diff` | 查看配置变更 |
-| `/eclean reload` | 重载配置和语言 |
+| `/eclean clean --preview` | Preview cleanup without removing entities |
+| `/eclean clean` | Run cleanup immediately |
+| `/eclean trash` | Open the shared trash can |
+| `/eclean stats gui` | Open the statistics menu |
+| `/eclean config diff` | View configuration changes |
+| `/eclean reload` | Reload configuration and language files |
 
-## 使用文档
+## Documentation
 
-- [命令与菜单](docs/Commands.md)：完整命令、回收操作和清理历史
-- [配置说明](docs/Configuration.md)：预设、保护规则、调度和语言
-- [权限列表](docs/Permissions.md)
-- [PlaceholderAPI 占位符](docs/Placeholders.md)
-- [构建与依赖更新](docs/Building.md)
+- [Commands and menus](docs/Commands.md): full command reference, item recovery, and cleanup history
+- [Configuration](docs/Configuration.md): profiles, protection rules, scheduling, and language
+- [Permissions](docs/Permissions.md)
+- [PlaceholderAPI variables](docs/Placeholders.md)
+- [Building and updating dependencies](docs/Building.md)

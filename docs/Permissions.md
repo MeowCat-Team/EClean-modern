@@ -1,40 +1,40 @@
-# 权限
+# Permissions
 
-[返回首页](../README.md)
+[Home](../README.md) · English | [简体中文](Permissions-zh.md)
 
-插件为每个命令/操作注册了独立权限，均默认为 `op`；`eclean.admin` 为兼容旧版的综合管理权限，会授予以下全部能力，`eclean.trash` 仍等价于打开垃圾桶。
+Commands and actions have separate permissions, defaulting to `op`. The legacy `eclean.admin` permission grants all capabilities listed below. `eclean.trash` remains an alias for opening the shared trash can.
 
-命令、菜单和补全使用一致的权限判断。权限插件显式撤销某项能力（包括其父权限或兼容别名）时，拒绝优先于其他别名、父权限或 `eclean.admin` 的授权；未授权非 OP 玩家的默认拒绝不会阻止单独授予叶子权限。
+Commands, menus, and tab completion use the same permission rules. An explicit denial of a capability, including its parent or compatibility alias, takes precedence over grants from other aliases, parents, or `eclean.admin`. The default lack of permission for a non-OP player does not prevent granting an individual leaf permission.
 
-- `eclean.admin` 使用全部 EClean 功能（兼容旧版综合管理权限）
-- `eclean.trash` 打开共享垃圾桶（等价 `eclean.command.trash.open`）
-- `eclean.command.debug` 切换 Debug 消息
-- `eclean.command.reload` 重载插件配置和语言
-- `eclean.command.config` 查看、校验、比较配置及切换 profile
-- `eclean.command.clean.all` 执行一次完整清理
-- `eclean.command.clean.entity` 执行实体清理
-- `eclean.command.clean.drop` 执行掉落物清理
-- `eclean.command.clean.chunk` 执行密集实体清理
-- `eclean.command.clean.preview` 使用 `--preview` 预演模式
-- `eclean.command.clean.trash` 清空共享垃圾桶
-- `eclean.command.trash.open` 打开共享垃圾桶
-- `eclean.command.trash.stats` 查看垃圾桶统计
-- `eclean.command.stats.self` 统计当前世界
-- `eclean.command.stats.world` 统计指定世界
-- `eclean.command.stats.gui` 打开统计 GUI
-- `eclean.command.status.world` 查看指定世界状态
-- `eclean.command.status.all` 查看全服状态
-- `eclean.command.entity.self` 查询当前世界实体分布
-- `eclean.command.entity.world` 查询指定世界实体分布
-- `eclean.command.entity.chunk` 查询指定区块实体详情
-- `eclean.command.players` 查看在线玩家坐标
-- `eclean.command.show` 打开密集实体统计菜单
-- `eclean.command.show.teleport` 在密集实体菜单中传送
-- `eclean.command.show.clean` 在密集实体菜单中删除实体
-- `eclean.command.history` 查看清理历史
-- `eclean.command.top.entity` 查看实体类型排名
-- `eclean.command.top.chunk` 查看区块排名
-- `eclean.command.teleport` 使用 `/eclean tp` 传送
-- `eclean.alerts` 接收插件自动提醒
+- `eclean.admin`: all EClean capabilities (legacy aggregate permission).
+- `eclean.trash`: open the shared trash can; equivalent to `eclean.command.trash.open`.
+- `eclean.command.debug`: toggle debug messages.
+- `eclean.command.reload`: reload configuration and language files.
+- `eclean.command.config`: inspect, validate, compare, and switch configuration profiles.
+- `eclean.command.clean.all`: run all cleanup modules.
+- `eclean.command.clean.entity`: clean living entities.
+- `eclean.command.clean.drop`: clean dropped items.
+- `eclean.command.clean.chunk`: clean dense entities.
+- `eclean.command.clean.preview`: use `--preview`.
+- `eclean.command.clean.trash`: clear the shared trash can.
+- `eclean.command.trash.open`: open the shared trash can.
+- `eclean.command.trash.stats`: view trash-can statistics.
+- `eclean.command.stats.self`: view statistics for the current world.
+- `eclean.command.stats.world`: view statistics for a specified world.
+- `eclean.command.stats.gui`: open the statistics menu.
+- `eclean.command.status.world`: view one world's status.
+- `eclean.command.status.all`: view server-wide status.
+- `eclean.command.entity.self`: view entity distribution in the current world.
+- `eclean.command.entity.world`: view entity distribution in a specified world.
+- `eclean.command.entity.chunk`: view entity details for a specified chunk.
+- `eclean.command.players`: view online players and their coordinates.
+- `eclean.command.show`: open the dense-entity menu.
+- `eclean.command.show.teleport`: teleport from the dense-entity menu.
+- `eclean.command.show.clean`: remove entities through the dense-entity menu.
+- `eclean.command.history`: view cleanup history.
+- `eclean.command.top.entity`: view entity-type rankings.
+- `eclean.command.top.chunk`: view chunk rankings.
+- `eclean.command.teleport`: use `/eclean tp`.
+- `eclean.alerts`: receive automatic plugin alerts.
 
-跨世界统计菜单同时需要 `eclean.command.stats.gui` 与 `eclean.command.stats.world`。菜单中的实体分布、区块详情和传送操作各自检查对应权限。
+Cross-world statistics menus require both `eclean.command.stats.gui` and `eclean.command.stats.world`. Entity distribution, chunk details, and teleport actions inside menus also check their respective permissions.

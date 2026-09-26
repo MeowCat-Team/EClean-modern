@@ -1,32 +1,34 @@
-# PlaceholderAPI 占位符
+# PlaceholderAPI variables
 
-[返回首页](../README.md)
+[Home](../README.md) · English | [简体中文](Placeholders-zh.md)
 
-- `%eclean_before_next%` - `距离下一次清理的时间, 单位秒`
-- `%eclean_before_next_formatted%` - `距离下一次清理的时间, 格式化的时间`
-- `%eclean_last_drop%` - `最近完成的掉落物清理请求实际删除的实体数，全服请求为各世界之和（一组物品算一个实体）`
-- `%eclean_last_living%` - `最近完成的生物清理请求实际删除的实体数，全服请求为各世界之和`
-- `%eclean_last_chunk%` - `最近完成的密度清理请求或 GUI 实际删除的实体数，全服请求为各世界之和`
-- `%eclean_trashcan_countdown%` - `最早到期条目的剩余秒数，空桶或全部条目无定时过期时为 0`
-- `%eclean_trashcan_countdown_formatted%` - `最早到期条目的剩余时间, 格式化的时间`
-- `%eclean_total_entities%` - `全服实体总数`
-- `%eclean_total_chunks%` - `全服已加载区块总数`
-- `%eclean_world_<世界名>_entities%` - `指定世界的实体总数`
-- `%eclean_last_clean_time%` - `最近一次有审计记录的执行结束时间（可为零删除或失败）`
-- `%eclean_last_removal_time%` - `最近一次实际删除实体的时间，无删除记录时为空`
-- `%eclean_total_removed_entities%` - `本次进程运行内累计实际删除实体数，不包含垃圾桶清空的物品件数`
-- `%eclean_next_clean%` - `距离下次清理的秒数`
-- `%eclean_next_clean_formatted%` - `距离下次清理的格式化时间`
-- `%eclean_trashcan_entries%` - `垃圾桶条目数`
-- `%eclean_trashcan_total%` - `垃圾桶物品总数量`
-- `%eclean_history_count%` - `当前保留的历史记录条数，最多 100 条`
+Install PlaceholderAPI and enable `advanced.papi.enabled` to use these placeholders.
 
-## 统计口径
+- `%eclean_before_next%`: seconds until the next cleanup.
+- `%eclean_before_next_formatted%`: formatted time until the next cleanup.
+- `%eclean_last_drop%`: actual entities removed by the most recently completed dropped-item cleanup request; server-wide requests sum all worlds. One dropped stack counts as one entity.
+- `%eclean_last_living%`: actual entities removed by the most recently completed living-entity cleanup request; server-wide requests sum all worlds.
+- `%eclean_last_chunk%`: actual entities removed by the most recently completed density cleanup request or menu action; server-wide requests sum all worlds.
+- `%eclean_trashcan_countdown%`: seconds until the earliest trash entry expires; `0` when empty or when no entry has a timed expiry.
+- `%eclean_trashcan_countdown_formatted%`: formatted time until the earliest trash entry expires.
+- `%eclean_total_entities%`: server-wide entity count.
+- `%eclean_total_chunks%`: server-wide loaded-chunk count.
+- `%eclean_world_<world>_entities%`: entity count for the specified world.
+- `%eclean_last_clean_time%`: end time of the most recent audited execution, including zero-removal or failed executions.
+- `%eclean_last_removal_time%`: time of the most recent actual entity removal; empty if no removal has been recorded.
+- `%eclean_total_removed_entities%`: actual entities removed during the current server process, excluding item amounts cleared from the trash can.
+- `%eclean_next_clean%`: seconds until the next cleanup.
+- `%eclean_next_clean_formatted%`: formatted time until the next cleanup.
+- `%eclean_trashcan_entries%`: number of trash-can entries.
+- `%eclean_trashcan_total%`: total number of individual items stored in the trash can.
+- `%eclean_history_count%`: retained history records, up to 100.
 
-PlaceholderAPI 的实体数和区块数来自已加载区块的缓存，每 10 秒发起一次刷新，结果在扫描完成后发布。首次扫描完成前总数为 0，世界名称保留大小写。占位符请求不会触发世界扫描或加载区块。
+## Counting rules
 
-历史按“实际执行的世界与模块”记录，包含来源、操作者、范围、配置版本、耗时、实际删除数、失败删除数、跳过区块数和执行中断标记。自动、命令和菜单入口共用记录；合并的并发请求只记一次实际执行，预览不记历史。所有实体清理数量均按实体计数，垃圾桶数量按物品件数计数。历史和累计计数在重启后重置。
+Entity and chunk counts come from a cache of loaded chunks. A refresh starts every 10 seconds, and results are published after the scan completes. Totals are `0` before the first completed scan. World names preserve their case. Placeholder requests do not trigger scans or load chunks.
 
-## 时间与重启
+History records each actual world/module execution, including source, actor, scope, configuration revision, duration, actual removals, removal failures, skipped chunks, and interrupted execution. Scheduled cleanup, commands, and menu actions share this audit path. Concurrent requests sharing an execution produce one record; previews produce none. Cleanup counts entities; trash-can amounts count individual items. History and cumulative counters reset on restart.
 
-格式化时间使用插件配置的语言。垃圾桶的过期时间按条目计算，合入新物品不会延长已有条目的到期时间。垃圾桶内容、历史和累计删除计数在服务器重启后重置。
+## Time and restarts
+
+Formatted durations use the plugin's configured language. Trash expiry is tracked per entry; merging new items does not extend an existing entry's lifetime. Trash-can contents, history, and cumulative removal counts reset on server restart.

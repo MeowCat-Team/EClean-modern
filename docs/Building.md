@@ -1,16 +1,16 @@
-# 构建与依赖更新
+# Building and updating dependencies
 
-[返回首页](../README.md)
+[Home](../README.md) · English | [简体中文](Building-zh.md)
 
-默认构建 `common` 和 `paper`，需要 JDK 25，生成的插件位于 `paper/build/libs/`。Paper API 固定为 `26.1.2.build.74-stable`；项目提交 Gradle 依赖锁与 SHA-256 校验清单，wrapper 下载使用官方 SHA-256，CI Action 固定提交。校验清单以当前成功构建的依赖为基线，并不等同于漏洞扫描或所有发布方签名验证。
+The default build includes `common` and `paper` and requires JDK 25. Plugin artifacts are written to `paper/build/libs/`. Paper API is pinned to `26.1.2.build.74-stable`. The repository includes Gradle dependency locks and SHA-256 verification metadata, verifies the wrapper download against its official checksum, and pins CI Actions to commits. The verification metadata records the dependencies used for the build; it is not a vulnerability scan or verification of every publisher's signature.
 
 ```shell
 ./gradlew build
 ```
 
-Windows 使用 `gradlew.bat build`。
+On Windows, use `gradlew.bat build`.
 
-更新依赖时先修改版本目录，再显式生成候选锁与校验数据，审查下载来源和校验差异后提交，日常 CI 不自动刷新这些文件：
+To update dependencies, first edit the version catalog, then explicitly generate candidate locks and verification metadata. Review artifact sources and checksum changes before committing them. Normal CI builds do not regenerate these files.
 
 ```shell
 ./gradlew build --write-locks --write-verification-metadata sha256

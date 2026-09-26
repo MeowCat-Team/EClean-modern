@@ -1,35 +1,33 @@
-# 配置说明
+# Configuration
 
-[返回首页](../README.md)
+[Home](../README.md) · English | [简体中文](Configuration-zh.md)
 
-## 配置预设
+## Profiles
 
-两套预设均支持完整配置字段，彼此不继承。切换 profile 会替换整套清理规则。下列路径相对于 `plugins/EClean-Modern/`。
+Both profiles support all configuration fields and are independent. Switching profiles replaces the complete rule set. Paths below are relative to `plugins/EClean-Modern/`.
 
-| 预设 | 配置位置 | 组织方式 |
+| Profile | Location | Layout |
 | --- | --- | --- |
-| `normal`（默认） | `config/normal/config.yml` | 单文件，模板以常用项为主 |
-| `dev` | `config/dev/` | 按功能拆分多个文件 |
+| `normal` (default) | `config/normal/config.yml` | One file; the template focuses on common settings |
+| `dev` | `config/dev/` | Separate files for each feature |
 
-## 切换、校验与重载
+## Switching, validation, and reloads
 
-切换方式：
+Select `profile: normal` or `profile: dev` in the root `config.yml` and restart, or use the commands below:
 
-- 修改根目录 `config.yml` 的 `profile: normal|dev`，然后重启；或
-- 使用命令：
-  - `/eclean config show` 查看当前预设与路径
-  - `/eclean config validate` 只读校验磁盘上的当前 profile 与语言，不迁移、生成文件或激活服务
-  - `/eclean config diff` 对比运行中配置与磁盘候选，显示变化的模块及旧/新值，不执行重载
-  - `/eclean config effective [世界名]` 查看运行中的规则；指定世界后解析其开关、距离和周期覆盖并列出来源
-  - `/eclean config profile <normal|dev>` 立即切换并热重载
+- `/eclean config show` displays the active profile and configuration paths.
+- `/eclean config validate` checks the selected profile and language files on disk without migrating, creating files, or activating services.
+- `/eclean config diff` compares the active configuration with the disk candidate and shows changed sections with old/new values, without reloading.
+- `/eclean config effective [world]` displays active rules; a world argument resolves its switches, distances, and interval overrides and shows their sources.
+- `/eclean config profile <normal|dev>` switches profiles and reloads immediately.
 
-首次从旧版升级时，插件会先验证旧配置，将已有的保护规则、禁用世界和功能开关迁移到 normal，并在 `config-backup-<时间戳>/` 永久保留原文件备份。缺失的旧功能配置不会自动启用清理；无法识别的字段需要修正后再加载。
+On the first upgrade from a legacy configuration, the plugin validates the old files, migrates protection rules, world exclusions, and switches into `normal`, and keeps the originals in a permanent `config-backup-<timestamp>/` directory. Missing legacy feature configuration does not automatically enable cleanup. Unrecognized fields must be corrected before loading.
 
-修改文件后使用 `/eclean reload`。配置和语言会一起验证、一起生效；失败时继续使用上一次有效配置。首次启动加载失败时暂停自动和手动清理及回收，修正文件后可重载恢复。误删已有配置文件也会报错，不会重新生成可能扩大删除范围的默认规则。
+After editing files, run `/eclean reload`. Configuration and language are validated and applied together; a failed reload retains the previous valid configuration. If initial loading fails, automatic/manual cleanup and item recovery remain disabled until you correct the files and reload. Missing existing configuration files produce an error instead of being regenerated with potentially broader cleanup defaults.
 
-## 调度与服务
+## Scheduling and integrations
 
-normal 也支持可选的 `advanced` 节点，例如：
+The `normal` profile also accepts an optional `advanced` section, for example:
 
 ```yaml
 advanced:
@@ -41,26 +39,26 @@ advanced:
     enabled: false
 ```
 
-这些开关、统计告警及调度设置在重载时生效。dev 将相同选项拆分到多个文件；它不是开发/测试模式，不会自动放宽清理保护。
+These switches, statistics alerts, and scheduler settings take effect on reload. The `dev` profile stores the same settings across multiple files. It does not enable a development/test runtime mode or relax cleanup protection.
 
-Cron 使用 Quartz 格式，例如每天 03:00 为 `0 0 3 * * ?`；`null` 或空字符串表示使用间隔调度。Cron 与各世界的 `intervalSeconds` 不能同时设置。使用间隔调度时，每个世界分别计时。
+Cron expressions use Quartz syntax, such as `0 0 3 * * ?` for 03:00 every day. `null` or an empty string selects interval scheduling. Cron cannot be combined with per-world `intervalSeconds` overrides. Under interval scheduling, each world has its own timer.
 
-清理和统计按区块分批扫描，默认每批最多 100 个区块，上一批完成后等待 10 tick，再提交下一批。清理会跳过已卸载区块并在结果中计数；统计遇到区块卸载或任务失败会报告采集失败，保留已有完整缓存。
+Cleanup and statistics scan loaded chunks in batches, by default up to 100 chunks per batch, with a 10-tick delay after each completed batch. Cleanup counts unloaded chunks as skipped. Statistics report collection failure if a chunk unloads or a task fails and retain the last complete cache.
 
-更新检查统一推荐使用 `advanced.update.enabled`；旧 `global.updateCheck: false` 仍会禁用检查。首次检查在启动/启用后约 20 秒，之后每 6 小时检查。版本按 [SemVer](https://semver.org/spec/v2.0.0.html) 比较，允许 `v` 前缀；正式版只提示更高的正式版本，预发布安装可提示更高的预发布版本。检查失败会节流提示，不自动下载或执行更新。
+Use `advanced.update.enabled` to control update checks; legacy `global.updateCheck: false` also disables them. The first check runs about 20 seconds after enabling, followed by checks every six hours. Versions use [SemVer](https://semver.org/spec/v2.0.0.html) precedence and accept a `v` prefix. Stable installations only receive notices for newer stable releases; prerelease installations can also receive newer prerelease notices. Failure messages are throttled. Updates are not downloaded or installed automatically.
 
-## 清理规则
+## Cleanup rules
 
-`drop.mode` 和 `living.mode` 使用 `remove-matching`（只清匹配项）或 `keep-matching`（保留匹配项）。旧 `blacklistMode` 仍兼容，显式 `mode` 优先。空匹配列表配合 `remove-matching` 不清任何对象，配合 `keep-matching` 会选择所有未受保护对象。密度模块没有 `entityLimits` 时不会删除实体。
+`drop.mode` and `living.mode` accept `remove-matching` (remove matching candidates) or `keep-matching` (retain matching candidates). Explicit `mode` takes precedence over legacy `blacklistMode`. With an empty matcher list, `remove-matching` removes nothing, while `keep-matching` selects all unprotected candidates. Density cleanup does not remove entities when `entityLimits` is empty.
 
-`chunkDensity.protectTamed`、`chunkDensity.protectAllay` 默认均为 `true`，分别保护驯服生物和悦灵。这是密度模块自己的保护设置，和 `living` 不互相覆盖。命名、拴绳、骑乘保护仍由各自模块的 `settings` 控制。`alertThreshold` 按区块内的单一实体类型计数（包含受保护对象），不会将牛和羊相加；一个限额正则匹配多类实体时共享该限额，重叠规则按配置顺序处理。
+`chunkDensity.protectTamed` and `chunkDensity.protectAllay` both default to `true`, protecting tamed mobs and allays. These settings belong to the density module and do not override, or inherit from, `living`. Named, leashed, and passenger protections use each module's own `settings`. `alertThreshold` counts each entity type separately within a chunk, including protected entities; cows and sheep are not added together. A limit regex matching multiple types shares its limit across those types. Overlapping rules are processed in configuration order.
 
-`drop.protectWrittenBook` 同时保护已签名的成书和已有内容的书与笔，空白书与笔仍按照其他清理规则处理。
+`drop.protectWrittenBook` protects both signed books and book-and-quill items containing written pages. Blank book-and-quill items follow the other cleanup rules.
 
-## 语言与界面
+## Language and appearance
 
-插件提示和格式化时间使用 `global.language` 指定的语言。修改翻译时请保留原有占位符；缺失的翻译或占位符不匹配的条目会使用内置文本，并记录提示。实体名称展示 Minecraft 翻译和精确 ID；垃圾桶搜索使用英文 Material ID。
+Plugin messages and formatted durations use `global.language`: choose `en_us` for English or `zh_cn` for Simplified Chinese. Preserve the original placeholders when editing translations. Missing translations or incompatible placeholders fall back to the bundled text and produce a log message. Entity names use Minecraft translations together with exact IDs; trash-can search uses English Material IDs.
 
-菜单颜色分别替换默认菜单中的 gold（标题）、gray（说明）、yellow（操作提示），不会修改物品本身的元数据。
+Menu colors replace the default gold (titles), gray (descriptions), and yellow (action hints). They do not modify the original item's metadata.
 
-回收和菜单操作见[命令与菜单](Commands.md)，统计占位符见[PlaceholderAPI](Placeholders.md)。
+See [Commands and menus](Commands.md) for recovery and menu controls, and [PlaceholderAPI variables](Placeholders.md) for statistics integration.

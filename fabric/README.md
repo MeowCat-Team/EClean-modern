@@ -1,15 +1,11 @@
-# Fabric Loader (预留)
+# Fabric module
 
-本模块当前仅为占位，**不参与默认构建**。
+[Project](../README.md) · English | [简体中文](README-zh.md)
 
-启用方式（开发阶段）：
-```bash
+This directory contains an experimental build scaffold. It does not produce a usable EClean Fabric mod and is excluded from the default Paper build.
+
+To include the module in a development build:
+
+```shell
 ./gradlew -PincludeExperimentalLoaders=true :fabric:build
 ```
-
-尚未实现内容：
-- `FabricPlatform` 实现
-- Fabric entrypoint
-- Brigadier 命令注册
-- Fabric 事件监听
-- Fabric Adventure Audience 接入
