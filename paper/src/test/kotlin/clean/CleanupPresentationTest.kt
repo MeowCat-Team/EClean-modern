@@ -105,10 +105,12 @@ class CleanupPresentationTest {
         })
         var now = ZonedDateTime.parse("2026-09-26T00:00:00Z")
         val snapshots = StatusSnapshotService()
-        val ticker = CleanupTickService(plugin.services.messages,
-            CleanupCoordinator(plugin.services.messages, snapshots) {},
-            CleanupAnnouncementService(sink, info, { "" }, { "countdown:$it" }, { true }),
-            snapshots, info, { now })
+        val coordinator = CleanupCoordinator(plugin.services.messages, snapshots) {}
+        val announcements = CleanupAnnouncementService(sink, info, { "" }, { "countdown:$it" }, { true })
+        val ticker = CleanupTicker(
+            Schedulers.backend(), info, snapshots, { Config.current },
+            coordinator::cleanScheduled, announcements::announceCountdown, { now },
+        )
         try {
             ticker.start()
             val poll = assertNotNull(tick)

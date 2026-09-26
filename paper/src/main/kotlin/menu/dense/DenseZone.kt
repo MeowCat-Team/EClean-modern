@@ -17,7 +17,7 @@ class DenseZone(
     val menu: DenseMenu,
     private val data: MutableList<EntityInfo>,
 ) {
-    private val cleanup = DenseCleanupService()
+    private val cleanup = PL.services.denseCleanupService
     val pager = UiPager(
         data = data,
         pageSize = 45,

@@ -11,6 +11,8 @@ import setupMockBukkit
 import plugin
 import top.e404.eclean.feature.trashcan.TrashcanItemStore
 import top.e404.eclean.feature.trashcan.TrashcanTicker
+import top.e404.eclean.config.Config
+import top.e404.eclean.menu.MenuManager
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -20,6 +22,14 @@ import kotlin.test.assertTrue
  * (与插件自身 onEnable 启动的 ticker 行为一致).
  */
 class TrashcanTickerTest {
+    private fun ticker(store: TrashcanItemStore) = TrashcanTicker(
+        scheduler = plugin.services.commonPlatform.scheduler,
+        snapshots = plugin.services.statusSnapshots,
+        config = { Config.current },
+        expireEntries = store::expireEntries,
+        earliestDeadline = store::earliestDeadline,
+        refreshMenus = MenuManager::refreshTrashcanMenus,
+    )
     companion object {
         @JvmStatic
         @BeforeAll
@@ -39,7 +49,7 @@ class TrashcanTickerTest {
         store.addItem(ItemStack(Material.DIAMOND, 1))
         assertEquals(1, store.size)
 
-        val ticker = TrashcanTicker(store, plugin.services.statusSnapshots)
+        val ticker = ticker(store)
         ticker.start()
         server.scheduler.performTicks(20)
         assertTrue(store.isEmpty())
@@ -50,7 +60,7 @@ class TrashcanTickerTest {
         val store = TrashcanItemStore(lifetimeSeconds = { 600L })
         store.addItem(ItemStack(Material.DIAMOND, 1))
 
-        val ticker = TrashcanTicker(store, plugin.services.statusSnapshots)
+        val ticker = ticker(store)
         ticker.start()
         server.scheduler.performTicks(20)
         assertTrue(ticker.countdown in 595..600)
@@ -60,7 +70,7 @@ class TrashcanTickerTest {
     fun `ticker countdown is zero when store is empty`() {
         val store = TrashcanItemStore(lifetimeSeconds = { 600L })
 
-        val ticker = TrashcanTicker(store, plugin.services.statusSnapshots)
+        val ticker = ticker(store)
         ticker.start()
         server.scheduler.performTicks(20)
         assertEquals(0, ticker.countdown)

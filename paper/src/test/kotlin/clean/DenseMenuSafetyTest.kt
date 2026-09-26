@@ -34,6 +34,14 @@ import world
 import kotlin.test.*
 
 class DenseMenuSafetyTest {
+    private fun service(now: () -> Long = System::currentTimeMillis): DenseCleanupService =
+        DenseCleanupService(
+            plugin.services.cleanupEnvironment.worldAccess,
+            plugin.services.cleanupEnvironment.scheduler,
+            { Config.current },
+            plugin.services.cleanupAudit,
+            now,
+        )
     companion object {
         @JvmStatic @BeforeAll fun setup() = setupMockBukkit()
     }
@@ -57,7 +65,7 @@ class DenseMenuSafetyTest {
 
     private fun zombie() = world.spawnEntity(Location(world, 8.0, 64.0, 8.0), EntityType.ZOMBIE)
 
-    private fun preview(service: DenseCleanupService = DenseCleanupService()): DenseCleanupPlan? {
+    private fun preview(service: DenseCleanupService = service()): DenseCleanupPlan? {
         var completed = false
         var result: DenseCleanupPlan? = null
         service.preview(ref, "ZOMBIE") { completed = true; result = it }
@@ -103,7 +111,7 @@ class DenseMenuSafetyTest {
         Config.update { it.copy(chunkDensity = it.chunkDensity.copy(entityLimits = mapOf(Regex("ZOMBIE") to 1))) }
         val protected = zombie().apply { customName(Component.text("Keep")) }
         repeat(3) { zombie() }
-        val service = DenseCleanupService()
+        val service = service()
         val plan = assertNotNull(preview(service))
         assertEquals(4, plan.total)
         assertEquals(2, plan.selectedIds.size)
@@ -117,7 +125,7 @@ class DenseMenuSafetyTest {
     @Test fun `confirmation rechecks protection and cannot delete newly arrived targets`() {
         val protectedLater = zombie()
         val selected = zombie()
-        val service = DenseCleanupService()
+        val service = service()
         val plan = assertNotNull(preview(service))
         protectedLater.customName(Component.text("Keep now"))
         val arrivedLater = zombie()
@@ -131,7 +139,7 @@ class DenseMenuSafetyTest {
     @Test fun `expired and reconfigured previews cannot execute`() {
         val entity = zombie()
         var time = 1_000L
-        val service = DenseCleanupService { time }
+        val service = service { time }
         val expired = assertNotNull(preview(service))
         time += 30_001
         assertNull(execute(service, expired))

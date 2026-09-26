@@ -20,11 +20,12 @@ import top.e404.eclean.command.Commands
 import top.e404.eclean.config.Config
 import top.e404.eclean.config.model.*
 import top.e404.eclean.feature.cleanup.drop.DropCleanupService
-import top.e404.eclean.feature.cleanup.chunk.ChunkDensityScanner
+import top.e404.eclean.feature.cleanup.AuditedDenseCleanup
+import top.e404.eclean.feature.cleanup.CleanupContext
 import top.e404.eclean.feature.cleanup.CleanupCoordinator
 import top.e404.eclean.feature.cleanup.CleanupHistoryService
 import top.e404.eclean.feature.cleanup.CleanupAnnouncementService
-import top.e404.eclean.feature.cleanup.CleanupTickService
+import top.e404.eclean.feature.cleanup.CleanupTicker
 import top.e404.eclean.common.api.Scheduler
 import top.e404.eclean.common.api.ScheduledTask
 import top.e404.eclean.common.api.ServerInfo
@@ -134,7 +135,7 @@ class CleanupSafetyIntegrationTest {
         var drops = -1
         var dense = -1
         DropCleanupService().cleanAllWorlds(dryRun = true) { drops = it.sumOf { result -> result.cleaned } }
-        ChunkDensityScanner().cleanAllWorlds(dryRun = true) { dense = it.cleaned }
+        AuditedDenseCleanup(CleanupContext(), plugin.services.cleanupEnvironment.common()).cleanAllWorlds(dryRun = true) { dense = it.cleaned }
         server.scheduler.performTicks(8)
         assertEquals(1, drops)
         assertEquals(1, dense)
@@ -162,11 +163,12 @@ class CleanupSafetyIntegrationTest {
             }
         })
         var now = java.time.ZonedDateTime.now()
-        val ticker = CleanupTickService(
-            plugin.services.messages, plugin.services.cleanupCoordinator,
-            CleanupAnnouncementService(
-                plugin.services.commonPlatform.messageSender, info, { "" }, { null }, { false },
-            ), plugin.services.statusSnapshots, info, now = { now },
+        val announcements = CleanupAnnouncementService(
+            plugin.services.commonPlatform.messageSender, info, { "" }, { null }, { false },
+        )
+        val ticker = CleanupTicker(
+            Schedulers.backend(), info, plugin.services.statusSnapshots, { Config.current },
+            plugin.services.cleanupCoordinator::cleanScheduled, announcements::announceCountdown, { now },
         )
         ticker.start()
         // MockBukkit does not implement the server Audience used by finish broadcasts.

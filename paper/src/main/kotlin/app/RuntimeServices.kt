@@ -11,7 +11,7 @@ import top.e404.eclean.config.ManagedConfiguredService
 import top.e404.eclean.feature.cleanup.CleanupAnnouncementService
 import top.e404.eclean.feature.cleanup.CleanupCoordinator
 import top.e404.eclean.feature.cleanup.CleanupHistoryService
-import top.e404.eclean.feature.cleanup.CleanupTickService
+import top.e404.eclean.feature.cleanup.CleanupTicker
 import top.e404.eclean.feature.stats.StatsAlertService
 import top.e404.eclean.feature.trashcan.TrashcanItemStore
 import top.e404.eclean.feature.trashcan.TrashcanManager
@@ -68,6 +68,9 @@ class RuntimeServices {
     )
     val cleanupHistory = CleanupHistoryService()
     val cleanupAudit = top.e404.eclean.feature.cleanup.CleanupAudit(cleanupHistory, statusSnapshots)
+    val denseCleanupService = top.e404.eclean.feature.cleanup.chunk.DenseCleanupService(
+        worldAccess, commonScheduler, { Config.current }, cleanupAudit,
+    )
     val cleanupEnvironment = top.e404.eclean.feature.cleanup.CleanupEnvironment(
         worldAccess, commonScheduler, { Config.current }, cleanupAudit, statusSnapshots, trashcanManager, trashcanStore, messages,
     )
@@ -94,7 +97,14 @@ class RuntimeServices {
         }
         messages.send(player, MLang[key])
     }
-    val trashcanTicker = TrashcanTicker(trashcanStore, statusSnapshots)
+    val trashcanTicker = TrashcanTicker(
+        scheduler = commonScheduler,
+        snapshots = statusSnapshots,
+        config = { Config.current },
+        expireEntries = trashcanStore::expireEntries,
+        earliestDeadline = trashcanStore::earliestDeadline,
+        refreshMenus = top.e404.eclean.menu.MenuManager::refreshTrashcanMenus,
+    )
     val cleanupAnnouncementService = CleanupAnnouncementService(
         messageSender = commonPlatform.messageSender,
         serverInfo = commonPlatform.serverInfo,
@@ -103,12 +113,24 @@ class RuntimeServices {
         shouldBroadcastWhenNoPlayers = { Config.current.cleanup.broadcastWhenNoPlayers },
     )
     val cleanupCoordinator = CleanupCoordinator(messages, statusSnapshots)
-    val cleanupTickService = CleanupTickService(messages, cleanupCoordinator, cleanupAnnouncementService, statusSnapshots, commonPlatform.serverInfo)
+    val cleanupTickService: CleanupTicker = CleanupTicker(
+        scheduler = commonScheduler,
+        serverInfo = commonPlatform.serverInfo,
+        snapshots = statusSnapshots,
+        config = { Config.current },
+        onDue = cleanupCoordinator::cleanScheduled,
+        onCountdown = cleanupAnnouncementService::announceCountdown,
+    )
     val statsAlertService = StatsAlertService(
-        commonPlatform.serverInfo,
-        commonPlatform.permissionService,
-        commonPlatform.messageSender,
-    ) { MLang["prefix"] }
+        scheduler = commonScheduler,
+        statistics = worldStatsService,
+        serverInfo = commonPlatform.serverInfo,
+        permissionService = commonPlatform.permissionService,
+        messageSender = commonPlatform.messageSender,
+        config = { Config.current },
+        prefixProvider = { MLang["prefix"] },
+        messageProvider = { MLang[it] },
+    )
     val configuredServices = ConfiguredServiceLifecycle(listOf(
         ManagedConfiguredService(cleanupTickService::start, cleanupTickService::stop),
         ManagedConfiguredService(trashcanTicker::start, trashcanTicker::stop),
