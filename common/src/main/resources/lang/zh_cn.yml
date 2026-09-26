@@ -14,10 +14,10 @@ debug.player_enable: <white>已<green>启用</green><aqua>Debug</aqua><white>, �
 debug.player_disable: <white>已<red>禁用</red><aqua>Debug</aqua><white>, 你不会收到<aqua>Debug</aqua><white>消息, 再使用一次此指令以<green>启用</green></white>
 command.invalid.number: '{number}不是有效数字'
 command.invalid.entity_type: <yellow>{type}</yellow><red>不是有效的实体类型</red>
-cleanup.countdown.60: <white>将在1分钟后进行清理</white>
-cleanup.countdown.30: <white>将在30秒后进行清理</white>
-cleanup.countdown.10: <white>将在10秒后进行清理</white>
-cleanup.countdown.0: <white>正在清理</white>
+cleanup.countdown.60: "<gray>将在 <gold>1 分钟</gold> 后清理</gray>"
+cleanup.countdown.30: "<gray>将在 <gold>30 秒</gold> 后清理</gray>"
+cleanup.countdown.10: "<gray>将在 <gold>10 秒</gold> 后清理</gray>"
+cleanup.countdown.0: "<yellow>正在清理...</yellow>"
 cleanup.finish.drop: '<white>已清理 <gold>{cleaned}</gold>/<gold>{total}</gold> 个掉落物</white>'
 cleanup.finish.living: '<white>已清理 <gold>{cleaned}</gold>/<gold>{total}</gold> 个生物</white>'
 cleanup.finish.chunk: '<white>已清理 <gold>{cleaned}</gold> 个密集实体</white>'
@@ -191,8 +191,8 @@ common.incomplete: "未完整执行"
 update.available: "<yellow>有可用更新：{latest}，当前版本：{current}。{url}</yellow>"
 update.failed: "<yellow>更新检查失败：{reason}。将在下次计划检查时重试。</yellow>"
 command.clean_done: "<yellow>清理请求已结束；各世界、各模块的结果及异常请查看 /eclean history。</yellow>"
-command.clean_result: "<white>已删除 {cleaned} 个实体；删除失败 {failed} 个；跳过 {skipped} 个区块；状态：{status}。</white>"
-command.clean_preview_result: "<white>预演选中 {cleaned} 个实体；失败 {failed}；跳过 {skipped} 个区块；状态：{status}。未执行删除。</white>"
+command.clean_result: "<green>清理完成</green> <dark_gray>·</dark_gray> <gray>已删除 <gold>{cleaned}</gold> 个实体</gray>\n<gray>失败 <red>{failed}</red> · 跳过 <yellow>{skipped}</yellow> 区块 · {status}</gray>"
+command.clean_preview_result: "<aqua>清理预演</aqua> <dark_gray>·</dark_gray> <gray>选中 <gold>{cleaned}</gold> 个实体</gray>\n<gray>失败 <red>{failed}</red> · 跳过 <yellow>{skipped}</yellow> 区块 · {status}</gray>\n<gray>未删除任何实体。</gray>"
 command.trash_preview: "<white>预演：垃圾桶当前有 {count} 件物品，未清空。</white>"
 command.trash_cleared: "<white>已从垃圾桶清除 {count} 件物品。</white>"
 command.config.valid: "<green>磁盘配置 {profile} 与语言文件校验通过，未修改运行状态。</green>"
@@ -204,3 +204,7 @@ command.config.source: "<gray>{field} 的来源：{source}</gray>"
 command.config.line: "<white>{line}</white>"
 command.config.semantics: "<gray>normal/dev 为独立配置。mode 优先于旧 blacklistMode；remove-matching 只清匹配项，keep-matching 保留匹配项。密度保护独立配置，限额按声明顺序处理，告警按单一实体类型计数。</gray>"
 menu.stats.item.lore_blocked: "<white>世界：{world}</white>\n<white>数量：{count}</white>\n<gray>缺少实体分布查询权限</gray>"
+cleanup.scope.worlds: "{count} 个世界"
+cleanup.summary.done: "<green>清理完成</green> <dark_gray>·</dark_gray> <aqua>{scope}</aqua>\n  <gray>掉落物 <gold>{drop}</gold> <dark_gray>·</dark_gray> 生物 <gold>{living}</gold> <dark_gray>·</dark_gray> 密集实体 <gold>{dense}</gold></gray>"
+cleanup.summary.preview: "<aqua>清理预演</aqua> <dark_gray>·</dark_gray> <aqua>{scope}</aqua>\n  <gray>掉落物 <gold>{drop}</gold> <dark_gray>·</dark_gray> 生物 <gold>{living}</gold> <dark_gray>·</dark_gray> 密集实体 <gold>{dense}</gold></gray>\n  <gray>未删除任何实体。</gray>"
+cleanup.summary.partial: "  <yellow>部分完成：失败 <red>{failed}</red> · 跳过 <gold>{skipped}</gold> 次区块扫描</yellow>\n  <gray>详情：<yellow>/eclean history</yellow></gray>"

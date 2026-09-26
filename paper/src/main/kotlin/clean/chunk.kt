@@ -34,13 +34,15 @@ fun cleanDenseEntities(announce: Boolean = true, dryRun: Boolean = false, contex
     scanner.cleanAllWorlds(dryRun = dryRun) { result ->
         val elapsed = System.currentTimeMillis() - time
         if (!dryRun) {
-            chunkAlertService.alert(result.denseEntries)
+            alertDenseEntries(result.denseEntries)
             if (announce) announceChunk(result.cleaned)
         }
         PL.services.messages.debug { "Chunk density cleanup finished: ${result.cleaned} selected, dryRun=$dryRun, ${elapsed}ms" }
         onComplete?.invoke(result.cleaned)
     }
 }
+
+internal fun alertDenseEntries(entries: List<top.e404.eclean.feature.cleanup.chunk.ChunkDensityEntry>) = chunkAlertService.alert(entries)
 
 fun scanDenseEntries(onComplete: (List<top.e404.eclean.feature.cleanup.chunk.ChunkDensityEntry>) -> Unit) {
     val scanner = resolveChunkScanner()

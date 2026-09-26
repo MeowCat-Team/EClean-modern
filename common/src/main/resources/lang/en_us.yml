@@ -14,10 +14,10 @@ debug.player_enable: <white>Debug <green>enabled</green>. You will receive debug
 debug.player_disable: <white>Debug <red>disabled</red>. You will stop receiving debug messages. Use this command again to <green>enable</green>.</white>
 command.invalid.number: '{number} is not a valid number'
 command.invalid.entity_type: <yellow>{type}</yellow><red> is not a valid entity type</red>
-cleanup.countdown.60: <white>Cleanup will start in 1 minute</white>
-cleanup.countdown.30: <white>Cleanup will start in 30 seconds</white>
-cleanup.countdown.10: <white>Cleanup will start in 10 seconds</white>
-cleanup.countdown.0: <white>Cleaning in progress</white>
+cleanup.countdown.60: "<gray>Cleanup in <gold>1 minute</gold>.</gray>"
+cleanup.countdown.30: "<gray>Cleanup in <gold>30 seconds</gold>.</gray>"
+cleanup.countdown.10: "<gray>Cleanup in <gold>10 seconds</gold>.</gray>"
+cleanup.countdown.0: "<yellow>Cleaning up...</yellow>"
 cleanup.finish.drop: '<white>Cleaned <gold>{cleaned}</gold>/<gold>{total}</gold> dropped items</white>'
 cleanup.finish.living: '<white>Cleaned <gold>{cleaned}</gold>/<gold>{total}</gold> living entities</white>'
 cleanup.finish.chunk: '<white>Cleaned <gold>{cleaned}</gold> dense entities</white>'
@@ -191,8 +191,8 @@ common.incomplete: "incomplete"
 update.available: "<yellow>Update available: {latest}; installed: {current}. {url}</yellow>"
 update.failed: "<yellow>Update check failed: {reason}. The next scheduled check will retry.</yellow>"
 command.clean_done: "<yellow>Cleanup request finished; use /eclean history for per-world and per-module results and failures.</yellow>"
-command.clean_result: "<white>Removed {cleaned} entities; failed removals: {failed}; skipped chunks: {skipped}; status: {status}.</white>"
-command.clean_preview_result: "<white>Preview selected {cleaned} entities; failures: {failed}; skipped chunks: {skipped}; status: {status}. Nothing was removed.</white>"
+command.clean_result: "<green>Cleanup complete</green> <dark_gray>·</dark_gray> <gray>Removed <gold>{cleaned}</gold> entities</gray>\n<gray>Failed <red>{failed}</red> · Skipped <yellow>{skipped}</yellow> chunks · {status}</gray>"
+command.clean_preview_result: "<aqua>Cleanup preview</aqua> <dark_gray>·</dark_gray> <gray>Selected <gold>{cleaned}</gold> entities</gray>\n<gray>Failed <red>{failed}</red> · Skipped <yellow>{skipped}</yellow> chunks · {status}</gray>\n<gray>No entities were removed.</gray>"
 command.trash_preview: "<white>Preview: the trash can contains {count} items; nothing was cleared.</white>"
 command.trash_cleared: "<white>Cleared {count} items from the trash can.</white>"
 command.config.valid: "<green>Disk configuration {profile} and language files are valid. Runtime state was not changed.</green>"
@@ -204,3 +204,7 @@ command.config.source: "<gray>Source of {field}: {source}</gray>"
 command.config.line: "<white>{line}</white>"
 command.config.semantics: "<gray>normal/dev are independent profiles. mode overrides legacy blacklistMode: remove-matching removes matches; keep-matching retains matches. Density protection is independent, limits run in declaration order, and alerts count each entity type separately.</gray>"
 menu.stats.item.lore_blocked: "<white>World: {world}</white>\n<white>Count: {count}</white>\n<gray>Entity distribution permission is required</gray>"
+cleanup.scope.worlds: "{count} worlds"
+cleanup.summary.done: "<green>Cleanup complete</green> <dark_gray>·</dark_gray> <aqua>{scope}</aqua>\n  <gray>Drops <gold>{drop}</gold> <dark_gray>·</dark_gray> Living <gold>{living}</gold> <dark_gray>·</dark_gray> Dense <gold>{dense}</gold></gray>"
+cleanup.summary.preview: "<aqua>Cleanup preview</aqua> <dark_gray>·</dark_gray> <aqua>{scope}</aqua>\n  <gray>Drops <gold>{drop}</gold> <dark_gray>·</dark_gray> Living <gold>{living}</gold> <dark_gray>·</dark_gray> Dense <gold>{dense}</gold></gray>\n  <gray>No entities were removed.</gray>"
+cleanup.summary.partial: "  <yellow>Partial result: failed <red>{failed}</red> · skipped <gold>{skipped}</gold> chunk scans</yellow>\n  <gray>Details: <yellow>/eclean history</yellow></gray>"

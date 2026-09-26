@@ -63,4 +63,21 @@ class MessageContractTest {
         assertTrue(manager["command.invalid.entity_type", "type" to "bad"].contains("bad"))
         assertEquals(1, warnings.size)
     }
+
+    @Test fun `old default menu and countdown wording upgrade while custom messages remain intact`() {
+        val dir = Files.createTempDirectory("eclean-default-message-upgrade")
+        Files.createDirectories(dir.resolve("lang"))
+        val custom = "<aqua>Our server starts cleanup soon</aqua>"
+        Files.writeString(dir.resolve("lang/en_us.yml"),
+            "menu.trashcan.title: '<gold>Shared trash · Entries expire · Lost on restart</gold>'\n" +
+            "cleanup.countdown.0: '<white>Cleaning in progress</white>'\n" +
+            "cleanup.countdown.10: '$custom'\n")
+        val manager = LanguageManager(dir)
+        manager.load("en_us")
+        val bundled = manager.bundledSnapshot("en_us").templates
+        assertEquals(bundled["menu.trashcan.title"], manager["menu.trashcan.title"])
+        assertEquals(bundled["cleanup.countdown.0"], manager["cleanup.countdown.0"])
+        assertEquals(custom, manager["cleanup.countdown.10"])
+    }
+
 }

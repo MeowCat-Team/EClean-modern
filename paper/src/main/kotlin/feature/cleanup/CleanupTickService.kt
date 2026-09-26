@@ -28,13 +28,20 @@ class CleanupTickService(
         schedule = next
         val initial = next.poll(serverInfo.worldNames, now)
         snapshots.updateCleanup { it.copy(elapsedSeconds = 0, remainingSeconds = initial.remainingSeconds) }
+        var lastCountdown: Long? = null
         val period = bundle.advanced.scheduler.cleanupTickIntervalTicks
         task = Schedulers.scheduleRepeatingGlobal(period, period) {
             val due = next.poll(serverInfo.worldNames, this.now())
             snapshots.updateCleanup { it.copy(elapsedSeconds = due.elapsedSeconds, remainingSeconds = due.remainingSeconds) }
             if (Config.current.cleanup.cleanWhenNoPlayers || serverInfo.hasOnlinePlayers) {
-                announcements.announceCountdown(if (due.worlds.isEmpty()) due.remainingSeconds else 0)
-                due.worlds.forEach { coordinator.cleanNow(worldName = it, context = CleanupContext(source = "scheduled")) }
+                if (due.worlds.isNotEmpty()) {
+                    announcements.announceCountdown(0)
+                    lastCountdown = null
+                    coordinator.cleanScheduled(due.worlds)
+                } else if (due.remainingSeconds > 0 && due.remainingSeconds != lastCountdown) {
+                    announcements.announceCountdown(due.remainingSeconds)
+                    lastCountdown = due.remainingSeconds
+                }
             }
         }
     }

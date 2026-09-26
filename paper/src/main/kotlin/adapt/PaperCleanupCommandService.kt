@@ -8,6 +8,7 @@ import top.e404.eclean.feature.cleanup.chunk.ChunkDensityScanner
 import top.e404.eclean.feature.cleanup.drop.DropCleanupService
 import top.e404.eclean.feature.cleanup.living.LivingCleanupService
 import top.e404.eclean.lang.MLang
+import top.e404.eclean.config.Config
 import top.e404.eclean.util.miniMessage
 
 class PaperCleanupCommandService(
@@ -17,16 +18,19 @@ class PaperCleanupCommandService(
     override fun worldExists(world: String) = Bukkit.getWorld(world) != null
     private fun context(sender: CommonCommandSender) = CleanupContext("command", sender.name)
     private fun send(sender: CommonCommandSender, key: String, vararg args: Pair<String, Any>) =
-        sender.sendMessage(miniMessage.deserialize(MLang.get(key, *args)))
+        sender.sendMessage(miniMessage.deserialize("${MLang["prefix"]} ${MLang.get(key, *args)}"))
 
     override fun cleanAll(sender: CommonCommandSender, dryRun: Boolean) {
-        coordinator().cleanNow(dryRun = dryRun, context = context(sender)) {
-            send(sender, if (dryRun) "command.clean_dry_done" else "command.clean_done")
+        val worlds = Bukkit.getWorlds().map { it.name }
+        coordinator().cleanNow(dryRun = dryRun, context = context(sender)) { result ->
+            if (dryRun || (!Config.current.cleanup.broadcastWhenNoPlayers && Bukkit.getOnlinePlayers().isEmpty())) sender.sendMessage(miniMessage.deserialize("${MLang["prefix"]} " +
+                top.e404.eclean.feature.cleanup.cleanupSummaryMessage(result, worlds, dryRun)))
         }
     }
     override fun cleanAllInWorld(sender: CommonCommandSender, world: String, dryRun: Boolean) {
-        coordinator().cleanNow(dryRun = dryRun, worldName = world, context = context(sender)) {
-            send(sender, if (dryRun) "command.clean_dry_done" else "command.clean_done")
+        coordinator().cleanNow(dryRun = dryRun, worldName = world, context = context(sender)) { result ->
+            if (dryRun || (!Config.current.cleanup.broadcastWhenNoPlayers && Bukkit.getOnlinePlayers().isEmpty())) sender.sendMessage(miniMessage.deserialize("${MLang["prefix"]} " +
+                top.e404.eclean.feature.cleanup.cleanupSummaryMessage(result, listOf(world), dryRun)))
         }
     }
     private fun result(sender: CommonCommandSender, dryRun: Boolean, cleaned: Int, failed: Int, skipped: Int, incomplete: Boolean) {

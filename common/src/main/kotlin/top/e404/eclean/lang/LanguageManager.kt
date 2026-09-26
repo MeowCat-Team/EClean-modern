@@ -54,7 +54,8 @@ class LanguageManager(
             if (!valid) logger("Language $language: placeholder mismatch at $key; using bundled translation")
             valid
         }
-        val candidate = LanguageSnapshot(language, fallback + compatible)
+        val upgraded = compatible.mapValues { (key, value) -> DefaultMessageMigrations.upgrade(key, value, fallback[key]) }
+        val candidate = LanguageSnapshot(language, fallback + upgraded)
         // On first use retain the original legacy file, including its comments and custom values.
         if (persistMissing && !Files.exists(target)) AtomicFiles.write(target, source)
         return candidate
