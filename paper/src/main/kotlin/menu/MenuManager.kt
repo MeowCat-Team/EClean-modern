@@ -18,8 +18,8 @@ import top.e404.eclean.menu.trashcan.TrashcanMenu
 import top.e404.eclean.platform.Schedulers
 import top.e404.eclean.platform.FoliaDetector
 import top.e404.eclean.ui.UiMenu
+import top.e404.eclean.ui.SearchSessions
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.UUID
 
 object MenuManager : Listener {
@@ -28,10 +28,7 @@ object MenuManager : Listener {
         PL.services.temporaryReturnService.handleJoin(event.player)
     }
     private val openMenus = ConcurrentHashMap<Player, UiMenu>()
-    private class SearchSession(val menu: TrashcanMenu, val expiresAt: Long) {
-        val claimed = AtomicBoolean()
-    }
-    private val searches = ConcurrentHashMap<UUID, SearchSession>()
+    private val searches = SearchSessions<UUID, TrashcanMenu>()
     internal const val SEARCH_TIMEOUT_TICKS = 20L * 60
 
     fun openMenu(menu: UiMenu, player: Player) {
@@ -105,11 +102,10 @@ object MenuManager : Listener {
 
     internal fun beginSearch(player: Player, menu: TrashcanMenu) {
         if (openMenus[player] !== menu || !Config.current.trashcan.enabled || !player.hasPermission(PermissionNode.TRASH_OPEN)) return
-        val session = SearchSession(menu, System.currentTimeMillis() + SEARCH_TIMEOUT_TICKS * 50)
-        searches[player.uniqueId] = session
+        val session = searches.begin(player.uniqueId, menu, SEARCH_TIMEOUT_TICKS * 50)
         // InventoryClickEvent is still dispatching; close on the next player tick.
         Schedulers.runLaterForEntity(player, 1) {
-            if (searches[player.uniqueId] !== session || !player.isOnline) return@runLaterForEntity
+            if (!searches.isCurrent(player.uniqueId, session) || !player.isOnline) return@runLaterForEntity
             player.closeInventory()
             PL.services.messages.send(player, MLang["menu.trashcan.search.prompt"])
         }
@@ -123,15 +119,15 @@ object MenuManager : Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     fun onAsyncChat(event: AsyncChatEvent) {
         val player = event.player
-        val session = searches[player.uniqueId] ?: return
+        val session = searches.current(player.uniqueId) ?: return
         // Claim and cancel the private input before scheduling any Bukkit work.
         event.isCancelled = true
-        if (!session.claimed.compareAndSet(false, true)) return
+        if (!session.claim()) return
         val query = PlainTextComponentSerializer.plainText().serialize(event.message()).trim()
         Schedulers.runForEntity(player) {
             if (!searches.remove(player.uniqueId, session)) return@runForEntity
             if (!player.isOnline) return@runForEntity
-            if (System.currentTimeMillis() >= session.expiresAt) {
+            if (searches.expired(session)) {
                 PL.services.messages.send(player, MLang["menu.trashcan.search.timeout"])
                 return@runForEntity
             }
@@ -144,12 +140,12 @@ object MenuManager : Listener {
                 return@runForEntity
             }
             if (query.equals("cancel", true)) {
-                session.menu.applySearchQuery(null)
+                session.value.applySearchQuery(null)
                 PL.services.messages.send(player, MLang["menu.trashcan.search.cancelled"])
             } else {
-                session.menu.applySearchQuery(query.take(128))
+                session.value.applySearchQuery(query.take(128))
             }
-            openMenu(session.menu, player)
+            openMenu(session.value, player)
         }
     }
 
