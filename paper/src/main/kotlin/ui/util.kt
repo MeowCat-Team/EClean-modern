@@ -5,6 +5,9 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.ItemMeta
 import net.kyori.adventure.text.format.TextDecoration
 import top.e404.eclean.util.miniMessage
+import top.e404.eclean.config.Config
+
+fun menuText(text: String): String = menuText(text, Config.current.advanced.menu)
 
 fun buildItemStack(
     material: Material,
