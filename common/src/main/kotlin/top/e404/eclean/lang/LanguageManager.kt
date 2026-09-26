@@ -33,7 +33,7 @@ class LanguageManager(
         readSnapshot().templates[key]?.placeholder(*placeholder)
 
     /** Parsing a candidate never changes the active language. */
-    fun prepare(language: String): LanguageSnapshot {
+    fun prepare(language: String, persistMissing: Boolean = true): LanguageSnapshot {
         require(Regex("[a-zA-Z][a-zA-Z0-9_-]{1,31}").matches(language)) { "Invalid language name: $language" }
         val target = dataDirectory.resolve("lang").resolve("$language.yml")
         val legacy = dataDirectory.resolve("lang.yml")
@@ -46,9 +46,17 @@ class LanguageManager(
         }
         val user = flattenToMap(source).mapValues { (_, value) -> LegacyLangMigrator.legacyToMiniMessage(value) }
         val fallback = flattenToMap(defaults ?: bundled("zh_cn") ?: error("Missing bundled language"))
-        val candidate = LanguageSnapshot(language, fallback + user)
+        val parameters = Regex("\\{([A-Za-z0-9_]+)\\}")
+        fun keys(text: String) = parameters.findAll(text).map { it.groupValues[1] }.toSet()
+        val compatible = user.filter { (key, value) ->
+            val expected = fallback[key]
+            val valid = expected == null || keys(value) == keys(expected)
+            if (!valid) logger("Language $language: placeholder mismatch at $key; using bundled translation")
+            valid
+        }
+        val candidate = LanguageSnapshot(language, fallback + compatible)
         // On first use retain the original legacy file, including its comments and custom values.
-        if (!Files.exists(target)) AtomicFiles.write(target, source)
+        if (persistMissing && !Files.exists(target)) AtomicFiles.write(target, source)
         return candidate
     }
 

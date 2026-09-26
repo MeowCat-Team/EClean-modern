@@ -40,5 +40,15 @@ fun Player.toCommonPlayer(): CommonPlayer = object : CommonPlayer {
 }
 
 class PaperMessageProvider : MessageProvider {
+    override fun itemName(type: String): Any = runCatching {
+        top.e404.eclean.util.RichText(top.e404.eclean.util.miniMessage.serialize(
+            Component.translatable(org.bukkit.Material.valueOf(type).translationKey())
+                .append(Component.text(" ($type)"))))
+    }.getOrDefault(type)
+    override fun entityName(type: String): Any = runCatching {
+        top.e404.eclean.util.RichText(top.e404.eclean.util.miniMessage.serialize(
+            Component.translatable(org.bukkit.entity.EntityType.valueOf(type).translationKey())
+                .append(Component.text(" ($type)"))))
+    }.getOrDefault(type)
     override fun get(key: String, vararg args: Pair<String, Any>): String = MLang.get(key, *args)
 }

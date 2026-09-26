@@ -7,7 +7,6 @@ import top.e404.eclean.lang.MLang
 import top.e404.eclean.ui.UiDisplayable
 import top.e404.eclean.ui.editItemMeta
 import top.e404.eclean.util.miniMessage
-import top.e404.eclean.util.parseSecondAsDuration
 
 class TrashcanDisplayItem(
     val entry: TrashcanEntry,
@@ -32,7 +31,7 @@ class TrashcanDisplayItem(
                 .takeIf { it != Long.MAX_VALUE }
                 ?.let { maxOf(0, (it - System.currentTimeMillis()) / 1000) }
             if (remainingSeconds != null && Config.current.trashcan.stacking.showRemainingTimeInLore) {
-                add(MLang.get("menu.trashcan.item.expire", "expire" to remainingSeconds.parseSecondAsDuration()))
+                add(MLang.get("menu.trashcan.item.expire", "expire" to top.e404.eclean.util.RichText(MLang.duration(remainingSeconds))))
             }
         }
         existingLore.addAll(newLines.map { miniMessage.deserialize(top.e404.eclean.ui.menuText(it)) })

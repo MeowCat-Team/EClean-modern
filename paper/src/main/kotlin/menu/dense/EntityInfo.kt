@@ -22,7 +22,7 @@ class EntityInfo(
     override var needUpdate = false
     override val item: ItemStack = run {
         val placeholder = arrayOf<Pair<String, Any?>>(
-            "type" to type,
+            "type" to top.e404.eclean.command.PaperMessageProvider().entityName(type),
             "amount" to amount,
             "chunk" to chunk.info(),
         )

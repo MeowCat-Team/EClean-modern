@@ -59,7 +59,7 @@ class LangConsistencyTest {
                 .forEach { file ->
                     val text = file.readText(Charsets.UTF_8)
                     // The broad fallback also sees configuration diagnostics, which are not translations.
-                    val filePatterns = if (file.name == "ConfigValidator.kt") patterns.take(2) else patterns
+                    val filePatterns = if (file.invariantSeparatorsPath.contains("/config/")) patterns.take(2) else patterns
                     for (pattern in filePatterns) {
                         for (match in pattern.findAll(text)) {
                             keys += match.groupValues[1]
@@ -90,6 +90,7 @@ class LangConsistencyTest {
         keys.remove("cleanup.countdown.\$seconds")
         // "cleanup.yml" is a config file name, not a language key.
         keys.remove("cleanup.yml")
+        keys.remove("command.usage.\$name")
         keys.remove("menu.dense.temp.status.\$temp")
         keys.remove("menu.trashcan.category.\${category.key}")
         keys.remove("menu.trashcan.sort.\${sort.key}")
