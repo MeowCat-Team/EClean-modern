@@ -15,8 +15,10 @@ object Update {
     private val httpClient = HttpClient.newBuilder().connectTimeout(java.time.Duration.ofSeconds(10)).build()
     private var task: io.papermc.paper.threadedregions.scheduler.ScheduledTask? = null
     @Volatile private var generation = 0L
+    private var lastFailureAt = 0L
+    private var lastNotified: String? = null
 
-    fun stop() { generation++; task?.cancel(); task = null }
+    @Synchronized fun stop() { generation++; task?.cancel(); task = null }
 
     fun register() {
         stop()
@@ -40,17 +42,32 @@ object Update {
                 .GET()
                 .build()
             val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-            if (response.statusCode() != 200 || token != generation) return
+            if (token != generation) return
+            check(response.statusCode() == 200) { "HTTP ${response.statusCode()}" }
             val json = JsonParser.parseString(response.body()).asJsonArray
-            if (json.isEmpty) return
-            val latest = json[0].asJsonObject.get("tag_name").asString
             val current = top.e404.eclean.PL.pluginMeta.version
-            if (latest != current) {
-                Bukkit.getConsoleSender().sendMessage(
-                    "§6[EClean-Modern] §e新版本可用: §b$latest §e(当前: §7$current§e) → §a$GITHUB_URL"
-                )
+            val latest = newerRelease(current, json.mapNotNull { element ->
+                val item = element.takeIf { it.isJsonObject }?.asJsonObject ?: return@mapNotNull null
+                val tag = item.get("tag_name")?.takeIf { it.isJsonPrimitive }?.asString ?: return@mapNotNull null
+                ReleaseCandidate(tag, item.get("draft")?.asBoolean ?: false, item.get("prerelease")?.asBoolean ?: false)
+            }) ?: return
+            synchronized(this) {
+                if (token != generation || lastNotified == latest.tag) return
+                top.e404.eclean.PL.services.messages.send(Bukkit.getConsoleSender(), top.e404.eclean.lang.MLang[
+                    "update.available", "latest" to latest.tag, "current" to current, "url" to GITHUB_URL,
+                ])
+                lastNotified = latest.tag
             }
-        } catch (_: Exception) {
+        } catch (failure: Exception) {
+            synchronized(this) {
+                val now = System.currentTimeMillis()
+                if (token == generation && now - lastFailureAt >= TimeUnit.HOURS.toMillis(1)) {
+                    lastFailureAt = now
+                    top.e404.eclean.PL.services.messages.send(Bukkit.getConsoleSender(), top.e404.eclean.lang.MLang[
+                        "update.failed", "reason" to (failure.message ?: failure.javaClass.simpleName),
+                    ])
+                }
+            }
         }
     }
 }

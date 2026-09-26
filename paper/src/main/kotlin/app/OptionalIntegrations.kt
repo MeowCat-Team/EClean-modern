@@ -4,6 +4,7 @@ import org.bukkit.Bukkit
 import org.bstats.bukkit.Metrics
 import top.e404.eclean.EClean
 import top.e404.eclean.PL
+import top.e404.eclean.config.updateChecksEnabled
 import top.e404.eclean.config.ConfigBundle
 import top.e404.eclean.update.Update
 
@@ -23,7 +24,7 @@ class OptionalIntegrations {
             check(clazz.getMethod("register").invoke(expansion) == true) { "PlaceholderAPI registration failed" }
             papi = expansion
         }
-        val wantUpdate = config.global.updateCheck && config.advanced.update.enabled
+        val wantUpdate = config.updateChecksEnabled
         if (wantUpdate != updateEnabled) {
             if (wantUpdate) Update.register() else Update.stop()
             updateEnabled = wantUpdate
