@@ -16,11 +16,11 @@ import world
 import resetConfig
 import removeNonPlayerEntities
 import setupMockBukkit
-import top.e404.eclean.clean.*
 import top.e404.eclean.command.Commands
 import top.e404.eclean.config.Config
 import top.e404.eclean.config.model.*
 import top.e404.eclean.feature.cleanup.drop.DropCleanupService
+import top.e404.eclean.feature.cleanup.chunk.ChunkDensityScanner
 import top.e404.eclean.feature.cleanup.CleanupCoordinator
 import top.e404.eclean.feature.cleanup.CleanupHistoryService
 import top.e404.eclean.feature.cleanup.CleanupAnnouncementService
@@ -107,7 +107,7 @@ class CleanupSafetyIntegrationTest {
             updateCleanup { it.copy(elapsedSeconds = 123, remainingSeconds = 456) }
         }
         val before = snapshots.current()
-        val last = listOf(lastDrop, lastLiving, lastChunk)
+        val last = snapshotCounters()
         val history = plugin.services.cleanupHistory
         val historyBefore = history.recent(100)
         var completed = false
@@ -118,7 +118,7 @@ class CleanupSafetyIntegrationTest {
         assertTrue(mob.isValid)
         assertEquals(before, snapshots.current())
         assertEquals(listOf(7, 8, 9), snapshotCounters())
-        assertEquals(last, listOf(lastDrop, lastLiving, lastChunk))
+        assertEquals(last, snapshotCounters())
         assertEquals(historyBefore, history.recent(100))
         assertNull(receiver.nextComponentMessage(), "Preview must not broadcast a real cleanup alert")
     }
@@ -133,8 +133,8 @@ class CleanupSafetyIntegrationTest {
         val before = snapshotCounters()
         var drops = -1
         var dense = -1
-        cleanDrop(dryRun = true) { drops = it }
-        cleanDenseEntities(dryRun = true) { dense = it }
+        DropCleanupService().cleanAllWorlds(dryRun = true) { drops = it.sumOf { result -> result.cleaned } }
+        ChunkDensityScanner().cleanAllWorlds(dryRun = true) { dense = it.cleaned }
         server.scheduler.performTicks(8)
         assertEquals(1, drops)
         assertEquals(1, dense)

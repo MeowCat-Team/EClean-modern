@@ -13,7 +13,7 @@ import removeNonPlayerEntities
 import resetConfig
 import server
 import setupMockBukkit
-import top.e404.eclean.clean.cleanLiving
+import top.e404.eclean.feature.cleanup.living.LivingCleanupService
 import updateLivingConfig
 import world
 
@@ -51,7 +51,7 @@ class LivingCleanupIntegrationTest {
         }
 
         val latch = CountDownLatch(1)
-        cleanLiving(announce = false, onComplete = { latch.countDown() })
+        LivingCleanupService().cleanAllWorlds { latch.countDown() }
         server.scheduler.performTicks(5)
         assert(latch.await(1, TimeUnit.SECONDS)) { "cleanLiving did not complete within timeout" }
 
@@ -73,7 +73,7 @@ class LivingCleanupIntegrationTest {
         }
 
         val latch = CountDownLatch(1)
-        cleanLiving(announce = false, dryRun = true, onComplete = { latch.countDown() })
+        LivingCleanupService().cleanAllWorlds(dryRun = true) { latch.countDown() }
         server.scheduler.performTicks(5)
         assert(latch.await(1, TimeUnit.SECONDS)) { "cleanLiving dryRun did not complete within timeout" }
 

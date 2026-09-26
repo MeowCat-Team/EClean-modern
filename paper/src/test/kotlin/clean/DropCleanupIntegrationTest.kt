@@ -14,7 +14,7 @@ import removeNonPlayerEntities
 import resetConfig
 import server
 import setupMockBukkit
-import top.e404.eclean.clean.cleanDrop
+import top.e404.eclean.feature.cleanup.drop.DropCleanupService
 import updateDropConfig
 import world
 
@@ -52,7 +52,7 @@ class DropCleanupIntegrationTest {
         }
 
         val latch = CountDownLatch(1)
-        cleanDrop(announce = false, onComplete = { latch.countDown() })
+        DropCleanupService().cleanAllWorlds { latch.countDown() }
         server.scheduler.performTicks(5)
         assert(latch.await(1, TimeUnit.SECONDS)) { "cleanDrop did not complete within timeout" }
 
@@ -74,7 +74,7 @@ class DropCleanupIntegrationTest {
         }
 
         val latch = CountDownLatch(1)
-        cleanDrop(announce = false, dryRun = true, onComplete = { latch.countDown() })
+        DropCleanupService().cleanAllWorlds(dryRun = true) { latch.countDown() }
         server.scheduler.performTicks(5)
         assert(latch.await(1, TimeUnit.SECONDS)) { "cleanDrop dryRun did not complete within timeout" }
 

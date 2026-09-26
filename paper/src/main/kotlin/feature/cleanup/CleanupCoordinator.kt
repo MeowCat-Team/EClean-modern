@@ -2,8 +2,8 @@ package top.e404.eclean.feature.cleanup
 
 import top.e404.eclean.PL
 import top.e404.eclean.app.MessageService
-import top.e404.eclean.clean.alertDenseEntries
 import top.e404.eclean.config.Config
+import top.e404.eclean.feature.cleanup.chunk.ChunkAlertService
 import top.e404.eclean.feature.cleanup.chunk.ChunkDensityResult
 import top.e404.eclean.feature.cleanup.chunk.ChunkDensityScanner
 import top.e404.eclean.feature.cleanup.drop.DropCleanupResult
@@ -15,6 +15,16 @@ import top.e404.eclean.service.StatusSnapshotService
 
 fun cleanupSummaryMessage(result: CleanupSummary, worlds: List<String>, dryRun: Boolean = false): String =
     formatCleanupSummary(result, worlds, dryRun) { key, args -> MLang.get(key, *args.toTypedArray()) }
+
+private val chunkAlertService by lazy {
+    ChunkAlertService(
+        messageSender = PL.services.commonPlatform.messageSender,
+        serverInfo = PL.services.commonPlatform.serverInfo,
+        permissionService = PL.services.commonPlatform.permissionService,
+        prefixProvider = { MLang["prefix"] },
+        alertFormatProvider = { MLang.getOrNull("cleanup.alert.dense") },
+    )
+}
 
 /** Paper-specific operations and presentation around the common batch coordinator. */
 class CleanupCoordinator(
@@ -36,7 +46,7 @@ class CleanupCoordinator(
         snapshots = snapshots,
         resetTimer = { PL.services.cleanupTickService.reset() },
         announce = { summary, worlds -> announce(cleanupSummaryMessage(summary, worlds)) },
-        alertDense = ::alertDenseEntries,
+        alertDense = { entries -> chunkAlertService.alert(entries) },
         debug = { messages.debug { it } },
     )
 

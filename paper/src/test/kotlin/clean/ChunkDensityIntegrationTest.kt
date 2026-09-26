@@ -13,7 +13,7 @@ import removeNonPlayerEntities
 import resetConfig
 import server
 import setupMockBukkit
-import top.e404.eclean.clean.cleanDenseEntities
+import top.e404.eclean.feature.cleanup.chunk.ChunkDensityScanner
 import updateChunkDensityConfig
 import world
 
@@ -51,7 +51,7 @@ class ChunkDensityIntegrationTest {
         }
 
         val latch = CountDownLatch(1)
-        cleanDenseEntities(announce = false, onComplete = { latch.countDown() })
+        ChunkDensityScanner().cleanAllWorlds { latch.countDown() }
         server.scheduler.performTicks(5)
         assert(latch.await(1, TimeUnit.SECONDS)) { "cleanDenseEntities did not complete within timeout" }
 
