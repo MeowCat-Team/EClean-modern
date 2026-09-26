@@ -32,6 +32,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Menu presentation**: center trash-can controls, keep disabled page buttons visible, add a consistent footer and empty-state hints, and clarify filtering and deposit actions.
+- **Cleanup messages**: manual and scheduled cleanup share a colored summary, with one combined result for worlds due in the same batch. Countdown starts are no longer announced twice, and failures include a concise history hint.
+- **Runtime diagnostics**: statistics safely skip chunks unloaded after discovery without logging an exception; GitHub API rate limits receive an explicit localized explanation.
 - **Command syntax**: `top` now uses fixed positions: `/eclean top <entity|chunk> [amount] [world]`. Specifying a world requires an amount from 1 to 100; `/eclean top entity 10 123` queries the world named `123`. Unknown worlds report an error.
 - **Cleanup counters**: `last_drop`, `last_living`, and `last_chunk` describe the most recently completed corresponding cleanup request; server-wide requests sum their world results. One dropped stack counts as one entity. Trash-can totals and trash-clear audit counts use item amounts.
 - **History semantics**: keep the latest 100 records. `history_count` is the retained record count, `last_clean_time` is the latest recorded execution end, including zero-removal or failed executions, and `last_removal_time` only advances after actual entity removal.
