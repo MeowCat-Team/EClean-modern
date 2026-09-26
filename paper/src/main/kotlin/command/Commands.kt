@@ -6,25 +6,60 @@ import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 import org.bukkit.entity.EntityType
+import org.bukkit.entity.Player
 import top.e404.eclean.PL
+import top.e404.eclean.config.Config
 import top.e404.eclean.lang.MLang
+import java.util.UUID
 
 object Commands : CommandExecutor, TabCompleter {
     private val dispatcher = EcleanCommandDispatcher()
     private val handlers: Map<String, (CommandSender, Array<out String>) -> Unit> = mapOf(
-        "debug" to { sender, _ -> DebugCommand.handle(sender) },
-        "reload" to { sender, _ -> ReloadCommand.handle(sender) },
+        "debug" to { sender, _ ->
+            debugCommandHandler(PaperMessageProvider(), { Config.current },
+                { newBundle -> Config.update { newBundle } },
+                { playerId ->
+                    val name = runCatching { UUID.fromString(playerId) }.getOrNull()
+                        ?.let(Bukkit::getPlayer)?.name ?: playerId
+                    PL.services.messages.toggleDebugger(name)
+                })(sender.toPlayerAwareCommon(), emptyArray())
+        },
+        "reload" to { sender, _ ->
+            reloadCommandHandler(PaperMessageProvider(), { PL.services.reload(sender) })(sender.toCommon(), emptyArray())
+        },
         "config" to { sender, args -> ConfigCommand.handle(sender, args) },
-        "clean" to { sender, args -> CleanCommand.handle(sender, args) },
-        "stats" to { sender, args -> StatsCommand.handle(sender, args) },
-        "status" to { sender, args -> StatusCommand.handle(sender, args) },
-        "entity" to { sender, args -> EntityCommand.handle(sender, args) },
-        "trash" to { sender, args -> TrashCommand.handle(sender, args) },
-        "players" to { sender, _ -> PlayersCommand.handle(sender) },
-        "show" to { sender, _ -> ShowCommand.handle(sender) },
-        "history" to { sender, args -> HistoryCommand.handle(sender, args) },
-        "top" to { sender, args -> TopCommand.handle(sender, args) },
-        "tp" to { sender, args -> TeleportCommand.handle(sender, args) },
+        "clean" to { sender, args ->
+            cleanCommandHandler(PaperMessageProvider(), PL.services.commonPlatform.cleanupCommandService)(sender.toCommon(), args)
+        },
+        "stats" to { sender, args ->
+            statsCommandHandler(PaperMessageProvider(), PL.services.commonPlatform.worldStatsProvider,
+                PL.services.commonPlatform.statsMenuService)(sender.toPlayerAwareCommon(), args)
+        },
+        "status" to { sender, args ->
+            statusCommandHandler(PaperMessageProvider(), PL.services.commonPlatform.worldStatsProvider)(sender.toCommon(), args)
+        },
+        "entity" to { sender, args ->
+            entityCommandHandler(PaperMessageProvider(), PL.services.commonPlatform.worldStatsProvider)(sender.toPlayerAwareCommon(), args)
+        },
+        "trash" to { sender, args ->
+            trashCommandHandler(PaperMessageProvider(), PL.services.commonPlatform.trashcanService)(sender.toPlayerAwareCommon(), args)
+        },
+        "players" to { sender, _ ->
+            playersCommandHandler(PaperMessageProvider(), PL.services.commonPlatform.playerProvider)(sender.toCommon(), emptyArray())
+        },
+        "show" to { sender, _ ->
+            showCommandHandler(PaperMessageProvider(), PL.services.commonPlatform.denseShowService)(sender.toPlayerAwareCommon(), emptyArray())
+        },
+        "history" to { sender, args ->
+            historyCommandHandler(PaperMessageProvider(), PL.services.cleanupHistory)(sender.toCommon(), args)
+        },
+        "top" to { sender, args ->
+            topCommandHandler(PaperMessageProvider(), PL.services.commonPlatform.worldStatsProvider)(sender.toCommon(), args)
+        },
+        "tp" to { sender, args ->
+            teleportCommandHandler(PaperMessageProvider(), PL.services.commonPlatform.worldAccess,
+                PL.services.commonPlatform.teleportService)(sender.toPlayerAwareCommon(), args)
+        },
     )
 
     fun register() {
@@ -50,3 +85,6 @@ object Commands : CommandExecutor, TabCompleter {
             .forEach { PL.services.messages.send(sender, MLang[it]) }
     }
 }
+
+private fun CommandSender.toPlayerAwareCommon() =
+    if (this is Player) toCommonPlayer() else toCommon()
