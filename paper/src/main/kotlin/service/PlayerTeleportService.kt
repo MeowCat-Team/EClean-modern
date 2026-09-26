@@ -32,3 +32,27 @@ class PlayerTeleportService(
         return result
     }
 }
+
+/** Paper bindings for the shared temporary-return state machine. */
+class TemporaryReturnService(
+    execution: ExecutionGateway,
+    teleportService: PlayerTeleportService,
+    notifier: (Player, TemporaryReturnEvent) -> Unit = { _, _ -> },
+) {
+    private val delegate = TemporaryReturnCoordinator(object : TemporaryReturnPort<Player, Location> {
+        override fun id(player: Player) = player.uniqueId
+        override fun isOnline(player: Player) = player.isOnline
+        override fun position(player: Player) = player.location
+        override fun copy(position: Location) = position.clone()
+        override fun submit(player: Player, task: () -> Unit) = execution.submitForPlayer(player, task)
+        override fun schedule(player: Player, delayTicks: Long, task: () -> Unit) =
+            execution.runLaterForPlayer(PlayerRef(player.uniqueId, "", 0.0, 0.0, 0.0), player, delayTicks, task)
+        override fun teleport(player: Player, target: Location) = teleportService.teleport(player, target)
+    }, notifier)
+
+    fun teleportWithReturn(player: Player, target: Location, delayTicks: Long) =
+        delegate.teleportWithReturn(player, target, delayTicks)
+    fun handleQuit(player: Player) = delegate.handleQuit(player)
+    fun handleJoin(player: Player) = delegate.handleJoin(player)
+    fun shutdown() = delegate.shutdown()
+}
