@@ -1,31 +1,34 @@
 package top.e404.eclean.config
 
 import org.bukkit.command.CommandSender
+import top.e404.eclean.PL
 import top.e404.eclean.config.model.ConfigProfile
 
 object Config {
+    private val backend get() = PL.services.configuration
+
     val current: ConfigBundle
-        get() = ConfigManager.current
+        get() = backend.current
 
     val profile: ConfigProfile
-        get() = ConfigManager.currentProfile
+        get() = backend.currentProfile
 
     fun load(sender: CommandSender? = null) {
-        ConfigManager.loadAll(sender)
+        backend.loadAll()
     }
 
     fun reload(sender: CommandSender? = null) {
-        ConfigManager.reloadAll(sender)
+        backend.reloadAll()
     }
 
     fun switchProfile(profile: ConfigProfile): ConfigProfile =
-        ConfigManager.switchProfile(profile)
+        backend.switchProfile(profile)
 
     fun replaceForTest(bundle: ConfigBundle) {
-        ConfigManager.replaceSnapshotForTest(bundle)
+        backend.replaceSnapshotForTest(bundle)
     }
 
     fun update(transform: (ConfigBundle) -> ConfigBundle) {
-        ConfigManager.update(transform)
+        backend.update(transform)
     }
 }
