@@ -19,6 +19,7 @@
 - `/eclean reload` 重载插件, 重载后计划清理的任务将重新开始计时
 - `/eclean clean` 立刻执行一次清理(不显示清理前提示，在有玩家的服务器中慎用)
 - `/eclean clean --preview` 预览一次清理，不真正删除实体
+- `/eclean clean all <世界名> [--preview]` 清理或预演指定世界的全部清理模块
 - `/eclean clean entity` 立刻执行一次实体清理(不显示清理前提示)
 - `/eclean clean entity <世界名>` 立刻在指定世界执行一次实体清理(不显示清理前提示)
 - `/eclean clean drop` 立刻执行一次掉落物清理(不显示清理前提示)
@@ -37,10 +38,12 @@
 - `/eclean history [数量]` 查看最近清理记录
 - `/eclean top entity [数量] [世界名]` 查看实体数量最多的类型
 - `/eclean top chunk [数量] [世界名]` 查看实体数量最多的区块
-- `/eclean trash` 打开垃圾桶（支持分类、搜索、排序）
+- `/eclean trash [open]` 打开垃圾桶（支持分类、搜索、排序）
 - `/eclean trash stats` 查看垃圾桶统计信息(每个聚合条目的类型/数量/剩余时间)
 - `/eclean show` 打开密集实体统计信息菜单
 - `/eclean tp <世界名> <x> <y> <z>` 直接传送到指定坐标(管理员)
+
+`top` 的参数位置固定为“类型 → 数量 → 世界”。指定世界时必须先写数量，例如 `/eclean top entity 10 123` 查询名为 `123` 的世界；不再靠参数能否解析为数字猜测世界。数量范围为 1–100。未知世界明确报错。`--preview` 可以放在 `clean` 之后的任意参数位置。
 
 自动清理和 `/eclean clean ...`（包括指定世界与 `--preview`）均遵守对应功能的 `enabled`、`disabledWorlds` 和 `perWorld.worlds.<世界名>.enabled`，指定世界不会绕过这些限制。`--preview` 统计实际规则选中的对象，不更新上次清理计数、历史或倒计时，也不广播清理完成消息和密集区警报。
 
@@ -67,6 +70,7 @@
 - `eclean.trash` 打开共享垃圾桶（等价 `eclean.command.trash.open`）
 - `eclean.command.debug` 切换 Debug 消息
 - `eclean.command.reload` 重载插件配置和语言
+- `eclean.command.config` 查看、校验、比较配置及切换 profile
 - `eclean.command.clean.all` 执行一次完整清理
 - `eclean.command.clean.entity` 执行实体清理
 - `eclean.command.clean.drop` 执行掉落物清理
@@ -97,24 +101,26 @@
 
 - `%eclean_before_next%` - `距离下一次清理的时间, 单位秒`
 - `%eclean_before_next_formatted%` - `距离下一次清理的时间, 格式化的时间`
-- `%eclean_last_drop%` - `上次清理的掉落物数量`
-- `%eclean_last_living%` - `上次清理的生物数量`
-- `%eclean_last_chunk%` - `上次清理的密集实体数量`
-- `%eclean_trashcan_countdown%` - `最早到期条目的剩余时间(条目永不过期时为空桶, 为0), 单位秒`
+- `%eclean_last_drop%` - `最近完成的掉落物清理请求实际删除的实体数，全服请求为各世界之和（一组物品算一个实体）`
+- `%eclean_last_living%` - `最近完成的生物清理请求实际删除的实体数，全服请求为各世界之和`
+- `%eclean_last_chunk%` - `最近完成的密度清理请求或 GUI 实际删除的实体数，全服请求为各世界之和`
+- `%eclean_trashcan_countdown%` - `最早到期条目的剩余秒数，空桶或全部条目无定时过期时为 0`
 - `%eclean_trashcan_countdown_formatted%` - `最早到期条目的剩余时间, 格式化的时间`
 - `%eclean_total_entities%` - `全服实体总数`
 - `%eclean_total_chunks%` - `全服已加载区块总数`
 - `%eclean_world_<世界名>_entities%` - `指定世界的实体总数`
-- `%eclean_last_clean_time%` - `上次清理时间`
+- `%eclean_last_clean_time%` - `最近一次有审计记录的执行结束时间（可为零删除或失败）`
+- `%eclean_last_removal_time%` - `最近一次实际删除实体的时间，无删除记录时为空`
+- `%eclean_total_removed_entities%` - `本次进程运行内累计实际删除实体数，不包含垃圾桶清空的物品件数`
 - `%eclean_next_clean%` - `距离下次清理的秒数`
 - `%eclean_next_clean_formatted%` - `距离下次清理的格式化时间`
 - `%eclean_trashcan_entries%` - `垃圾桶条目数`
 - `%eclean_trashcan_total%` - `垃圾桶物品总数量`
-- `%eclean_history_count%` - `清理历史次数`
+- `%eclean_history_count%` - `当前保留的历史记录条数，最多 100 条`
 
 ## 配置
 
-EClean 提供两套配置预设：
+EClean 提供两套独立的配置预设，彼此不继承。切换 profile 会切换整套清理规则；normal 同样支持全部配置字段，单文件与分文件只是组织方式：
 
 - `normal`（默认）：单文件配置，模板以常用项为主。
   - 配置文件：`config/normal/config.yml`
@@ -130,7 +136,10 @@ EClean 提供两套配置预设：
 
 - 修改根目录 `config.yml` 的 `profile: normal|dev`，然后重启；或
 - 使用命令：
-  - `/eclean config show` 查看当前预设
+  - `/eclean config show` 查看当前预设与路径
+  - `/eclean config validate` 只读校验磁盘上的当前 profile 与语言，不迁移、生成文件或激活服务
+  - `/eclean config diff` 对比运行中配置与磁盘候选，显示变化的模块及旧/新值，不执行重载
+  - `/eclean config effective [世界名]` 查看运行中的规则；指定世界后解析其开关、距离和周期覆盖并列出来源
   - `/eclean config profile <normal|dev>` 立即切换并热重载
 
 首次从旧版升级时，插件会先验证旧配置，将已有的保护规则、禁用世界和功能开关迁移到 normal，并在 `config-backup-<时间戳>/` 永久保留原文件备份。缺失的旧功能配置不会自动启用清理；无法识别的字段需要修正后再加载。
@@ -153,11 +162,42 @@ advanced:
 
 Cron 使用 Quartz 格式，例如每天 03:00 为 `0 0 3 * * ?`；`null` 或空字符串表示使用间隔调度。Cron 与各世界的 `intervalSeconds` 不能同时设置。使用间隔调度时，每个世界分别计时。
 
-清理和统计按区块分批扫描，默认每批最多 100 个区块，上一批完成后等待 10 tick，再提交下一批。已卸载的区块会被跳过。菜单颜色分别替换默认菜单中的 gold（标题）、gray（说明）、yellow（操作提示），不会修改物品本身的元数据。
+清理和统计按区块分批扫描，默认每批最多 100 个区块，上一批完成后等待 10 tick，再提交下一批。清理会跳过已卸载区块并在结果中计数；统计遇到区块卸载或任务失败会报告采集失败，保留已有完整缓存。菜单颜色分别替换默认菜单中的 gold（标题）、gray（说明）、yellow（操作提示），不会修改物品本身的元数据。
 
 PlaceholderAPI 的实体数和区块数来自已加载区块的缓存，每 10 秒发起一次刷新，结果在扫描完成后发布。首次扫描完成前总数为 0，世界名称保留大小写。占位符请求不会触发世界扫描或加载区块。
 
 Folia 不支持插件热卸载；关闭服务器后再替换插件。临时传送在传送成功后开始倒计时，退出后会在本次服务进程中的下次登录尝试返回；返回位置不跨服务器重启保存。
+
+
+`drop.mode` 和 `living.mode` 使用 `remove-matching`（只清匹配项）或 `keep-matching`（保留匹配项）。旧 `blacklistMode` 仍兼容，显式 `mode` 优先。空匹配列表配合 `remove-matching` 不清任何对象，配合 `keep-matching` 会选择所有未受保护对象。密度模块没有 `entityLimits` 时不会删除实体。
+
+`chunkDensity.protectTamed`、`chunkDensity.protectAllay` 默认均为 `true`，分别保护驯服生物和悦灵。这是密度模块自己的保护设置，和 `living` 不互相覆盖。命名、拴绳、骑乘保护仍由各自模块的 `settings` 控制。`alertThreshold` 按区块内的单一实体类型计数（包含受保护对象），不会将牛和羊相加；一个限额正则匹配多类实体时共享该限额，重叠规则按配置顺序处理。
+
+更新检查统一推荐使用 `advanced.update.enabled`；旧 `global.updateCheck: false` 仍会禁用检查。首次检查在启动/启用后约 20 秒，之后每 6 小时检查。版本按 [SemVer](https://semver.org/spec/v2.0.0.html) 比较，允许 `v` 前缀；正式版只提示更高的正式版本，预发布安装可提示更高的预发布版本。检查失败会节流提示，不自动下载或执行更新。
+
+历史按“实际执行的世界与模块”记录，包含来源、操作者、范围、配置版本、耗时、实际删除数、失败删除数、跳过区块数和执行中断标记。自动、命令和菜单入口共用记录；合并的并发请求只记一次实际执行，预览不记历史。所有实体清理数量均按实体计数，垃圾桶数量按物品件数计数。历史和累计计数在重启后重置。
+
+跨世界统计 GUI 同时需要 `eclean.command.stats.gui` 与 `eclean.command.stats.world`。查看实体分布、查看区块详情和传送仍分别检查对应权限。普通传送及菜单传送等待平台实际结果，失败不会提示成功；临时传送开关在当前菜单会话中持续生效，关闭并重新打开菜单后恢复默认关闭。
+
+中英文消息检查键集合和参数契约，缺失键回退到对应内置语言。自定义翻译的参数与内置模板不一致时，该键回退并记录提示，其他自定义键继续使用。普通消息参数按文本转义，内部富文本和点击动作使用显式组件构造。实体名称展示 Minecraft 翻译和精确 ID，物品本身保留原生名称；插件消息仍使用全局语言，搜索仍使用英文 Material ID。格式化时间使用配置语言。
+
+垃圾桶的“无定时过期”只适用于当前服务进程，不保证重启恢复；新物品合入旧条目不会延长该条目的到期时间。
+
+## 构建与依赖更新
+
+默认构建目标为 common/paper，需要 JDK 25。Paper API 固定为 `26.1.2.build.74-stable`；项目提交 Gradle 依赖锁与 SHA-256 校验清单，wrapper 下载使用官方 SHA-256，CI Action 固定提交。校验清单以当前成功构建的依赖为基线，并不等同于漏洞扫描或所有发布方签名验证。
+
+```shell
+./gradlew build
+```
+
+更新依赖时先修改版本目录，再显式生成候选锁与校验数据，审查下载来源和校验差异后提交，日常 CI 不自动刷新这些文件：
+
+```shell
+./gradlew build --write-locks --write-verification-metadata sha256
+```
+
+实验性的 Fabric/NeoForge 占位模块不属于这套已验证的构建范围。
 
 ## 下载
 - [最新版](https://github.com/CoffeePopStudio/EClean-modern/releases/latest)
