@@ -12,6 +12,7 @@ dependencies {
     api(libs.adventure.text.serializer.plain)
 
     implementation(libs.kotlinx.serialization.core)
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.kaml)
     implementation(libs.cron.utils)
     implementation(libs.snakeyaml)

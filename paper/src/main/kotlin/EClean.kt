@@ -1,14 +1,11 @@
 package top.e404.eclean
 
-import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 import top.e404.eclean.app.RuntimeServices
 import top.e404.eclean.command.Commands
-import top.e404.eclean.config.Config
 import top.e404.eclean.lang.MLang
 import top.e404.eclean.listener.DespawnListener
 import top.e404.eclean.menu.MenuManager
-import top.e404.eclean.update.Update
 
 open class EClean : JavaPlugin {
     companion object {
