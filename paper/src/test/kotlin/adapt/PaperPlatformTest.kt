@@ -29,7 +29,7 @@ class PaperPlatformTest {
         override fun teleport(
             player: top.e404.eclean.common.api.CommonPlayer,
             target: top.e404.eclean.common.api.CommonLocation,
-        ) = Unit
+        ) = java.util.concurrent.CompletableFuture.completedFuture(true)
     }
 
     private val fakeTrashcan = object : TrashcanService {
@@ -39,20 +39,21 @@ class PaperPlatformTest {
     }
 
     private val fakeWorldStats = object : WorldStatsProvider {
+        override fun worldExists(worldName: String) = false
         override fun collectWorldStats(worldName: String, onComplete: (WorldStatsResult?) -> Unit) =
             onComplete(null)
 
-        override fun collectAllWorldStats(onComplete: (List<Pair<String, WorldStatsResult>>) -> Unit) =
+        override fun collectAllWorldStats(onComplete: (List<Pair<String, WorldStatsResult>>?) -> Unit) =
             onComplete(emptyList())
 
-        override fun collectChunkTotals(worldName: String?, onComplete: (List<ChunkTotal>) -> Unit) =
+        override fun collectChunkTotals(worldName: String?, onComplete: (List<ChunkTotal>?) -> Unit) =
             onComplete(emptyList())
 
         override fun collectEntityStats(
             worldName: String,
             type: String,
             minCount: Int,
-            onComplete: (List<top.e404.eclean.feature.stats.ChunkEntityCount>) -> Unit,
+            onComplete: (List<top.e404.eclean.feature.stats.ChunkEntityCount>?) -> Unit,
         ) = onComplete(emptyList())
 
         override fun collectChunkEntities(
@@ -60,7 +61,7 @@ class PaperPlatformTest {
             type: String,
             chunkX: Int,
             chunkZ: Int,
-            onComplete: (List<top.e404.eclean.feature.stats.EntityLocationDetail>) -> Unit,
+            onComplete: (List<top.e404.eclean.feature.stats.EntityLocationDetail>?) -> Unit,
         ) = onComplete(emptyList())
 
         override fun isValidEntityType(type: String): Boolean = false
@@ -83,6 +84,8 @@ class PaperPlatformTest {
             worldStatsProvider = fakeWorldStats,
             denseShowService = fakeDenseShow,
             statsMenuService = fakeStatsMenu,
+            playerProvider = plugin.services.commonPlatform.playerProvider,
+            cleanupCommandService = plugin.services.commonPlatform.cleanupCommandService,
         )
 
         assertEquals(PlatformType.PAPER, platform.type)

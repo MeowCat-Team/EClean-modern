@@ -47,6 +47,17 @@ fun historyCommandHandler(
                 "drop" to record.drop,
                 "living" to record.living,
                 "chunk" to record.chunk,
+                "world" to (record.worldName ?: "*"),
+                "kind" to record.kind,
+                "source" to record.context.source,
+                "actor" to (record.context.actor ?: "-"),
+                "failed" to record.failed,
+                "skipped" to record.skippedChunks,
+                "status" to top.e404.eclean.util.RichText(messageProvider.get(if (record.incomplete) "common.incomplete" else "common.complete")),
+                "scope" to (record.scope ?: "*"),
+                "revision" to record.configRevision,
+                "duration" to (record.timestamp - record.context.startedAt).coerceAtLeast(0),
+                "trash" to record.trashItems,
             )
             sender.sendMessage(miniMessage.deserialize(line))
         }

@@ -15,9 +15,9 @@ import java.util.concurrent.atomic.AtomicInteger
 class ChunkDensityEngine(
     private val worldAccess: WorldAccess,
     private val scheduler: Scheduler,
+    private val onExecuted: (ChunkDensityResult, Boolean) -> Unit = { _, _ -> },
     private val isCurrentConfig: (ConfigBundle) -> Boolean = { true },
     private val policy: ChunkDensityPolicy = ChunkDensityPolicy(),
-    private val cleaner: ChunkDensityCleaner = ChunkDensityCleaner(),
 ) {
     fun cleanAllWorlds(
         config: ConfigBundle,
@@ -32,22 +32,38 @@ class ChunkDensityEngine(
             return
         }
         val cleaned = AtomicInteger(0)
+        val failed = AtomicInteger(0)
+        val skipped = AtomicInteger(0)
+        val incomplete = java.util.concurrent.atomic.AtomicBoolean(false)
         val dense = mutableListOf<ChunkDensityEntry>()
         val pending = AtomicInteger(worldNames.size)
         worldNames.forEach { worldName ->
             cleanWorld(worldName, config, dryRun) { result ->
                 cleaned.addAndGet(result.cleaned)
+                failed.addAndGet(result.failed)
+                skipped.addAndGet(result.skippedChunks)
+                if (result.incomplete) incomplete.set(true)
                 synchronized(dense) { dense += result.denseEntries }
                 if (pending.decrementAndGet() == 0) {
-                    scheduler.complete { onComplete(ChunkDensityResult(cleaned.get(), dense.toList())) }
+                    scheduler.complete { onComplete(ChunkDensityResult(cleaned.get(), dense.toList(), failed.get(), skipped.get(), incomplete.get())) }
                 }
             }
         }
     }
 
     fun cleanWorld(worldName: String, config: ConfigBundle, dryRun: Boolean = false, onComplete: (ChunkDensityResult) -> Unit = {}) =
-        top.e404.eclean.feature.cleanup.CleanupFlights.run(worldAccess, "density", worldName, dryRun, ChunkDensityResult(0, emptyList()),
-            action = { done -> cleanWorldImpl(worldName, config, dryRun, done) }, onComplete = onComplete)
+        top.e404.eclean.feature.cleanup.CleanupFlights.run(worldAccess, "density", worldName, dryRun, ChunkDensityResult(0, emptyList(), incomplete = true),
+            action = { done ->
+                val finished = java.util.concurrent.atomic.AtomicBoolean(false)
+                val finish: (ChunkDensityResult) -> Unit = { result ->
+                    if (finished.compareAndSet(false, true)) {
+                        val scoped = result.copy(worldName = worldName, configRevision = config.revision)
+                        try { onExecuted(scoped, dryRun) } finally { done(scoped) }
+                    }
+                }
+                try { cleanWorldImpl(worldName, config, dryRun, finish) }
+                catch (_: Exception) { finish(ChunkDensityResult(0, emptyList(), incomplete = true)) }
+            }, onComplete = { onComplete(it.copy(worldName = worldName)) })
 
     private fun cleanWorldImpl(
         worldName: String,
@@ -64,17 +80,29 @@ class ChunkDensityEngine(
             scheduler.complete { onComplete(ChunkDensityResult(0, emptyList())) }
             return
         }
+        val visited = AtomicInteger(0)
         val rule = ChunkDensityRule.fromConfig(config.chunkDensity)
         val cleaned = AtomicInteger(0)
+        val failed = AtomicInteger(0)
+        val skipped = AtomicInteger(0)
+        val incomplete = java.util.concurrent.atomic.AtomicBoolean(false)
         val dense = mutableListOf<ChunkDensityEntry>()
         RegionBatchDispatcher(scheduler).dispatch(chunkRefs, config.advanced.scheduler) { ref ->
-            if (!isCurrentConfig(config)) return@dispatch
-            val chunk = worldAccess.getChunk(worldName, ref) ?: return@dispatch
-            val report = cleanChunk(chunk, rule, dryRun)
-            cleaned.addAndGet(report.cleaned)
-            synchronized(dense) { dense += report.denseEntries }
-        }.whenComplete { _, _ ->
-            scheduler.complete { onComplete(ChunkDensityResult(cleaned.get(), dense.toList())) }
+            if (!isCurrentConfig(config)) { skipped.incrementAndGet(); return@dispatch }
+            val chunk = worldAccess.getChunk(worldName, ref)
+            if (chunk == null) { skipped.incrementAndGet(); return@dispatch }
+            visited.incrementAndGet()
+            val decision = policy.decide(chunk.entitySnapshot(), rule)
+            synchronized(dense) { dense += decision.denseEntries }
+            val selectedIds = decision.entityIdsToRemove.toHashSet()
+            if (dryRun) cleaned.addAndGet(selectedIds.size)
+            else chunk.livingEntities().filter { it.uniqueId in selectedIds }.forEach {
+                try { it.remove(); cleaned.incrementAndGet() } catch (_: Exception) { failed.incrementAndGet() }
+            }
+        }.whenComplete { _, error ->
+            skipped.set(chunkRefs.size - visited.get())
+            incomplete.set(error != null || !isCurrentConfig(config))
+            scheduler.complete { onComplete(ChunkDensityResult(cleaned.get(), dense.toList(), failed.get(), skipped.get(), incomplete.get())) }
         }
     }
 
@@ -89,31 +117,6 @@ class ChunkDensityEngine(
         }.whenComplete { _, _ ->
             scheduler.complete { onComplete(dense.sortedByDescending { it.amount }) }
         }
-    }
-
-    private fun cleanChunk(
-        chunk: top.e404.eclean.common.api.CommonChunk,
-        rule: ChunkDensityRule,
-        dryRun: Boolean,
-    ): ChunkDensityChunkReport {
-        val snapshot = chunk.entitySnapshot()
-        if (snapshot.entities.isEmpty()) {
-            return ChunkDensityChunkReport(cleaned = 0, denseEntries = emptyList())
-        }
-        val decision = policy.decide(snapshot, rule)
-        if (!dryRun) {
-            val report = cleaner.clean(decision) { ids ->
-                chunk.livingEntities()
-                    .filter { it.uniqueId in ids }
-                    .also { selected -> selected.forEach { it.remove() } }
-                    .size
-            }
-            return report
-        }
-        return ChunkDensityChunkReport(
-            cleaned = decision.entityIdsToRemove.size,
-            denseEntries = decision.denseEntries,
-        )
     }
 
 }

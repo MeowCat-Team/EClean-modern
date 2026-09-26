@@ -6,7 +6,7 @@ import org.bukkit.Bukkit
 import top.e404.eclean.common.api.MessageSender
 import java.util.UUID
 
-class PaperMessageSender : MessageSender {
+class PaperMessageSender(private val logger: java.util.logging.Logger = Bukkit.getLogger()) : MessageSender {
 
     override fun sendPlayer(playerId: String, component: Component) {
         val player = runCatching { UUID.fromString(playerId) }
@@ -33,6 +33,6 @@ class PaperMessageSender : MessageSender {
 
     override fun broadcast(component: Component) {
         try { Bukkit.getServer().sendMessage(component) }
-        catch (error: Exception) { top.e404.eclean.PL.logger.warning("Cleanup notification failed: ${error.message}") }
+        catch (error: Exception) { logger.warning("Cleanup notification failed: ${error.message}") }
     }
 }

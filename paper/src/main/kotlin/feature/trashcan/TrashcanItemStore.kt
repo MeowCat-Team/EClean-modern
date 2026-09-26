@@ -185,10 +185,12 @@ class TrashcanItemStore(
         }
     }
 
-    fun clear() {
+    fun clear(): Long {
         lock.writeLock().lock()
         try {
+            val removed = entries.sumOf { it.count }
             entries.clear()
+            return removed
         } finally {
             lock.writeLock().unlock()
         }

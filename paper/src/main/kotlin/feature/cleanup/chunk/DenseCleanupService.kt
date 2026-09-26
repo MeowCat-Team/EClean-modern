@@ -20,7 +20,7 @@ class DenseCleanupPlan internal constructor(
     internal val createdAt: Long,
 )
 
-data class DenseCleanupOutcome(val cleaned: Int, val remaining: Int)
+data class DenseCleanupOutcome(val cleaned: Int, val remaining: Int, val failed: Int = 0)
 
 /** Menu cleanup uses the same policy as automatic cleanup and never expands a confirmed target. */
 class DenseCleanupService(private val now: () -> Long = System::currentTimeMillis) {
@@ -41,7 +41,7 @@ class DenseCleanupService(private val now: () -> Long = System::currentTimeMilli
         }
     }
 
-    fun execute(plan: DenseCleanupPlan, onComplete: (DenseCleanupOutcome?) -> Unit) {
+    fun execute(plan: DenseCleanupPlan, context: top.e404.eclean.feature.cleanup.CleanupContext = top.e404.eclean.feature.cleanup.CleanupContext("menu"), onComplete: (DenseCleanupOutcome?) -> Unit) {
         withLoadedChunk(plan.chunk) { chunk ->
             val config = Config.current
             if (chunk == null || config !== plan.config || !enabled(plan.chunk, config) ||
@@ -56,8 +56,15 @@ class DenseCleanupService(private val now: () -> Long = System::currentTimeMilli
             val selected = chunk.livingEntities().filter {
                 it.type == plan.type && it.uniqueId in plan.selectedIds && it.uniqueId in stillSelected
             }
-            selected.forEach { it.remove() }
-            onComplete(DenseCleanupOutcome(selected.size, chunk.livingEntities().count { it.type == plan.type }))
+            var cleaned = 0
+            var failed = 0
+            selected.forEach { try { it.remove(); cleaned++ } catch (_: Exception) { failed++ } }
+            top.e404.eclean.PL.services.cleanupAudit.publish(top.e404.eclean.feature.cleanup.CleanupRecord(
+                System.currentTimeMillis(), plan.chunk.world, 0, 0, cleaned, kind = "density", context = context,
+                failed = failed, scope = "${plan.chunk.x},${plan.chunk.z}/${plan.type}",
+                configRevision = plan.config.revision,
+            ))
+            onComplete(DenseCleanupOutcome(cleaned, chunk.livingEntities().count { it.type == plan.type }, failed))
         }
     }
 

@@ -66,12 +66,12 @@ class TrashcanManager(
     /** 垃圾桶条目快照(插入顺序), 供统计使用 */
     fun stats(): List<TrashcanEntry> = store.getEntries()
 
-    fun clearAll() {
-        if (store.isEmpty()) return
+    fun clearAll(): Long {
         messages.debug { "清空垃圾桶" }
-        store.clear()
-        notifyAdmins(MLang["command.trash_clean_done"])
-        refreshOpenMenus()
+        val removed = store.clear()
+        runCatching { notifyAdmins(MLang["command.trash_clean_done"]) }
+        runCatching { refreshOpenMenus() }
+        return removed
     }
 
     internal fun refreshOpenMenus() {

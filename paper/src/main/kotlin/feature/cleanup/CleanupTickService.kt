@@ -34,7 +34,7 @@ class CleanupTickService(
             snapshots.updateCleanup { it.copy(elapsedSeconds = due.elapsedSeconds, remainingSeconds = due.remainingSeconds) }
             if (Config.current.cleanup.cleanWhenNoPlayers || serverInfo.hasOnlinePlayers) {
                 announcements.announceCountdown(if (due.worlds.isEmpty()) due.remainingSeconds else 0)
-                due.worlds.forEach { coordinator.cleanNow(worldName = it) }
+                due.worlds.forEach { coordinator.cleanNow(worldName = it, context = CleanupContext(source = "scheduled")) }
             }
         }
     }

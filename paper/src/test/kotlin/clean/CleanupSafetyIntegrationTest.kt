@@ -108,10 +108,10 @@ class CleanupSafetyIntegrationTest {
         }
         val before = snapshots.current()
         val last = listOf(lastDrop, lastLiving, lastChunk)
-        val history = CleanupHistoryService().apply { record("world", 2, 3, 4) }
+        val history = plugin.services.cleanupHistory
         val historyBefore = history.recent(100)
         var completed = false
-        CleanupCoordinator(plugin.services.messages, snapshots, history).cleanNow(dryRun = true) { completed = true }
+        CleanupCoordinator(plugin.services.messages, snapshots).cleanNow(dryRun = true) { completed = true }
         server.scheduler.performTicks(20)
         assertTrue(completed)
         assertTrue(item.isValid)

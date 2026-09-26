@@ -11,9 +11,9 @@ import java.util.concurrent.atomic.AtomicInteger
 class LivingCleanupEngine(
     private val worldAccess: WorldAccess,
     private val scheduler: Scheduler,
+    private val onExecuted: (LivingCleanupResult, Boolean) -> Unit = { _, _ -> },
     private val isCurrentConfig: (ConfigBundle) -> Boolean = { true },
     private val policy: LivingCleanupPolicy = LivingCleanupPolicy(),
-    private val executor: LivingCleanupExecutor = LivingCleanupExecutor(),
 ) {
     fun cleanAllWorlds(
         config: ConfigBundle,
@@ -40,8 +40,18 @@ class LivingCleanupEngine(
     }
 
     fun cleanWorld(worldName: String, config: ConfigBundle, dryRun: Boolean = false, onComplete: (LivingCleanupResult) -> Unit) =
-        top.e404.eclean.feature.cleanup.CleanupFlights.run(worldAccess, "living", worldName, dryRun, LivingCleanupResult(0, 0),
-            action = { done -> cleanWorldImpl(worldName, config, dryRun, done) }, onComplete = onComplete)
+        top.e404.eclean.feature.cleanup.CleanupFlights.run(worldAccess, "living", worldName, dryRun, LivingCleanupResult(0, 0, incomplete = true),
+            action = { done ->
+                val finished = java.util.concurrent.atomic.AtomicBoolean(false)
+                val finish: (LivingCleanupResult) -> Unit = { result ->
+                    if (finished.compareAndSet(false, true)) {
+                        val scoped = result.copy(worldName = worldName, configRevision = config.revision)
+                        try { onExecuted(scoped, dryRun) } finally { done(scoped) }
+                    }
+                }
+                try { cleanWorldImpl(worldName, config, dryRun, finish) }
+                catch (_: Exception) { finish(LivingCleanupResult(0, 0, incomplete = true)) }
+            }, onComplete = { onComplete(it.copy(worldName = worldName)) })
 
     private fun cleanWorldImpl(
         worldName: String,
@@ -62,9 +72,12 @@ class LivingCleanupEngine(
         val matchers = config.living.matchers
         val cleaned = AtomicInteger(0)
         val total = AtomicInteger(0)
+        val failed = AtomicInteger(0)
+        val visited = AtomicInteger(0)
         RegionBatchDispatcher(scheduler).dispatch(chunkRefs, config.advanced.scheduler) { ref ->
             if (!isCurrentConfig(config)) return@dispatch
             val chunk = worldAccess.getChunk(worldName, ref) ?: return@dispatch
+            visited.incrementAndGet()
             val collection = LivingCleanupCollection(
                 chunk.livingEntities().map { entity ->
                     LivingCleanupCandidate(
@@ -81,20 +94,15 @@ class LivingCleanupEngine(
             )
             if (collection.candidates.isEmpty()) return@dispatch
             val decision = policy.decide(collection, rule, matchers)
-            val removed = if (!dryRun) {
-                executor.execute(collection, decision) { ids ->
-                    chunk.livingEntities()
-                        .filter { it.uniqueId in ids }
-                        .also { selected -> selected.forEach { it.remove() } }
-                        .size
-                }
-            } else {
-                decision.entityIdsToRemove.size
-            }
-            cleaned.addAndGet(removed)
+            val selectedIds = decision.entityIdsToRemove.toHashSet()
             total.addAndGet(decision.total)
-        }.whenComplete { _, _ ->
-            scheduler.complete { onComplete(LivingCleanupResult(cleaned.get(), total.get())) }
+            if (dryRun) cleaned.addAndGet(decision.entityIdsToRemove.size)
+            else chunk.livingEntities().filter { it.uniqueId in selectedIds }.forEach {
+                try { it.remove(); cleaned.incrementAndGet() } catch (_: Exception) { failed.incrementAndGet() }
+            }
+        }.whenComplete { _, error ->
+            scheduler.complete { onComplete(LivingCleanupResult(cleaned.get(), total.get(), failed.get(),
+                chunkRefs.size - visited.get(), error != null || !isCurrentConfig(config))) }
         }
     }
 }

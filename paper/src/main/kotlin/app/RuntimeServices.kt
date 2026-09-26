@@ -4,6 +4,8 @@ import org.bukkit.command.CommandSender
 import top.e404.eclean.PL
 import top.e404.eclean.common.api.Platform
 import top.e404.eclean.config.Config
+import top.e404.eclean.config.diff
+import top.e404.eclean.config.sections
 import top.e404.eclean.feature.cleanup.CleanupAnnouncementService
 import top.e404.eclean.feature.cleanup.CleanupCoordinator
 import top.e404.eclean.feature.cleanup.CleanupHistoryService
@@ -52,11 +54,24 @@ class RuntimeServices {
     )
     val trashcanManager = TrashcanManager(trashcanStore, messages)
     val worldStatsService = WorldStatsService()
+    val cleanupHistory = CleanupHistoryService()
+    val cleanupAudit = top.e404.eclean.feature.cleanup.CleanupAudit(cleanupHistory, statusSnapshots)
+    private val commonScheduler = top.e404.eclean.paper.adapt.PaperScheduler(PL)
+    private val worldAccess = top.e404.eclean.paper.adapt.PaperWorldAccess()
+    val cleanupEnvironment = top.e404.eclean.feature.cleanup.CleanupEnvironment(
+        worldAccess, commonScheduler, { Config.current }, cleanupAudit, statusSnapshots, trashcanManager, trashcanStore, messages,
+    )
     val commonPlatform: Platform = PaperPlatform(
         PL,
         PaperTeleportService(playerTeleportService),
         trashcanService = PaperTrashcanService(trashcanManager),
         worldStatsProvider = PaperWorldStatsProvider(worldStatsService),
+        playerProvider = top.e404.eclean.paper.adapt.PaperPlayerProvider(playerSnapshots::players),
+        statsMenuService = top.e404.eclean.paper.adapt.PaperStatsMenuService(worldStatsService),
+        denseShowService = top.e404.eclean.paper.adapt.PaperDenseShowService(cleanupEnvironment),
+        cleanupCommandService = top.e404.eclean.paper.adapt.PaperCleanupCommandService(cleanupEnvironment) { cleanupCoordinator },
+        scheduler = commonScheduler,
+        worldAccess = worldAccess,
     )
     val temporaryReturnService = TemporaryReturnService(execution, playerTeleportService) { player, event ->
         val key = when (event) {
@@ -77,8 +92,7 @@ class RuntimeServices {
         countdownMessageProvider = { seconds -> MLang.getOrNull("cleanup.countdown.$seconds") },
         shouldBroadcastWhenNoPlayers = { Config.current.cleanup.broadcastWhenNoPlayers },
     )
-    val cleanupHistory = CleanupHistoryService()
-    val cleanupCoordinator = CleanupCoordinator(messages, statusSnapshots, cleanupHistory)
+    val cleanupCoordinator = CleanupCoordinator(messages, statusSnapshots)
     val cleanupTickService = CleanupTickService(messages, cleanupCoordinator, cleanupAnnouncementService, statusSnapshots, commonPlatform.serverInfo)
     val statsAlertService = StatsAlertService(
         commonPlatform.serverInfo,
@@ -116,7 +130,33 @@ class RuntimeServices {
                 if (stopped) return@execute
                 val reason = failure.cause?.message ?: failure.message ?: failure.javaClass.simpleName
                 messages.warn("Configuration rejected; previous configuration remains active: $reason", failure)
-                messages.send(sender, MLang["command.reload_failed", "reason" to top.e404.eclean.util.miniMessage.escapeTags(reason)])
+                messages.send(sender, MLang["command.reload_failed", "reason" to reason])
+            }
+        }
+    }
+
+    fun inspectConfig(sender: CommandSender, diff: Boolean) {
+        configExecutor.execute {
+            if (stopped) return@execute
+            try {
+                val candidate = top.e404.eclean.config.ConfigManager.inspect()
+                if (stopped) return@execute
+                if (!diff) messages.send(sender, MLang["command.config.valid", "profile" to candidate.profile.id])
+                else {
+                    val changed = Config.current.diff(candidate.bundle).map { it.displayName }.toMutableList()
+                    if (candidate.profile != Config.profile) changed.add("profile")
+                    if (candidate.language != top.e404.eclean.config.ConfigManager.currentLanguage) changed.add("language")
+                    messages.send(sender, MLang["command.config.diff", "changes" to changed.joinToString(", ").ifEmpty { "-" }])
+                    val before = Config.current.sections()
+                    val after = candidate.bundle.sections()
+                    for (section in Config.current.diff(candidate.bundle)) {
+                        messages.send(sender, MLang["command.config.diff_section", "section" to section.displayName])
+                        before.getValue(section).lines().forEach { messages.send(sender, MLang["command.config.line", "line" to "- $it"]) }
+                        after.getValue(section).lines().forEach { messages.send(sender, MLang["command.config.line", "line" to "+ $it"]) }
+                    }
+                }
+            } catch (failure: Exception) {
+                if (!stopped) messages.send(sender, MLang["command.config.invalid", "reason" to (failure.message ?: failure.javaClass.simpleName)])
             }
         }
     }

@@ -14,6 +14,75 @@ class RegionDispatchTest {
     private val refs = (0..4).map { ChunkRef("world", it, 0) }
     private val options = SchedulerAdvancedConfig(chunkScanBatchSize = 2, chunkScanIntervalTicks = 3)
 
+    @Test fun `discovery failure completes and audits an incomplete result once`() {
+        val access = object : WorldAccess {
+            override fun worldNames() = listOf("world")
+            override fun getLoadedChunkRefs(worldName: String): List<ChunkRef> = error("world unavailable")
+            override fun getChunk(worldName: String, ref: ChunkRef): CommonChunk? = null
+        }
+        var audited = 0
+        var completed = 0
+        DropCleanupEngine(access, QueuedScheduler(), onExecuted = { result, _ ->
+            assertTrue(result.incomplete)
+            assertEquals("world", result.worldName)
+            audited++
+        }).cleanWorld("world", ConfigBundle()) { assertTrue(it.incomplete); completed++ }
+        assertEquals(1, audited)
+        assertEquals(1, completed)
+    }
+
+    @Test fun `coalesced observers receive one physical execution record including skipped chunks`() {
+        val scheduler = QueuedScheduler()
+        val access = object : WorldAccess {
+            override fun worldNames() = listOf("world")
+            override fun getLoadedChunkRefs(worldName: String) = refs.take(2)
+            override fun getChunk(worldName: String, ref: ChunkRef): CommonChunk? = null
+        }
+        var audited = 0
+        val results = mutableListOf<top.e404.eclean.feature.cleanup.drop.DropCleanupResult>()
+        repeat(2) {
+            DropCleanupEngine(access, scheduler, onExecuted = { _, _ -> audited++ })
+                .cleanWorld("world", ConfigBundle()) { results += it }
+        }
+        scheduler.finishRegions()
+        assertEquals(1, audited)
+        assertEquals(2, results.size)
+        assertEquals(results[0].executionId, results[1].executionId)
+        assertEquals(2, results[0].skippedChunks)
+    }
+
+    @Test fun `a failed removal does not erase successful counts or abort peer removals`() {
+        class Item(val fail: Boolean) : CommonItem {
+            override val uniqueId = java.util.UUID.randomUUID()
+            override val type = "STONE"
+            override val location = CommonLocation("world", 0.0, 64.0, 0.0)
+            override val enchanted = false
+            override val hasLore = false
+            override val isWrittenBook = false
+            override val distanceToNearestPlayer: Double? = null
+            override fun remove() { if (fail) error("removal rejected") }
+        }
+        val items = listOf(Item(false), Item(true), Item(false))
+        val chunk = object : CommonChunk {
+            override val ref = refs.first()
+            override fun items() = items
+            override fun entities(): List<CommonEntity> = items
+            override fun livingEntities() = emptyList<CommonLivingEntity>()
+        }
+        val access = object : WorldAccess {
+            override fun worldNames() = listOf("world")
+            override fun getLoadedChunkRefs(worldName: String) = listOf(chunk.ref)
+            override fun getChunk(worldName: String, ref: ChunkRef) = chunk
+        }
+        val scheduler = QueuedScheduler()
+        var result: top.e404.eclean.feature.cleanup.drop.DropCleanupResult? = null
+        DropCleanupEngine(access, scheduler).cleanWorld("world", ConfigBundle()) { result = it }
+        scheduler.finishRegions()
+        assertEquals(2, result?.cleaned)
+        assertEquals(1, result?.failed)
+        assertEquals(3, result?.total)
+    }
+
     @Test fun `scan waits for each bounded batch and its interval`() {
         val scheduler = QueuedScheduler()
         val seen = mutableListOf<Int>()

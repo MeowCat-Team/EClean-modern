@@ -13,23 +13,23 @@ import top.e404.eclean.app.MessageService
 class CleanupCoordinator(
     private val messages: MessageService,
     private val snapshots: StatusSnapshotService,
-    private val history: CleanupHistoryService,
 ) {
     @Volatile private var stopped = false
     fun stop() { stopped = true }
 
     fun cleanNow(
-        dryRun: Boolean = false, worldName: String? = null, onComplete: (() -> Unit)? = null,
+        dryRun: Boolean = false, worldName: String? = null, context: CleanupContext = CleanupContext(), onComplete: (() -> Unit)? = null,
     ) {
         if (stopped) { onComplete?.invoke(); return }
         CleanupFlights.run(this, "coordinator", worldName ?: "*", dryRun, Unit,
-            action = { done -> cleanNowImpl(dryRun, worldName) { done(Unit) } },
+            action = { done -> cleanNowImpl(dryRun, worldName, context) { done(Unit) } },
             onComplete = { onComplete?.invoke() })
     }
 
     private fun cleanNowImpl(
         dryRun: Boolean = false,
         worldName: String? = null,
+        context: CleanupContext = CleanupContext(),
         onComplete: (() -> Unit)? = null,
     ) {
         messages.debug {
@@ -39,13 +39,13 @@ class CleanupCoordinator(
         var living = 0
         var dense = 0
         val steps: List<((() -> Unit) -> Unit)> = if (worldName != null) listOf(
-            { next -> DropCleanupService().cleanWorld(worldName, dryRun = dryRun) { drops = it.cleaned; next() } },
-            { next -> LivingCleanupService().cleanWorld(worldName, dryRun = dryRun) { living = it.cleaned; next() } },
-            { next -> ChunkDensityScanner().cleanWorld(worldName, dryRun = dryRun) { dense = it.cleaned; next() } },
+            { next -> DropCleanupService(context).cleanWorld(worldName, dryRun = dryRun) { drops = it.cleaned; next() } },
+            { next -> LivingCleanupService(context).cleanWorld(worldName, dryRun = dryRun) { living = it.cleaned; next() } },
+            { next -> ChunkDensityScanner(context).cleanWorld(worldName, dryRun = dryRun) { dense = it.cleaned; next() } },
         ) else listOf(
-            { next -> cleanDrop(announce = !dryRun, dryRun = dryRun) { drops = it; next() } },
-            { next -> cleanLiving(announce = !dryRun, dryRun = dryRun) { living = it; next() } },
-            { next -> cleanDenseEntities(announce = !dryRun, dryRun = dryRun) { dense = it; next() } },
+            { next -> cleanDrop(announce = !dryRun, dryRun = dryRun, context = context) { drops = it; next() } },
+            { next -> cleanLiving(announce = !dryRun, dryRun = dryRun, context = context) { living = it; next() } },
+            { next -> cleanDenseEntities(announce = !dryRun, dryRun = dryRun, context = context) { dense = it; next() } },
         )
         runSequential(steps) {
             try {
@@ -58,7 +58,6 @@ class CleanupCoordinator(
                             remainingSeconds = if (worldName == null) Config.current.cleanup.intervalSeconds else it.remainingSeconds,
                         )
                     }
-                    history.record(worldName, drops, living, dense)
                     if (worldName != null) top.e404.eclean.PL.services.cleanupAnnouncementService.announceFinish(
                         top.e404.eclean.lang.MLang["cleanup.finish.world", "world" to worldName,
                             "drop" to drops, "living" to living, "dense" to dense],

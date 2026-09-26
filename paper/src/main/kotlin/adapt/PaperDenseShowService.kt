@@ -10,13 +10,13 @@ import top.e404.eclean.menu.dense.EntityInfo
 import top.e404.eclean.platform.Schedulers
 import java.util.UUID
 
-class PaperDenseShowService : DenseShowService {
+class PaperDenseShowService(private val environment: top.e404.eclean.feature.cleanup.CleanupEnvironment) : DenseShowService {
     override fun show(player: CommonPlayer) {
         val bukkitPlayer = runCatching { UUID.fromString(player.uniqueId) }
             .getOrNull()
             ?.let { Bukkit.getPlayer(it) }
             ?: return
-        val scanner = ChunkDensityScanner()
+        val scanner = ChunkDensityScanner(environment = environment)
         scanner.scanDenseEntries { entries ->
             Schedulers.runForEntity(bukkitPlayer) {
                 if (bukkitPlayer.isOnline) {

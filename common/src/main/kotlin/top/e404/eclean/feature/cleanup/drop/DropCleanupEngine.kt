@@ -15,9 +15,9 @@ import java.util.concurrent.atomic.AtomicInteger
 class DropCleanupEngine(
     private val worldAccess: WorldAccess,
     private val scheduler: Scheduler,
+    private val onExecuted: (DropCleanupResult, Boolean) -> Unit = { _, _ -> },
     private val isCurrentConfig: (ConfigBundle) -> Boolean = { true },
     private val policy: DropCleanupPolicy = DropCleanupPolicy(),
-    private val executor: DropCleanupExecutor = DropCleanupExecutor(),
     /** Called on the owning region; true means the source was actually removed. */
     private val cleanupItem: (CommonItem, ConfigBundle) -> Boolean = { item, _ ->
         item.remove()
@@ -49,8 +49,18 @@ class DropCleanupEngine(
     }
 
     fun cleanWorld(worldName: String, config: ConfigBundle, dryRun: Boolean = false, onComplete: (DropCleanupResult) -> Unit) =
-        top.e404.eclean.feature.cleanup.CleanupFlights.run(worldAccess, "drop", worldName, dryRun, DropCleanupResult(0, 0),
-            action = { done -> cleanWorldImpl(worldName, config, dryRun, done) }, onComplete = onComplete)
+        top.e404.eclean.feature.cleanup.CleanupFlights.run(worldAccess, "drop", worldName, dryRun, DropCleanupResult(0, 0, incomplete = true),
+            action = { done ->
+                val finished = java.util.concurrent.atomic.AtomicBoolean(false)
+                val finish: (DropCleanupResult) -> Unit = { result ->
+                    if (finished.compareAndSet(false, true)) {
+                        val scoped = result.copy(worldName = worldName, configRevision = config.revision)
+                        try { onExecuted(scoped, dryRun) } finally { done(scoped) }
+                    }
+                }
+                try { cleanWorldImpl(worldName, config, dryRun, finish) }
+                catch (_: Exception) { finish(DropCleanupResult(0, 0, incomplete = true)) }
+            }, onComplete = { onComplete(it.copy(worldName = worldName)) })
 
     private fun cleanWorldImpl(
         worldName: String,
@@ -71,9 +81,12 @@ class DropCleanupEngine(
         val matchers = config.drop.matchers
         val cleaned = AtomicInteger(0)
         val total = AtomicInteger(0)
+        val failed = AtomicInteger(0)
+        val visited = AtomicInteger(0)
         RegionBatchDispatcher(scheduler).dispatch(chunkRefs, config.advanced.scheduler) { ref ->
             if (!isCurrentConfig(config)) return@dispatch
             val chunk = worldAccess.getChunk(worldName, ref) ?: return@dispatch
+            visited.incrementAndGet()
             val items = chunk.items()
             val collection = DropCleanupCollection(
                 items.map { item ->
@@ -89,19 +102,16 @@ class DropCleanupEngine(
             )
             if (collection.candidates.isEmpty()) return@dispatch
             val decision = policy.decide(collection, rule, matchers)
-            val removed = if (!dryRun) {
-                executor.execute(collection, decision) { ids ->
-                    items
-                        .filter { it.uniqueId in ids }
-                        .count { cleanupItem(it, config) }
-                }
-            } else {
-                decision.itemIdsToRemove.size
-            }
-            cleaned.addAndGet(removed)
+            val selectedIds = decision.itemIdsToRemove.toHashSet()
             total.addAndGet(decision.total)
-        }.whenComplete { _, _ ->
-            scheduler.complete { onComplete(DropCleanupResult(cleaned.get(), total.get())) }
+            if (dryRun) cleaned.addAndGet(decision.itemIdsToRemove.size)
+            else items.filter { it.uniqueId in selectedIds }.forEach {
+                if (runCatching { cleanupItem(it, config) }.getOrDefault(false)) cleaned.incrementAndGet()
+                else failed.incrementAndGet()
+            }
+        }.whenComplete { _, error ->
+            scheduler.complete { onComplete(DropCleanupResult(cleaned.get(), total.get(), failed.get(),
+                chunkRefs.size - visited.get(), error != null || !isCurrentConfig(config))) }
         }
     }
 }

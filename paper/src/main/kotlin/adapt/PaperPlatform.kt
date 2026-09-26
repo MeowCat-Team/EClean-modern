@@ -21,20 +21,20 @@ import top.e404.eclean.feature.trashcan.TrashcanService
 class PaperPlatform(
     plugin: JavaPlugin,
     override val teleportService: TeleportService,
-    override val playerProvider: PlayerProvider = PaperPlayerProvider(),
+    override val playerProvider: PlayerProvider,
     override val trashcanService: TrashcanService,
     override val worldStatsProvider: WorldStatsProvider,
-    override val denseShowService: DenseShowService = PaperDenseShowService(),
-    override val statsMenuService: StatsMenuService = PaperStatsMenuService(),
-    override val cleanupCommandService: CleanupCommandService = PaperCleanupCommandService(),
+    override val denseShowService: DenseShowService,
+    override val statsMenuService: StatsMenuService,
+    override val cleanupCommandService: CleanupCommandService,
+    override val scheduler: Scheduler = PaperScheduler(plugin),
+    override val worldAccess: WorldAccess = PaperWorldAccess(),
 ) : Platform {
     override val type: PlatformType = PlatformType.PAPER
-    override val scheduler: Scheduler = PaperScheduler(plugin)
-    override val messageSender: MessageSender = PaperMessageSender()
+    override val messageSender: MessageSender = PaperMessageSender(plugin.logger)
     override val commandRegistry: CommandRegistry = PaperCommandRegistry(plugin)
     override val permissionService: PermissionService = PaperPermissionService()
     override val serverInfo: ServerInfo = PaperServerInfo()
-    override val worldAccess: WorldAccess = PaperWorldAccess()
     override val eventBus: EventBus = PaperEventBus(plugin)
 
     override fun shutdown() {

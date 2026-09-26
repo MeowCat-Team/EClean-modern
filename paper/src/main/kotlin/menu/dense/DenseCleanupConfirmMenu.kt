@@ -54,7 +54,7 @@ class DenseCleanupConfirmMenu(
                 onAccessDenied(player)
                 return@runLaterForEntity
             }
-            service.execute(plan) { result ->
+            service.execute(plan, top.e404.eclean.feature.cleanup.CleanupContext("menu", player.uniqueId.toString())) { result ->
                 Schedulers.runForEntity(player) {
                     if (!player.isOnline || MenuManager.getOpenMenu(player) !== this) return@runForEntity
                     if (result == null) {
@@ -62,7 +62,7 @@ class DenseCleanupConfirmMenu(
                     } else {
                         source.zone.updateEntry(plan.chunk, plan.type, result.remaining)
                         PL.services.messages.send(player, MLang[
-                            "menu.dense.clean", "chunk" to plan.chunk.info(), "type" to plan.type, "count" to result.cleaned,
+                            "menu.dense.clean", "chunk" to plan.chunk.info(), "type" to plan.type, "count" to result.cleaned, "failed" to result.failed,
                         ])
                     }
                     MenuManager.openMenu(source, player)
