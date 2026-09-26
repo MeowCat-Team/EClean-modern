@@ -1,5 +1,7 @@
 # EClean Modern
 
+简体中文 | [English](README-en.md)
+
 面向 Paper / Folia 的实体清理插件，基于 [EClean](https://github.com/4o4E/EClean) 开发。支持定时清理、规则保护、清理预览、共享垃圾桶和可视化统计。
 
 [下载](https://github.com/MeowCat-Team/EClean-modern/releases/latest) · [更新日志](docs/Changelog-zh.md) · [English changelog](docs/Changelog.md)
@@ -7,7 +9,7 @@
 ## 安装
 
 1. 使用 Java 25，将插件 JAR 放入服务器的 `plugins/` 目录。
-2. 启动服务器生成配置，按需调整`plugins/EClean-Modern/config/normal/config.yml`。
+2. 启动服务器生成配置，按需调整 `plugins/EClean-Modern/config/normal/config.yml`。
 3. 执行 `/eclean reload`，再用 `/eclean clean --preview` 确认清理范围。
 
 垃圾桶内容不跨重启保留。更新插件时请完整停服后替换 JAR。
