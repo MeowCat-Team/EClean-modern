@@ -111,6 +111,7 @@ menu.trashcan.empty.lore: |-
   <gray>The trash can is empty, or no items match.</gray>
   <gray>Try another category or clear the search.</gray>
   <yellow>Click items in your inventory to deposit them.</yellow>
+update.rate_limited: "GitHub API rate limit reached"
 command.reload_done: <green>Reload complete</green>
 command.trash_disable: <green>The trash can feature is disabled</green>
 command.trash_open: <green>Trash can opened</green>

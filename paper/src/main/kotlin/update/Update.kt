@@ -2,7 +2,6 @@ package top.e404.eclean.update
 
 import com.google.gson.JsonParser
 import org.bukkit.Bukkit
-import top.e404.eclean.config.Config
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -38,12 +37,18 @@ object Update {
             val request = HttpRequest.newBuilder()
                 .uri(URI.create(GITHUB_API))
                 .header("Accept", "application/vnd.github+json")
+                .header("User-Agent", "EClean-Modern/${top.e404.eclean.PL.pluginMeta.version}")
                 .timeout(java.time.Duration.ofSeconds(15))
                 .GET()
                 .build()
             val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
             if (token != generation) return
-            check(response.statusCode() == 200) { "HTTP ${response.statusCode()}" }
+            check(response.statusCode() == 200) {
+                if (response.statusCode() == 429 ||
+                    (response.statusCode() == 403 && response.headers().firstValue("X-RateLimit-Remaining").orElse("") == "0")) {
+                    top.e404.eclean.lang.MLang["update.rate_limited"]
+                } else "HTTP ${response.statusCode()}"
+            }
             val json = JsonParser.parseString(response.body()).asJsonArray
             val current = top.e404.eclean.PL.pluginMeta.version
             val latest = newerRelease(current, json.mapNotNull { element ->

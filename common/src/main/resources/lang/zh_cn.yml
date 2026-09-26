@@ -111,6 +111,7 @@ menu.trashcan.empty.lore: |-
   <gray>垃圾桶为空，或没有符合筛选条件的物品。</gray>
   <gray>可以切换分类或清除搜索条件。</gray>
   <yellow>点击下方背包中的物品即可存入。</yellow>
+update.rate_limited: "GitHub API 请求已达到限额"
 command.reload_done: <green>重载完成</green>
 command.trash_disable: <green>垃圾桶功能已被禁用</green>
 command.trash_open: <green>已打开垃圾桶</green>
