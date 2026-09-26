@@ -2,7 +2,8 @@ package top.e404.eclean.paper.adapt
 
 import org.bukkit.Bukkit
 import top.e404.eclean.common.api.CommonPlayer
-import top.e404.eclean.feature.cleanup.chunk.ChunkDensityScanner
+import top.e404.eclean.feature.cleanup.AuditedDenseCleanup
+import top.e404.eclean.feature.cleanup.CleanupContext
 import top.e404.eclean.feature.cleanup.chunk.DenseShowService
 import top.e404.eclean.menu.MenuManager
 import top.e404.eclean.menu.dense.DenseMenu
@@ -16,7 +17,7 @@ class PaperDenseShowService(private val environment: top.e404.eclean.feature.cle
             .getOrNull()
             ?.let { Bukkit.getPlayer(it) }
             ?: return
-        val scanner = ChunkDensityScanner(environment = environment)
+        val scanner = AuditedDenseCleanup(CleanupContext(), environment.common())
         scanner.scanDenseEntries { entries ->
             Schedulers.runForEntity(bukkitPlayer) {
                 if (bukkitPlayer.isOnline) {

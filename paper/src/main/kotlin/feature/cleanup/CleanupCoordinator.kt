@@ -5,11 +5,9 @@ import top.e404.eclean.app.MessageService
 import top.e404.eclean.config.Config
 import top.e404.eclean.feature.cleanup.chunk.ChunkAlertService
 import top.e404.eclean.feature.cleanup.chunk.ChunkDensityResult
-import top.e404.eclean.feature.cleanup.chunk.ChunkDensityScanner
 import top.e404.eclean.feature.cleanup.drop.DropCleanupResult
 import top.e404.eclean.feature.cleanup.drop.DropCleanupService
 import top.e404.eclean.feature.cleanup.living.LivingCleanupResult
-import top.e404.eclean.feature.cleanup.living.LivingCleanupService
 import top.e404.eclean.lang.MLang
 import top.e404.eclean.service.StatusSnapshotService
 
@@ -39,9 +37,9 @@ class CleanupCoordinator(
             override fun drops(world: String, dryRun: Boolean, context: CleanupContext, done: (DropCleanupResult) -> Unit) =
                 DropCleanupService(context).cleanWorld(world, dryRun, done)
             override fun living(world: String, dryRun: Boolean, context: CleanupContext, done: (LivingCleanupResult) -> Unit) =
-                LivingCleanupService(context).cleanWorld(world, dryRun, done)
+                AuditedLivingCleanup(context, PL.services.cleanupEnvironment.common()).cleanWorld(world, dryRun, done)
             override fun dense(world: String, dryRun: Boolean, context: CleanupContext, done: (ChunkDensityResult) -> Unit) =
-                ChunkDensityScanner(context).cleanWorld(world, dryRun = dryRun, onWorldComplete = done)
+                AuditedDenseCleanup(context, PL.services.cleanupEnvironment.common()).cleanWorld(world, dryRun, done)
         },
         snapshots = snapshots,
         resetTimer = { PL.services.cleanupTickService.reset() },

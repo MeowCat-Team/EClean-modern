@@ -4,9 +4,9 @@ import org.bukkit.Bukkit
 import top.e404.eclean.common.api.CommonCommandSender
 import top.e404.eclean.feature.cleanup.CleanupCommandService
 import top.e404.eclean.feature.cleanup.CleanupContext
-import top.e404.eclean.feature.cleanup.chunk.ChunkDensityScanner
+import top.e404.eclean.feature.cleanup.AuditedDenseCleanup
+import top.e404.eclean.feature.cleanup.AuditedLivingCleanup
 import top.e404.eclean.feature.cleanup.drop.DropCleanupService
-import top.e404.eclean.feature.cleanup.living.LivingCleanupService
 import top.e404.eclean.lang.MLang
 import top.e404.eclean.config.Config
 import top.e404.eclean.util.miniMessage
@@ -39,7 +39,7 @@ class PaperCleanupCommandService(
             "status" to top.e404.eclean.util.RichText(MLang[if (incomplete) "common.incomplete" else "common.complete"]))
     }
     override fun cleanEntity(sender: CommonCommandSender, world: String?, dryRun: Boolean) {
-        val service = LivingCleanupService(context(sender), environment = environment)
+        val service = AuditedLivingCleanup(context(sender), environment.common())
         if (world == null) service.cleanAllWorlds(dryRun) { entries ->
             result(sender, dryRun, entries.sumOf { it.cleaned }, entries.sumOf { it.failed }, entries.sumOf { it.skippedChunks }, entries.any { it.incomplete })
         } else service.cleanWorld(world, dryRun) { result(sender, dryRun, it.cleaned, it.failed, it.skippedChunks, it.incomplete) }
@@ -51,7 +51,7 @@ class PaperCleanupCommandService(
         } else service.cleanWorld(world, dryRun) { result(sender, dryRun, it.cleaned, it.failed, it.skippedChunks, it.incomplete) }
     }
     override fun cleanChunk(sender: CommonCommandSender, world: String?, dryRun: Boolean) {
-        val service = ChunkDensityScanner(context(sender), environment = environment)
+        val service = AuditedDenseCleanup(context(sender), environment.common())
         if (world == null) service.cleanAllWorlds(dryRun) { result(sender, dryRun, it.cleaned, it.failed, it.skippedChunks, it.incomplete) }
         else service.cleanWorld(world, dryRun = dryRun) { result(sender, dryRun, it.cleaned, it.failed, it.skippedChunks, it.incomplete) }
     }
