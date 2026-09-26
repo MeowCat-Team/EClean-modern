@@ -15,6 +15,7 @@ import top.e404.eclean.platform.execution.info
 import top.e404.eclean.ui.UiButton
 import top.e404.eclean.ui.UiMenu
 import top.e404.eclean.ui.buildItemStack
+import top.e404.eclean.ui.menuSpacer
 import java.util.UUID
 
 class DenseCleanupConfirmMenu(
@@ -29,6 +30,8 @@ class DenseCleanupConfirmMenu(
         player.hasPermission(PermissionNode.SHOW) && player.hasPermission(PermissionNode.SHOW_CLEAN)
 
     init {
+        val spacer = menuSpacer()
+        (0 until 27).forEach { setButton(it, spacer) }
         setButton(13, UiButton(
             buildItemStack(Material.PAPER, 1, MLang["menu.dense.confirm.target"], MLang[
                 "menu.dense.confirm.lore", "chunk" to plan.chunk.info(), "type" to plan.type,
@@ -36,11 +39,11 @@ class DenseCleanupConfirmMenu(
                 "retained" to plan.total - plan.selectedIds.size,
             ].lines()), { true },
         ))
-        setButton(11, UiButton(buildItemStack(Material.RED_WOOL, 1, MLang["menu.dense.confirm.cancel"]), { event ->
+        setButton(11, UiButton(buildItemStack(Material.LIME_WOOL, 1, MLang["menu.dense.confirm.cancel"]), { event ->
             if (!submitted && event.click == ClickType.LEFT) returnToSource(event.whoClicked as Player)
             true
         }))
-        setButton(15, UiButton(buildItemStack(Material.LIME_WOOL, 1, MLang["menu.dense.confirm.accept"]), { event ->
+        setButton(15, UiButton(buildItemStack(Material.RED_WOOL, 1, MLang["menu.dense.confirm.accept"]), { event ->
             if (!submitted && event.click == ClickType.LEFT) confirm(event.whoClicked as Player)
             true
         }))

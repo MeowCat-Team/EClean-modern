@@ -83,7 +83,34 @@ menu.trashcan.search.timeout: <yellow>Search timed out. Subsequent chat messages
 menu.trashcan.search.cancelled: <yellow>Search cancelled.</yellow>
 menu.trashcan.deposit_failed: <red>Could not deposit the item. Please try again later.</red>
 menu.trashcan.search.reset: '<white>Search: {query} (click to clear)</white>'
-menu.trashcan.title: "<gold>Shared trash · Entries expire · Lost on restart</gold>"
+menu.trashcan.title: "<gold>Shared Trash</gold>"
+menu.page.position: "<gray>Page <white>{page}</white> / <white>{pages}</white></gray>"
+menu.page.first: "<gray>You are on the first page</gray>"
+menu.page.last: "<gray>You are on the last page</gray>"
+menu.trashcan.category.lore: |-
+  <gray>Selected: {category}</gray>
+
+  <yellow>Click to cycle categories</yellow>
+
+  <gray>Shared with all players</gray>
+  <gray>Entries expire individually; restart clears all items</gray>
+menu.trashcan.sort.lore: |-
+  <gray>Selected: {sort}</gray>
+
+  <yellow>Click to change sorting</yellow>
+
+  <gray>Click items in your inventory to deposit:</gray>
+  <white>Left: 1 · Right: half · Shift+Left: whole stack</white>
+menu.trashcan.search.lore: |-
+  <gray>Filter by English material ID, e.g. diamond</gray>
+
+  <yellow>Click, then type a keyword in chat</yellow>
+  <gray>Private input · 60 seconds · cancel to exit</gray>
+menu.trashcan.empty.name: "<gray>No items to display</gray>"
+menu.trashcan.empty.lore: |-
+  <gray>The trash can is empty, or no items match.</gray>
+  <gray>Try another category or clear the search.</gray>
+  <yellow>Click items in your inventory to deposit them.</yellow>
 command.reload_done: <green>Reload complete</green>
 command.trash_disable: <green>The trash can feature is disabled</green>
 command.trash_open: <green>Trash can opened</green>

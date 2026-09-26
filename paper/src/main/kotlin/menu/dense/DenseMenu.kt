@@ -13,6 +13,7 @@ import top.e404.eclean.ui.PageButton
 import top.e404.eclean.ui.UiButton
 import top.e404.eclean.ui.UiMenu
 import top.e404.eclean.ui.buildItemStack
+import top.e404.eclean.ui.menuSpacer
 
 class DenseMenu(data: MutableList<EntityInfo>) : UiMenu(PL, MLang["menu.dense.title"], 6, true) {
     val zone = DenseZone(this, data)
@@ -24,6 +25,7 @@ class DenseMenu(data: MutableList<EntityInfo>) : UiMenu(PL, MLang["menu.dense.ti
         isNext = false,
         hasPage = { zone.hasPrev },
         currentPage = { zone.page },
+        totalPages = { zone.pager.totalPages },
         pageAction = { zone.prevPage() },
         refresh = { updateIcon() },
         name = MLang["menu.dense.prev.name"],
@@ -33,6 +35,7 @@ class DenseMenu(data: MutableList<EntityInfo>) : UiMenu(PL, MLang["menu.dense.ti
         isNext = true,
         hasPage = { zone.hasNext },
         currentPage = { zone.page },
+        totalPages = { zone.pager.totalPages },
         pageAction = { zone.nextPage() },
         refresh = { updateIcon() },
         name = MLang["menu.dense.next.name"],
@@ -40,6 +43,7 @@ class DenseMenu(data: MutableList<EntityInfo>) : UiMenu(PL, MLang["menu.dense.ti
     )
 
     init {
+        val spacer = menuSpacer()
         initSlots(
             listOf(
                 "         ",
@@ -47,10 +51,11 @@ class DenseMenu(data: MutableList<EntityInfo>) : UiMenu(PL, MLang["menu.dense.ti
                 "         ",
                 "         ",
                 "         ",
-                "  p t n  ",
+                "##p#t#n##",
             )
         ) { char ->
             when (char) {
+                '#' -> spacer
                 'p' -> prev.button
                 'n' -> next.button
                 't' -> {

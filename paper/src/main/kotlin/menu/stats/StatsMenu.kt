@@ -13,6 +13,7 @@ import top.e404.eclean.ui.PageButton
 import top.e404.eclean.ui.UiMenu
 import top.e404.eclean.ui.UiPager
 import top.e404.eclean.ui.buildItemStack
+import top.e404.eclean.ui.menuSpacer
 
 class StatsMenu(
     private val worldName: String,
@@ -34,6 +35,8 @@ class StatsMenu(
 
     init {
         addPager(pager)
+        val spacer = menuSpacer()
+        (45..53).forEach { setButton(it, spacer) }
         setButton(47, pageButton(false).button)
         setButton(51, pageButton(true).button)
     }
@@ -42,6 +45,7 @@ class StatsMenu(
         isNext = next,
         hasPage = { if (next) pager.hasNext else pager.hasPrev },
         currentPage = { pager.page },
+        totalPages = { pager.totalPages },
         pageAction = { if (next) pager.nextPage() else pager.prevPage() },
         refresh = { updateIcon() },
         name = if (next) MLang["menu.trashcan.next.name"] else MLang["menu.trashcan.prev.name"],

@@ -18,7 +18,8 @@ import top.e404.eclean.ui.UiMenu
 import top.e404.eclean.ui.UiPager
 import top.e404.eclean.ui.buildItemStack
 import top.e404.eclean.ui.emptyItem
-import top.e404.eclean.util.miniMessage
+import top.e404.eclean.ui.menuSpacer
+import top.e404.eclean.util.RichText
 
 open class TrashcanMenu(
     private val store: TrashcanItemStore,
@@ -55,6 +56,9 @@ open class TrashcanMenu(
             data = displayData,
             pageSize = ITEM_PAGE_SIZE,
             startSlot = 0,
+            emptyPlaceholder = {
+                buildItemStack(Material.BARRIER, name = MLang["menu.trashcan.empty.name"], lore = MLang["menu.trashcan.empty.lore"].lines())
+            },
             onClickHandler = { index, event -> handleItemClick(index, event) },
         )
         pagerInitialized = true
@@ -62,6 +66,7 @@ open class TrashcanMenu(
             isNext = false,
             hasPage = { hasPrev },
             currentPage = { currentPage },
+            totalPages = { pager.totalPages },
             pageAction = { prevPage() },
             refresh = { updateIcon() },
             name = MLang["menu.trashcan.prev.name"],
@@ -71,6 +76,7 @@ open class TrashcanMenu(
             isNext = true,
             hasPage = { hasNext },
             currentPage = { currentPage },
+            totalPages = { pager.totalPages },
             pageAction = { nextPage() },
             refresh = { updateIcon() },
             name = MLang["menu.trashcan.next.name"],
@@ -80,6 +86,7 @@ open class TrashcanMenu(
         val categoryBtn = createCategoryButton()
         val sortBtn = createSortButton()
         val searchBtn = createSearchButton()
+        val spacer = menuSpacer()
 
         addPager(pager)
 
@@ -90,10 +97,11 @@ open class TrashcanMenu(
                 "         ",
                 "         ",
                 "         ",
-                "pc s r  n",
+                "p#c#s#r#n",
             )
         ) { char ->
             when (char) {
+                '#' -> spacer
                 'c' -> categoryBtn
                 's' -> sortBtn
                 'r' -> searchBtn
@@ -234,7 +242,7 @@ open class TrashcanMenu(
                 true
             },
             updateItemHandler = { btn ->
-                val lore = MLang["menu.trashcan.category.${category.key}"].lines()
+                val lore = MLang["menu.trashcan.category.lore", "category" to RichText(MLang["menu.trashcan.category.${category.key}"])].lines()
                 btn.setItem(buildItemStack(Material.HOPPER, 1, MLang["menu.trashcan.category.name"], lore))
             },
         )
@@ -251,7 +259,7 @@ open class TrashcanMenu(
                 true
             },
             updateItemHandler = { btn ->
-                val lore = MLang["menu.trashcan.sort.${sort.key}"].lines()
+                val lore = MLang["menu.trashcan.sort.lore", "sort" to RichText(MLang["menu.trashcan.sort.${sort.key}"])].lines()
                 btn.setItem(buildItemStack(Material.COMPARATOR, 1, MLang["menu.trashcan.sort.name"], lore))
             },
         )
@@ -274,9 +282,9 @@ open class TrashcanMenu(
             },
             updateItemHandler = { btn ->
                 val lore = if (searchQuery != null) {
-                    MLang["menu.trashcan.search.reset", "query" to miniMessage.escapeTags(searchQuery!!)].lines()
+                    MLang["menu.trashcan.search.reset", "query" to searchQuery!!].lines()
                 } else {
-                    MLang["menu.trashcan.search.name"].lines()
+                    MLang["menu.trashcan.search.lore"].lines()
                 }
                 btn.setItem(buildItemStack(Material.COMPASS, 1, MLang["menu.trashcan.search.name"], lore))
             },

@@ -86,7 +86,7 @@ class MenuSafetyTest {
 
     private fun startSearch(): TrashcanMenu {
         val (menu) = trashMenu(ItemStack(Material.DIAMOND, 3), ItemStack(Material.DIRT, 4))
-        click(50)
+        click(51)
         assertSame(menu, MenuManager.getOpenMenu(viewer), "Search must defer closing until after the click")
         scheduler.runDelayed(1)
         assertNull(MenuManager.getOpenMenu(viewer))
@@ -146,14 +146,14 @@ class MenuSafetyTest {
         assertFalse(pager.onClick(2, event), "Empty cell on final page must not map to an item")
     }
 
-    @Test fun `trash controls do not overlap content and empty footer cannot withdraw hidden item`() {
+    @Test fun `trash controls do not overlap content and footer cannot withdraw hidden item`() {
         val (menu, store) = trashMenu(*Array(50) { ItemStack(Material.DIAMOND) })
         assertEquals(Material.DIAMOND, menu.inventory.getItem(37)?.type)
-        assertEquals(Material.HOPPER, menu.inventory.getItem(46)?.type)
-        assertEquals(Material.COMPARATOR, menu.inventory.getItem(48)?.type)
-        assertEquals(Material.COMPASS, menu.inventory.getItem(50)?.type)
+        assertEquals(Material.HOPPER, menu.inventory.getItem(47)?.type)
+        assertEquals(Material.COMPARATOR, menu.inventory.getItem(49)?.type)
+        assertEquals(Material.COMPASS, menu.inventory.getItem(51)?.type)
         assertEquals(Material.ARROW, menu.inventory.getItem(53)?.type)
-        assertTrue(click(47).isCancelled)
+        assertTrue(click(46).isCancelled)
         assertEquals(50L, store.totalCount())
         assertTrue(viewer.inventory.contents.filterNotNull().all { it.type.isAir })
     }
@@ -256,7 +256,7 @@ class MenuSafetyTest {
 
     @Test fun `Paper shutdown closes menus and cancels search without scheduling disabled plugin work`() {
         val (menu) = trashMenu(ItemStack(Material.DIAMOND))
-        click(50)
+        click(51)
         Schedulers.init(object : Scheduler by scheduler {
             override fun runForEntity(entityId: String, task: () -> Unit) {
                 error("Disabled plugins cannot schedule new tasks")
@@ -333,6 +333,38 @@ class MenuSafetyTest {
         click(0)
         assertTrue(viewer.inventory.contents.filterNotNull().all { it.type.isAir })
         assertEquals(0L, store.totalCount())
+    }
+
+    @Test fun `two viewers with stale menus cannot receive the same final item`() {
+        val store = TrashcanItemStore({ null })
+        store.addItem(ItemStack(Material.DIAMOND))
+        val manager = TrashcanManager(store, MessageService())
+        val other = server.addPlayer("other-${UUID.randomUUID().toString().take(8)}")
+        other.addAttachment(plugin).setPermission("eclean.admin", true)
+        manager.open(viewer)
+        manager.open(other)
+        assertTrue(click(0).isCancelled)
+        // Keep both refresh callbacks queued to exercise the other player's old display.
+        val event = InventoryClickEvent(other.openInventory, InventoryType.SlotType.CONTAINER, 0,
+            ClickType.SHIFT_LEFT, InventoryAction.MOVE_TO_OTHER_INVENTORY)
+        server.pluginManager.callEvent(event)
+        assertTrue(event.isCancelled)
+        assertEquals(1, viewer.inventory.contents.filterNotNull().sumOf { it.amount })
+        assertTrue(other.inventory.contents.filterNotNull().all { it.type.isAir })
+        assertEquals(0L, store.totalCount())
+        scheduler.runPlayerTasks()
+        assertEquals(Material.BARRIER, other.openInventory.topInventory.getItem(22)?.type)
+    }
+
+    @Test fun `empty placeholder and disabled pagination never become recoverable items`() {
+        val (menu, store) = trashMenu()
+        assertEquals(Material.BARRIER, menu.inventory.getItem(22)?.type)
+        for (slot in listOf(22, 45, 46, 48, 50, 52, 53)) assertTrue(click(slot).isCancelled)
+        assertEquals(Material.GRAY_DYE, menu.inventory.getItem(45)?.type)
+        assertEquals(Material.GRAY_DYE, menu.inventory.getItem(53)?.type)
+        assertEquals(0, menu.currentPage)
+        assertEquals(0L, store.totalCount())
+        assertTrue(viewer.inventory.contents.filterNotNull().all { it.type.isAir })
     }
 
     private class QueuedPlayerScheduler(delegate: Scheduler) : Scheduler by delegate {

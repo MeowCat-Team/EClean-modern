@@ -83,7 +83,34 @@ menu.trashcan.search.timeout: <yellow>搜索已超时，后续聊天将正常公
 menu.trashcan.search.cancelled: <yellow>已取消搜索。</yellow>
 menu.trashcan.deposit_failed: <red>物品存入失败，请稍后重试。</red>
 menu.trashcan.search.reset: '<white>当前搜索: {query}（点击清除）</white>'
-menu.trashcan.title: "<gold>共享垃圾桶 · 逐条过期 · 重启丢失</gold>"
+menu.trashcan.title: "<gold>共享垃圾桶</gold>"
+menu.page.position: "<gray>第 <white>{page}</white> / <white>{pages}</white> 页</gray>"
+menu.page.first: "<gray>已经是第一页</gray>"
+menu.page.last: "<gray>已经是最后一页</gray>"
+menu.trashcan.category.lore: |-
+  <gray>当前分类：{category}</gray>
+
+  <yellow>点击切换分类</yellow>
+
+  <gray>所有玩家共享桶内物品</gray>
+  <gray>物品逐条过期，服务器重启后清空</gray>
+menu.trashcan.sort.lore: |-
+  <gray>当前排序：{sort}</gray>
+
+  <yellow>点击切换排序</yellow>
+
+  <gray>点击下方背包中的物品即可存入：</gray>
+  <white>左键 1 件 · 右键一半 · Shift+左键整组</white>
+menu.trashcan.search.lore: |-
+  <gray>按英文物品 ID 筛选，例如 diamond</gray>
+
+  <yellow>点击后在聊天栏输入关键词</yellow>
+  <gray>私密输入 · 60 秒内有效 · cancel 取消</gray>
+menu.trashcan.empty.name: "<gray>暂无可显示的物品</gray>"
+menu.trashcan.empty.lore: |-
+  <gray>垃圾桶为空，或没有符合筛选条件的物品。</gray>
+  <gray>可以切换分类或清除搜索条件。</gray>
+  <yellow>点击下方背包中的物品即可存入。</yellow>
 command.reload_done: <green>重载完成</green>
 command.trash_disable: <green>垃圾桶功能已被禁用</green>
 command.trash_open: <green>已打开垃圾桶</green>

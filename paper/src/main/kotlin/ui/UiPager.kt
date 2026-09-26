@@ -15,11 +15,13 @@ class UiPager<T : UiDisplayable>(
     private val data: MutableList<T>,
     pageSize: Int = 45,
     private val startSlot: Int = 0,
+    private val emptyPlaceholder: (() -> ItemStack)? = null,
     private val onClickHandler: (Int, InventoryClickEvent) -> Boolean,
 ) {
     private val pagerState = PagerState(pageSize, data::size)
 
     val page: Int get() = pagerState.page
+    val totalPages: Int get() = if (data.isEmpty()) 1 else (data.size - 1) / pagerState.pageSize + 1
     val hasPrev: Boolean get() = pagerState.hasPrev
     val hasNext: Boolean get() = pagerState.hasNext
 
@@ -39,6 +41,7 @@ class UiPager<T : UiDisplayable>(
         for (i in (end - start) until pagerState.pageSize) {
             inventory.setItem(startSlot + i, emptyItem)
         }
+        if (data.isEmpty()) emptyPlaceholder?.let { inventory.setItem(startSlot + pagerState.pageSize / 2, it()) }
     }
 
     fun onClick(slot: Int, event: InventoryClickEvent): Boolean {
