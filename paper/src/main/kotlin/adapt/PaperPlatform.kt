@@ -1,7 +1,6 @@
 package top.e404.eclean.paper.adapt
 
 import org.bukkit.plugin.java.JavaPlugin
-import top.e404.eclean.common.api.CommandRegistry
 import top.e404.eclean.common.api.EventBus
 import top.e404.eclean.common.api.MessageSender
 import top.e404.eclean.common.api.PermissionService
@@ -32,7 +31,6 @@ class PaperPlatform(
 ) : Platform {
     override val type: PlatformType = PlatformType.PAPER
     override val messageSender: MessageSender = PaperMessageSender(plugin.logger)
-    override val commandRegistry: CommandRegistry = PaperCommandRegistry(plugin)
     override val permissionService: PermissionService = PaperPermissionService()
     override val serverInfo: ServerInfo = PaperServerInfo()
     override val eventBus: EventBus = PaperEventBus(plugin)

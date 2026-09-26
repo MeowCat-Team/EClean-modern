@@ -26,8 +26,6 @@ import top.e404.eclean.platform.FoliaDetector
 import top.e404.eclean.platform.Schedulers
 import top.e404.eclean.platform.execution.BukkitExecutionGateway
 import top.e404.eclean.platform.execution.ExecutionGateway
-import top.e404.eclean.platform.runtime.RuntimePlatform
-import top.e404.eclean.platform.runtime.RuntimePlatformFactory
 import top.e404.eclean.service.PlayerTeleportService
 import top.e404.eclean.service.StatusSnapshotService
 import top.e404.eclean.service.TemporaryReturnEvent
@@ -49,7 +47,6 @@ class RuntimeServices {
         deactivate = { configuredServices.stop() },
         onLoadFailure = { PL.logger.severe("Configuration rejected; cleanup and recovery are paused. Fix the files and run /eclean reload: ${it.message}") },
     )
-    val platform: RuntimePlatform = RuntimePlatformFactory.create(FoliaDetector.isFolia())
     val execution: ExecutionGateway = BukkitExecutionGateway()
     val statusSnapshots = StatusSnapshotService()
     val playerTeleportService = PlayerTeleportService(execution)

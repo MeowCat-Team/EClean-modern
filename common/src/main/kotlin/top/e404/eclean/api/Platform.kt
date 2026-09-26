@@ -8,7 +8,6 @@ interface Platform {
     val type: top.e404.eclean.common.api.PlatformType
     val scheduler: top.e404.eclean.common.api.Scheduler
     val messageSender: top.e404.eclean.common.api.MessageSender
-    val commandRegistry: top.e404.eclean.common.api.CommandRegistry
     val permissionService: top.e404.eclean.common.api.PermissionService
     val serverInfo: top.e404.eclean.common.api.ServerInfo
     val worldAccess: top.e404.eclean.common.api.WorldAccess

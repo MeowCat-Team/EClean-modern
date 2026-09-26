@@ -91,7 +91,6 @@ class PaperPlatformTest {
         assertEquals(PlatformType.PAPER, platform.type)
         assertNotNull(platform.scheduler)
         assertNotNull(platform.messageSender)
-        assertNotNull(platform.commandRegistry)
         assertNotNull(platform.permissionService)
     }
 }

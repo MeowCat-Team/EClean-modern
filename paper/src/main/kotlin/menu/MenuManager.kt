@@ -16,7 +16,7 @@ import top.e404.eclean.config.Config
 import top.e404.eclean.lang.MLang
 import top.e404.eclean.menu.trashcan.TrashcanMenu
 import top.e404.eclean.platform.Schedulers
-import top.e404.eclean.platform.runtime.RuntimePlatform
+import top.e404.eclean.platform.FoliaDetector
 import top.e404.eclean.ui.UiMenu
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
@@ -83,7 +83,7 @@ object MenuManager : Listener {
         var unownedMenus = 0
         for ((player, menu) in HashMap(openMenus)) {
             if (!openMenus.remove(player, menu)) continue
-            if (PL.services.platform == RuntimePlatform.PAPER || Bukkit.isOwnedByCurrentRegion(player)) {
+            if (!FoliaDetector.isFolia() || Bukkit.isOwnedByCurrentRegion(player)) {
                 if (player.openInventory.topInventory == menu.inventory) player.closeInventory()
             } else {
                 unownedMenus++
