@@ -11,6 +11,15 @@ class ConfigFailureSafetyTest {
     @TempDir lateinit var directory: Path
     private fun loader() = ConfigLoader(directory = { directory.toFile() }, resource = { javaClass.classLoader.getResourceAsStream(it) })
 
+    @Test fun `diagnostic profile read cannot migrate legacy files`() {
+        val root = "debug: true\nlanguage: en_us"
+        Files.writeString(directory.resolve("config.yml"), root)
+        Files.writeString(directory.resolve("drop.yml"), "enabled: false")
+        assertFails { loader().readProfile(migrate = false) }
+        assertEquals(root, Files.readString(directory.resolve("config.yml")))
+        assertEquals(setOf("config.yml", "drop.yml"), directory.toFile().listFiles()!!.map { it.name }.toSet())
+    }
+
     @Test fun `both bundled profiles pass the same validation as user files`() {
         val loader = loader()
         loader.initializeFreshInstall()

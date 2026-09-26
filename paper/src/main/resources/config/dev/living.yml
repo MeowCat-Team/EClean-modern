@@ -13,8 +13,8 @@ settings:
   cleanNamed: false
   cleanLeashed: false
   cleanMounted: false
-# true=黑名单模式；false=白名单模式
-blacklistMode: true
+# remove-matching=只清匹配项；keep-matching=保留匹配项
+mode: remove-matching
 # 匹配规则，例如 "ZOMBIE"
 matchers: []
 # 距离最近玩家超过该值才清理（米）；null=不限制

@@ -18,6 +18,8 @@ class ChunkDensityPolicy {
         rule: ChunkDensityRule,
     ): ChunkDensityDecision {
         val candidates = snapshot.entities.toMutableList()
+        if (rule.protectTamed) candidates.removeIf(ChunkEntityState::tamed)
+        if (rule.protectAllay) candidates.removeIf(ChunkEntityState::allay)
         if (!rule.cleanNamed) candidates.removeIf(ChunkEntityState::named)
         if (!rule.cleanLeashed) candidates.removeIf(ChunkEntityState::leashed)
         if (!rule.cleanMounted) candidates.removeIf(ChunkEntityState::mounted)

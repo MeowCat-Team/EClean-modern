@@ -6,16 +6,19 @@
 # ============================================
 
 enabled: true
+# 密度保护独立于 living；默认保留宠物和悦灵
+protectTamed: true
+protectAllay: true
 # 不参与密集区块清理的世界
 disabledWorlds: []
-# 有名字/被拴绳/被骑乘的生物是否计入密度
+# 是否允许密度规则清理有名字/被拴绳/被骑乘的生物（不影响告警计数）
 settings:
   cleanNamed: false
   cleanLeashed: false
   cleanMounted: false
-# 区块实体数量超过该值视为密集
+# 区块内单一实体类型的数量严格超过该值时告警（包含受保护实体）
 alertThreshold: 50
-# 每类实体的数量上限，例如:
+# 正则匹配多类实体时共享上限；重叠规则按声明顺序执行。例如:
 # entityLimits:
 #   "ZOMBIE": 30
 entityLimits: {}

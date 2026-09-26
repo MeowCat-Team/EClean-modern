@@ -8,6 +8,8 @@ data class ChunkDensityRule(
     val cleanMounted: Boolean,
     val alertThreshold: Int,
     val entityLimits: Map<Regex, Int>,
+    val protectTamed: Boolean = true,
+    val protectAllay: Boolean = true,
 ) {
     companion object {
         fun fromConfig(config: ChunkDensityConfig) = ChunkDensityRule(
@@ -16,6 +18,8 @@ data class ChunkDensityRule(
             cleanMounted = config.settings.cleanMounted,
             alertThreshold = config.alertThreshold,
             entityLimits = config.entityLimits,
+            protectTamed = config.protectTamed,
+            protectAllay = config.protectAllay,
         )
     }
 }

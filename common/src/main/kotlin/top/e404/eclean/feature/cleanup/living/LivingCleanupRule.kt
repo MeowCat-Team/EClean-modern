@@ -21,7 +21,7 @@ data class LivingCleanupRule(
                 cleanNamed = cfg.settings.cleanNamed,
                 cleanLeashed = cfg.settings.cleanLeashed,
                 cleanMounted = cfg.settings.cleanMounted,
-                blackList = cfg.blacklistMode,
+                blackList = cfg.mode?.let { it == top.e404.eclean.config.model.MatchMode.REMOVE_MATCHING } ?: cfg.blacklistMode,
                 maxDistance = perWorld?.livingMaxDistance ?: cfg.maxDistance,
                 typeRules = cfg.typeRules,
                 protectTamed = cfg.protectTamed,

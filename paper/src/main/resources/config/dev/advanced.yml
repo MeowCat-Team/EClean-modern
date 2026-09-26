@@ -33,5 +33,5 @@ bStats:
 
 # 更新检查
 update:
-  # 是否检查更新（同时需要全局 updateCheck 为 true）
+  # 是否检查更新（旧配置 global.updateCheck: false 仍可禁用；新配置使用此处）
   enabled: true

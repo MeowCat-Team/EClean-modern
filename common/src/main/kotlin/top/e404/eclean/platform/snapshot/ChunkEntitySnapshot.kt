@@ -17,4 +17,6 @@ data class ChunkEntityState(
     val named: Boolean,
     val leashed: Boolean,
     val mounted: Boolean,
+    val tamed: Boolean = false,
+    val allay: Boolean = false,
 )

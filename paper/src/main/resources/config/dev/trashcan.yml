@@ -8,7 +8,7 @@
 enabled: true
 # 掉落物清理时自动收集进垃圾桶
 collectFromDropCleanup: true
-# 垃圾桶条目存活秒数；null 表示永不过期
+# 条目存活秒数；null 表示本次运行内不按时间过期。重启丢失，合并不延长到期时间
 clearIntervalSeconds: 600
 # 相同物品自动堆叠
 stacking:

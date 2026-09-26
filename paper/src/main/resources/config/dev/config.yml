@@ -6,7 +6,6 @@
 # ============================================
 
 debug: false
-updateCheck: true
 language: zh_cn
 # debug 相同消息合并输出的时间窗口(毫秒)，避免刷屏
 debugCooldownMillis: 1000

@@ -12,7 +12,9 @@ data class RuntimeConfiguration(
     val profile: ConfigProfile = ConfigProfile.NORMAL,
     val language: LanguageSnapshot = LanguageSnapshot(),
     val ready: Boolean = false,
-)
+) {
+    val revision: Long get() = bundle.revision
+}
 
 object ConfigManager {
     private val loader = ConfigLoader()
@@ -30,12 +32,21 @@ object ConfigManager {
     val current: ConfigBundle get() = state.current.bundle
     val currentProfile: ConfigProfile get() = state.current.profile
     val currentLanguage: LanguageSnapshot get() = state.current.language
+    val revision: Long get() = state.current.revision
     val ready: Boolean get() = state.current.ready
+
+    /** Diagnostics must not migrate, create files, activate services, or publish language. */
+    fun inspect(): RuntimeConfiguration {
+        val selected = loader.readProfile(migrate = false)
+        val bundle = loader.loadAll(selected).copy(revision = revision)
+        val language = PL.services.language.prepare(bundle.global.language, persistMissing = false)
+        return RuntimeConfiguration(bundle, selected, language, ready = true)
+    }
 
     fun prepare(profile: ConfigProfile? = null): RuntimeConfiguration {
         val selected = profile ?: loader.readProfile()
         if (profile != null) loader.ensureDefaults(selected)
-        val bundle = loader.loadAll(selected)
+        val bundle = loader.loadAll(selected).copy(revision = state.current.revision + 1)
         val language = PL.services.language.prepare(bundle.global.language)
         return RuntimeConfiguration(bundle, selected, language, ready = true)
     }

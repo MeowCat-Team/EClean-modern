@@ -15,8 +15,8 @@ class ConfigLoader(
     private val directory: () -> File = { PL.dataFolder },
     private val resource: (String) -> InputStream? = { PL.getResource(it) },
 ) {
-    fun readProfile(createIfMissing: Boolean = false): ConfigProfile {
-        migrateLegacy()
+    fun readProfile(createIfMissing: Boolean = false, migrate: Boolean = true): ConfigProfile {
+        if (migrate) migrateLegacy()
         if (createIfMissing) ensureCopied(ConfigFiles.PROFILE)
         val profile = decode(ConfigFiles.PROFILE, ProfileConfig.serializer(), file(ConfigFiles.PROFILE).readText())
         return ConfigProfile.fromId(profile.profile)

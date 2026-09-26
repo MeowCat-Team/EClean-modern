@@ -12,6 +12,17 @@ import java.util.UUID
 
 class ChunkDensityPolicyTest {
     @Test
+    fun `density protects pets and allays independently of living cleanup settings`() {
+        val pet = ChunkEntityState(UUID.randomUUID(), "WOLF", false, false, false, tamed = true)
+        val allay = ChunkEntityState(UUID.randomUUID(), "ALLAY", false, false, false, allay = true)
+        val cow = ChunkEntityState(UUID.randomUUID(), "COW", false, false, false)
+        val snapshot = ChunkEntitySnapshot(ChunkRef("world", 0, 0), listOf(pet, allay, cow))
+        val rule = ChunkDensityRule(false, false, false, 0, mapOf(Regex(".*") to 0))
+        assertEquals(listOf(cow.uuid), ChunkDensityPolicy().decide(snapshot, rule).entityIdsToRemove)
+        assertEquals(3, ChunkDensityPolicy().decide(snapshot, rule).denseEntries.size)
+        assertEquals(3, ChunkDensityPolicy().decide(snapshot, rule.copy(protectTamed = false, protectAllay = false)).entityIdsToRemove.size)
+    }
+    @Test
     fun `policy keeps protected entities and reports dense chunk from snapshot`() {
         val zombieIds = (1..12).map { UUID.nameUUIDFromBytes("zombie-$it".toByteArray()) }
         val snapshot = ChunkEntitySnapshot(

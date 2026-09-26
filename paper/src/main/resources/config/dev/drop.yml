@@ -8,8 +8,8 @@
 enabled: true
 # 不参与掉落物清理的世界
 disabledWorlds: []
-# true=黑名单模式（只清理匹配项）；false=白名单模式（只保留匹配项）
-blacklistMode: false
+# remove-matching=只清匹配项；keep-matching=保留匹配项（旧 blacklistMode 仍兼容）
+mode: keep-matching
 # 保护附魔物品
 protectEnchanted: false
 # 保护带 lore 物品

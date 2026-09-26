@@ -12,6 +12,8 @@ fun CommonChunk.entitySnapshot(): ChunkEntitySnapshot = ChunkEntitySnapshot(
             named = entity.named,
             leashed = entity.leashed,
             mounted = entity.mounted,
+            tamed = entity.tamed,
+            allay = entity.allay,
         )
     },
 )

@@ -16,7 +16,7 @@ data class DropCleanupRule(
             val cfg = config.drop
             val perWorld = worldName?.let { config.perWorld.worlds[it] }
             return DropCleanupRule(
-                blackList = cfg.blacklistMode,
+                blackList = cfg.mode?.let { it == top.e404.eclean.config.model.MatchMode.REMOVE_MATCHING } ?: cfg.blacklistMode,
                 protectEnchanted = cfg.protectEnchanted,
                 protectLore = cfg.protectLore,
                 protectWrittenBook = cfg.protectWrittenBook,

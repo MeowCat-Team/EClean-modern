@@ -19,6 +19,8 @@ data class ConfigBundle(
     val trashcan: TrashcanConfig = TrashcanConfig(),
     val perWorld: PerWorldConfig = PerWorldConfig(),
     val advanced: AdvancedConfig = AdvancedConfig(),
+    /** Runtime generation; never read from YAML or included in effective rule comparisons. */
+    val revision: Long = 0,
 )
 
 fun NormalConfig.toBundle(): ConfigBundle = ConfigBundle(

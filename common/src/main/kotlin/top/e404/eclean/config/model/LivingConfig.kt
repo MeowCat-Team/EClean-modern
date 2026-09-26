@@ -21,6 +21,8 @@ data class LivingConfig(
     val enabled: Boolean = true,
     val disabledWorlds: List<@Serializable(with = RegexSerializer::class) Regex> = emptyList(),
     val settings: EntityRuleSettings = EntityRuleSettings(),
+    val mode: MatchMode? = null,
+    // Legacy compatibility. An explicit mode takes precedence.
     val blacklistMode: Boolean = true,
     val matchers: List<@Serializable(with = RegexSerializer::class) Regex> = emptyList(),
     val maxDistance: Double? = null,
