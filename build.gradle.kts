@@ -7,7 +7,7 @@ plugins {
 
 allprojects {
     group = "top.e404"
-    version = "0.2.9"
+    version = "0.3.0"
 
     repositories {
         mavenCentral()

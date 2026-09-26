@@ -1,11 +1,13 @@
 # Changelog
 
+[Home](../README.md) · English | [简体中文](Changelog-zh.md)
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 0.3.0
 
 ### Added
 
@@ -26,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Configuration reloads**: reject malformed or unknown fields, invalid ranges, regexes, and Cron expressions; retain the previous configuration on reload failure. Validate legacy configuration before migration and preserve backups. Configuration, profile, and language are published together, and configured services are reapplied on reload.
 - **Messages and translations**: escape ordinary message arguments, avoid recursive placeholder substitution, and construct click actions as components. Missing translations or incompatible custom placeholders fall back per key. Localize durations, display Minecraft entity names with exact IDs, and correct ambiguous help/menu text.
 
+- **Version metadata**: PlaceholderAPI reports the plugin's release version, and incremental builds refresh the version embedded in `plugin.yml`.
+
 ### Changed
 
 - **Command syntax**: `top` now uses fixed positions: `/eclean top <entity|chunk> [amount] [world]`. Specifying a world requires an amount from 1 to 100; `/eclean top entity 10 123` queries the world named `123`. Unknown worlds report an error.
@@ -34,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Update checks**: use SemVer precedence, ignore draft releases, keep stable installations on stable releases, deduplicate update notices, and throttle failure messages. `advanced.update.enabled` is the recommended switch; legacy `global.updateCheck: false` still disables checking.
 - **Internal structure**: separate platform-independent code into `common` and the server implementation into `paper`, share command/permission definitions, inject adapter dependencies explicitly, and remove superseded cleanup planners and helpers.
 - **Build reproducibility**: require JDK 25, pin Paper API to `26.1.2.build.74-stable`, commit Gradle dependency locks and SHA-256 verification metadata, verify the wrapper download, and pin CI Actions to commits.
+- **Documentation**: English is now the default for the project overview and complete usage guides, with Simplified Chinese available from every page.
 
 ### Upgrade notes
 

@@ -10,7 +10,7 @@ import java.util.Date
 class ECleanPapiExpansion : PlaceholderExpansion() {
     override fun getIdentifier(): String = "eclean"
     override fun getAuthor(): String = "404E"
-    override fun getVersion(): String = "0.2.9"
+    override fun getVersion(): String = PL.pluginMeta.version
 
     override fun canRegister(): Boolean =
         Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")
