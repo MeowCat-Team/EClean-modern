@@ -4,6 +4,8 @@
 
 Commands and actions have separate permissions, defaulting to `op`. The legacy `eclean.admin` permission grants all capabilities listed below. `eclean.trash` remains an alias for opening the shared trash can.
 
+On Fabric, the default is operator level 2. Fabric's native permission identifiers convert the first dot to a colon, for example `eclean:command.clean.all` and `eclean:admin`. See the [Fabric guide](Fabric.md) for installation and provider behavior.
+
 Commands, menus, and tab completion use the same permission rules. An explicit denial of a capability, including its parent or compatibility alias, takes precedence over grants from other aliases, parents, or `eclean.admin`. The default lack of permission for a non-OP player does not prevent granting an individual leaf permission.
 
 - `eclean.admin`: all EClean capabilities (legacy aggregate permission).

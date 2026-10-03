@@ -61,6 +61,28 @@ jobs:
       - name: Build and test
         run: ./gradlew build
 
+      - name: Build and test Fabric 26.2
+        run: ./gradlew :fabric:build -PminecraftVersion=26.2
+
+      - name: Test packaged Fabric 26.1.2 server
+        timeout-minutes: 10
+        run: python3 .github/scripts/fabric-smoke.py 26.1.2
+
+      - name: Test packaged Fabric 26.2 server
+        timeout-minutes: 10
+        run: python3 .github/scripts/fabric-smoke.py 26.2
+
+      - name: Upload Fabric server test logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: Fabric-release-server-logs
+          path: |
+            .local/fabric-smoke/*/smoke-console.log
+            .local/fabric-smoke/*/logs/latest.log
+          include-hidden-files: true
+          if-no-files-found: ignore
+
       - name: Extract release notes from changelog
         run: |
           V="${{ steps.version.outputs.version }}"
@@ -86,7 +108,10 @@ jobs:
           tag_name: v${{ steps.version.outputs.version }}
           name: v${{ steps.version.outputs.version }}
           body_path: release_notes.md
-          files: paper/build/libs/EClean-Modern-*.jar
+          files: |
+            paper/build/libs/EClean-Modern-*-paper.jar
+            fabric/build/26.1.2/libs/EClean-Modern-*-fabric-mc26.1.2.jar
+            fabric/build/26.2/libs/EClean-Modern-*-fabric-mc26.2.jar
           fail_on_unmatched_files: true
 
   publish-modrinth:
@@ -111,7 +136,7 @@ jobs:
           modrinth-id: VW7EmMIj # ecl-modern
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           files: release/EClean-Modern-*-paper.jar
-          name: EClean Modern ${{ needs.release.outputs.version }}
+          name: EClean Modern ${{ needs.release.outputs.version }} (Paper / Folia)
           version: ${{ needs.release.outputs.version }}
           version-type: release
           changelog-file: release_notes.md
@@ -120,4 +145,41 @@ jobs:
             folia
           environment: server
           game-versions: ${{ needs.release.outputs.game-version }}
+          java: '25'
+
+  publish-modrinth-fabric:
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        minecraft: ['26.1.2', '26.2']
+    steps:
+      - name: Download Fabric release artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ needs.release.outputs.version }}
+          MINECRAFT_VERSION: ${{ matrix.minecraft }}
+        run: |
+          gh release download "v$RELEASE_VERSION" --repo "$GITHUB_REPOSITORY" \
+            --pattern "EClean-Modern-*-fabric-mc$MINECRAFT_VERSION.jar" --dir release
+          gh release view "v$RELEASE_VERSION" --repo "$GITHUB_REPOSITORY" \
+            --json body --jq .body > release_notes.md
+
+      - name: Publish Fabric to Modrinth
+        uses: Kira-NT/mc-publish@52307b03863581dec6b652b83e597aec02ebb075 # v3.3
+        with:
+          modrinth-id: VW7EmMIj # ecl-modern
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          files: release/EClean-Modern-*-fabric-mc${{ matrix.minecraft }}.jar
+          name: EClean Modern ${{ needs.release.outputs.version }} (Fabric ${{ matrix.minecraft }})
+          version: ${{ needs.release.outputs.version }}+fabric.${{ matrix.minecraft }}
+          version-type: release
+          changelog-file: release_notes.md
+          loaders: fabric
+          environment: server
+          game-versions: ${{ matrix.minecraft }}
+          modrinth-dependencies: fabric-api(required)
           java: '25'

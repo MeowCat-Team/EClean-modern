@@ -1,6 +1,7 @@
 package top.e404.eclean.util
 
 import net.kyori.adventure.text.minimessage.MiniMessage
+import java.util.Locale
 
 /** Only internally constructed, trusted MiniMessage may opt into formatted substitution. */
 data class RichText(val markup: String)
@@ -16,7 +17,9 @@ val miniMessage: MiniMessage = MiniMessage.miniMessage()
 
 private val constRegex = Regex("[.\\s\\-_]+")
 
-fun String.formatAsConst() = replace(constRegex, "_").uppercase()
+/** Native registry identifiers retain legal dots/hyphens instead of turning into a different type. */
+fun String.formatAsConst(): String =
+    (if (':' in this) trim() else replace(constRegex, "_")).uppercase(Locale.ROOT)
 
 fun String.placeholder(vararg placeholder: Pair<String, Any?>): String =
     placeholder(mapOf(*placeholder))

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "eclean",
+  "version": "${version}",
+  "name": "EClean Modern",
+  "description": "Server-side entity cleanup and administration tools.",
+  "authors": ["MeowCat Team", "4o4E"],
+  "contact": {
+    "homepage": "https://github.com/MeowCat-Team/EClean-modern",
+    "sources": "https://github.com/MeowCat-Team/EClean-modern",
+    "issues": "https://github.com/MeowCat-Team/EClean-modern/issues"
+  },
+  "license": "GPL-3.0-only",
+  "environment": "server",
+  "entrypoints": {
+    "main": ["top.e404.eclean.fabric.ECleanFabric"]
+  },
+  "mixins": ["eclean.fabric.mixins.json"],
+  "depends": {
+    "fabricloader": ">=${fabricLoaderVersion}",
+    "minecraft": "${minecraftVersion}",
+    "java": ">=25",
+    "fabric-api": ">=${fabricApiVersion}"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "top.e404.eclean.fabric.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "ChunkMapAccessor",
+    "ServerLevelAccessor",
+    "PersistentEntitySectionManagerAccessor",
+    "ItemEntityDespawnMixin",
+    "MinecraftServerPauseMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

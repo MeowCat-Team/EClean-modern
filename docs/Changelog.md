@@ -7,6 +7,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.3.4
+
+### Added
+
+- **Fabric 26.1.2 and 26.2**: complete server adapters, commands, loaded-chunk cleanup and statistics, transactional configuration reloads, native item recovery, vanilla-client menus, permission checks, temporary teleports, update checks, and per-version artifacts. CI builds both targets and releases publish each to Modrinth with Fabric API dependency metadata.
+
 ## 0.3.3
 
 ### Added

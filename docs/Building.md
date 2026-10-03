@@ -2,7 +2,7 @@
 
 [Home](../README.md) · English | [简体中文](Building-zh.md)
 
-The default build includes `common` and `paper` and requires JDK 25. Plugin artifacts are written to `paper/build/libs/`. Paper API is pinned to `26.1.2.build.74-stable`. The repository includes Gradle dependency locks and SHA-256 verification metadata, verifies the wrapper download against its official checksum, and pins CI Actions to commits. The verification metadata records the dependencies used for the build; it is not a vulnerability scan or verification of every publisher's signature.
+The default build includes `common`, `paper`, and Fabric for Minecraft 26.1.2 and requires JDK 25. Paper artifacts are written to `paper/build/libs/`; Fabric artifacts to `fabric/build/26.1.2/libs/`. Paper API is pinned to `26.1.2.build.74-stable`. The repository includes Gradle dependency locks and SHA-256 verification metadata, verifies the wrapper download against its official checksum, and pins CI Actions to commits. The verification metadata records the dependencies used for the build; it is not a vulnerability scan or verification of every publisher's signature.
 
 ```shell
 ./gradlew build
@@ -10,14 +10,19 @@ The default build includes `common` and `paper` and requires JDK 25. Plugin arti
 
 On Windows, use `gradlew.bat build`.
 
+Fabric also supports 26.2 from the same source. Build it with `./gradlew :fabric:build -PminecraftVersion=26.2`; outputs and dependency locks are separate for each game version. CI tests both. See the [Fabric guide](Fabric.md) for installation and runtime behavior.
+
+Fabric compiles against Mojang's public API with optional Loom access and interface transforms disabled. The build canonicalizes the local server compile JAR's ZIP entry order and timestamps while retaining every class/resource byte, then verifies the complete JAR against its pinned SHA-256. This keeps fresh builds reproducible without an exception to dependency verification.
+
 To update dependencies, first edit the version catalog, then explicitly generate candidate locks and verification metadata. Review artifact sources and checksum changes before committing them. Normal CI builds do not regenerate these files.
 
 ```shell
 ./gradlew build --write-locks --write-verification-metadata sha256
+./gradlew :fabric:build -PminecraftVersion=26.2 --write-locks --write-verification-metadata sha256
 ```
 
 ## Releases
 
-The `Release` workflow builds and tests the `modern` branch, reads the version from `build.gradle.kts`, and extracts its release notes from `docs/Changelog.md`. It creates the GitHub Release, then publishes the same Paper/Folia JAR and release notes to [EClean-Modern on Modrinth](https://modrinth.com/plugin/ecl-modern).
+The `Release` workflow builds and tests the `modern` branch, including both Fabric targets, and runs each packaged Fabric mod on a real server before creating a tag. It reads the version from `build.gradle.kts` and extracts release notes from `docs/Changelog.md`. The GitHub Release contains the Paper/Folia JAR and both Fabric JARs. Separate jobs publish those same artifacts and notes to [EClean-Modern on Modrinth](https://modrinth.com/plugin/ecl-modern).
 
-Configure the repository Actions secret `MODRINTH_TOKEN` with a Modrinth token that can create versions for project `VW7EmMIj` (`ecl-modern`). The workflow checks that the secret is present before creating a tag. The Minecraft version follows the pinned Paper API in `gradle/libs.versions.toml`; loader metadata lists Paper and Folia. If Modrinth publishing fails after the GitHub Release succeeds, use **Re-run failed jobs** to retry `publish-modrinth` without creating another tag or rebuilding.
+Configure the repository Actions secret `MODRINTH_TOKEN` with a Modrinth token that can create versions for project `VW7EmMIj` (`ecl-modern`). The workflow checks that the secret is present before creating a tag. Paper/Folia game metadata follows the pinned Paper API. Fabric versions use `<version>+fabric.<minecraft>`, exact game metadata, and a required Fabric API dependency. If Modrinth publishing fails after the GitHub Release succeeds, use **Re-run failed jobs** to retry the affected publishing job without creating another tag or rebuilding.

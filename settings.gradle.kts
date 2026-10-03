@@ -14,7 +14,7 @@ val includeExperimentalLoaders: Boolean =
 
 include(":common")
 include(":paper")
+include(":fabric")
 if (includeExperimentalLoaders) {
-    include(":fabric")
     include(":neoforge")
 }

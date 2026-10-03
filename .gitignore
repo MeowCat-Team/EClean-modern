@@ -8,3 +8,5 @@ run
 .zcode
 .local
 /.planning/
+/fabric/logs/
+__pycache__/

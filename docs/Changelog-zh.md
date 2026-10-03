@@ -7,6 +7,12 @@
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，
 并遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/) 版本规范。
 
+## 0.3.4
+
+### 新增
+
+- **Fabric 26.1.2 和 26.2**：完成服务端适配、命令、已加载区块清理与统计、原子配置重载、原生物品回收、原版客户端菜单、权限判断、临时传送和更新检查，分别生成两个版本的产物。CI 验证双版本，Release 分别发布到 Modrinth 并标注 Fabric API 依赖。
+
 ## 0.3.3
 
 ### 新增
