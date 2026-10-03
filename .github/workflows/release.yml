@@ -12,6 +12,7 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
       game-version: ${{ steps.version.outputs.game-version }}
+      game-versions: ${{ steps.version.outputs.game-versions }}
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -28,8 +29,28 @@ jobs:
             exit 1
           fi
           echo "version=$V" >> "$GITHUB_OUTPUT"
-          MC=$(python3 -c 'import tomllib; print(tomllib.load(open("gradle/libs.versions.toml", "rb"))["versions"]["paper"].split(".build.")[0])')
-          echo "game-version=$MC" >> "$GITHUB_OUTPUT"
+          python3 - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          data = json.loads(Path("paper/compatibility.json").read_text(encoding="utf-8"))
+          versions = data["versions"]
+          assert data["java"] == 25 and versions, "Paper compatibility requires Java 25 and version pins"
+          for entry in versions:
+              assert re.fullmatch(r"\d+(?:\.\d+){1,2}", entry["minecraft"]), "Invalid Minecraft version"
+              assert type(entry["build"]) is int and entry["build"] > 0, "Invalid Paper build"
+              assert entry["channel"] in {"STABLE", "ALPHA"}, "Unapproved Paper channel"
+              assert re.fullmatch(r"[a-f0-9]{64}", entry["sha256"]), "Invalid Paper SHA-256"
+          names = [entry["minecraft"] for entry in versions]
+          assert len(names) == len(set(names)), "Duplicate Minecraft version"
+          assert names == sorted(names, key=lambda value: tuple(map(int, value.split(".")))), "Versions must be ordered"
+          assert (names[0], names[-1]) == (data["minimum"], data["maximum"]), "Compatibility bounds differ from version pins"
+          descriptor = Path("paper/src/main/resources/plugin.yml").read_text(encoding="utf-8")
+          declared = re.search(r"(?m)^api-version:\s*['\"]?([^'\"\s]+)", descriptor)
+          assert declared and declared.group(1) == data["minimum"], "Plugin api-version differs from the tested minimum"
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write(f"game-version={data['minimum']}-{data['maximum']}\n")
+              output.write("game-versions<<PAPER_GAME_VERSIONS\n" + "\n".join(names) + "\nPAPER_GAME_VERSIONS\n")
+          PY
           echo "本次发版版本: $V"
 
       - name: Check Modrinth credentials
@@ -63,6 +84,40 @@ jobs:
 
       - name: Build and test Fabric 26.2
         run: ./gradlew :fabric:build -PminecraftVersion=26.2
+
+      - name: Test packaged Paper plugin on every supported version
+        timeout-minutes: 30
+        run: |
+          python3 - <<'PY'
+          import json, subprocess, sys
+          from pathlib import Path
+          data = json.loads(Path("paper/compatibility.json").read_text(encoding="utf-8"))
+          failures = []
+          for entry in data["versions"]:
+              command = [sys.executable, ".github/scripts/paper-smoke.py", entry["minecraft"],
+                         "--build", str(entry["build"]), "--expected-sha256", entry["sha256"]]
+              if entry["channel"] == "ALPHA":
+                  command.append("--allow-unstable")
+              print(f"::group::Paper {entry['minecraft']} build {entry['build']} ({entry['channel']})", flush=True)
+              result = subprocess.run(command)
+              print("::endgroup::", flush=True)
+              if result.returncode:
+                  failures.append(entry["minecraft"])
+          if failures:
+              raise SystemExit("Paper smoke failed: " + ", ".join(failures))
+          PY
+
+      - name: Upload Paper server test logs and reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: Paper-release-server-logs
+          path: |
+            .local/paper-smoke/*/smoke-console.log
+            .local/paper-smoke/*/smoke-report.json
+            .local/paper-smoke/*/logs/latest.log
+          include-hidden-files: true
+          if-no-files-found: ignore
 
       - name: Test packaged Fabric 26.1.2 server
         timeout-minutes: 10
@@ -144,7 +199,7 @@ jobs:
             paper
             folia
           environment: server
-          game-versions: ${{ needs.release.outputs.game-version }}
+          game-versions: ${{ needs.release.outputs.game-versions }}
           java: '25'
 
   publish-modrinth-fabric:

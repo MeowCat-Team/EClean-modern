@@ -13,6 +13,8 @@
 
 - **发布名称**：统一 Modrinth 中 Paper/Folia 与 Fabric 的平台、游戏版本后缀，显示名称均包含版本、平台和游戏版本。
 - **包命名空间**：源码包、插件入口、Fabric Mixin 和内嵌依赖统一迁移到 `org.meowcat.eclean`。
+- **Paper 兼容性**：使用同一份 Java 25 插件验证 1.21.5 至 26.2 的十个 Paper 版本，将 `api-version` 调整为验证下界，CI 与 Modrinth 元数据统一读取已测试版本清单。兼容性文档明确标注历史 Alpha 构建。
+- **Fabric 文档**：删除过时的脚手架 README，当前中英文使用说明保留在 `docs/`。
 
 ## 0.3.4
 

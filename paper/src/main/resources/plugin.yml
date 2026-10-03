@@ -1,7 +1,7 @@
 name: EClean-Modern
 version: ${version}
 main: org.meowcat.eclean.EClean
-api-version: '1.21.11'
+api-version: '1.21.5'
 folia-supported: true
 softdepend:
   - PlaceholderAPI

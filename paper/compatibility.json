@@ -1,0 +1,67 @@
+{
+  "java": 25,
+  "minimum": "1.21.5",
+  "maximum": "26.2",
+  "versions": [
+    {
+      "minecraft": "1.21.5",
+      "build": 114,
+      "channel": "ALPHA",
+      "sha256": "2ae6ae22adf417699746e0f89fc2ef6cb6ee050a5f6608cee58f0535d60b509e"
+    },
+    {
+      "minecraft": "1.21.6",
+      "build": 48,
+      "channel": "STABLE",
+      "sha256": "35e2dfa66b3491b9d2f0bb033679fa5aca1e1fdf097e7a06a80ce8afeda5c214"
+    },
+    {
+      "minecraft": "1.21.7",
+      "build": 32,
+      "channel": "STABLE",
+      "sha256": "83838188699cb2837e55b890fb1a1d39ad0710285ed633fbf9fc14e9f47ce078"
+    },
+    {
+      "minecraft": "1.21.8",
+      "build": 60,
+      "channel": "STABLE",
+      "sha256": "8de7c52c3b02403503d16fac58003f1efef7dd7a0256786843927fa92ee57f1e"
+    },
+    {
+      "minecraft": "1.21.9",
+      "build": 59,
+      "channel": "ALPHA",
+      "sha256": "aec002e77c7566e49494fdf05430b96078ffd1d7430e652d4f338fef951e7a10"
+    },
+    {
+      "minecraft": "1.21.10",
+      "build": 130,
+      "channel": "STABLE",
+      "sha256": "158703f75a26f842ea656b3dc6d75bf3d1ec176b97a2c36384d0b80b3871af53"
+    },
+    {
+      "minecraft": "1.21.11",
+      "build": 132,
+      "channel": "STABLE",
+      "sha256": "5ffef465eeeb5f2a3c23a24419d97c51afd7dbb4923ff42df9a3f58bba1ccfba"
+    },
+    {
+      "minecraft": "26.1.1",
+      "build": 29,
+      "channel": "ALPHA",
+      "sha256": "43d08ed52c7af4e9f72769122501a5c15f99c7ace0c428a3eef040fd3f6fdbc5"
+    },
+    {
+      "minecraft": "26.1.2",
+      "build": 74,
+      "channel": "STABLE",
+      "sha256": "1d70b1dab9cf4a6de615209a536f3a45a2186240253c428213ce2188ab95e5f7"
+    },
+    {
+      "minecraft": "26.2",
+      "build": 129,
+      "channel": "STABLE",
+      "sha256": "b1d8f6bfa1b6101fa8e947b53041cb3bdf5540e7b83b6547ca19ba7edefeb083"
+    }
+  ]
+}

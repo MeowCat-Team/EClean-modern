@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Release names**: use matching platform and Minecraft version suffixes for Paper/Folia and Fabric releases on Modrinth, with consistent version, platform, and game version display names.
 - **Package namespace**: move source packages, plugin entrypoints, Fabric Mixins, and bundled library namespaces to `org.meowcat.eclean`.
+- **Paper compatibility**: verify the same Java 25 plugin on ten Paper versions from 1.21.5 to 26.2, lower `api-version` to the verified minimum, and use the tested game list for CI and Modrinth metadata. Historical Alpha builds are identified in the compatibility guide.
+- **Fabric documentation**: remove the obsolete scaffold READMEs; the current bilingual guides remain under `docs/`.
 
 ## 0.3.4
 

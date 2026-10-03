@@ -10,6 +10,7 @@ import argparse
 from dataclasses import dataclass
 import json
 import os
+from pathlib import Path
 import re
 import sys
 from typing import Any
@@ -19,7 +20,7 @@ from urllib.request import Request, urlopen
 
 PROJECT_ID = "VW7EmMIj"
 API = "https://api.modrinth.com/v2"
-GAMES = {"26.1.2", "26.2"}
+FABRIC_GAMES = {"26.1.2", "26.2"}
 USER_AGENT = "EClean-Modern/version-names (https://github.com/MeowCat-Team/EClean-modern)"
 GUARDED_FIELDS = (
     "id", "project_id", "files", "dependencies", "loaders", "game_versions", "changelog",
@@ -95,8 +96,24 @@ def validate_base(base: str) -> None:
         raise RenameError("base_version must be a release number such as 0.3.4, without platform metadata")
 
 
+def paper_games() -> list[str]:
+    """Use the same ordered compatibility list as the build and release workflows."""
+    try:
+        compatibility = json.loads((Path(__file__).resolve().parents[2] / "paper/compatibility.json").read_text(encoding="utf-8"))
+        games = [entry["minecraft"] for entry in compatibility["versions"]]
+        if (not games or any(not isinstance(game, str) or not re.fullmatch(r"[0-9]+(?:\.[0-9]+){1,2}", game) for game in games)
+                or len(set(games)) != len(games)
+                or games != sorted(games, key=lambda game: tuple(map(int, game.split("."))))
+                or compatibility["minimum"] != games[0] or compatibility["maximum"] != games[-1]):
+            raise ValueError("Invalid compatibility order or bounds")
+        return games
+    except (OSError, ValueError, KeyError, TypeError):
+        raise RenameError("Paper compatibility manifest is missing or invalid") from None
+
+
 def build_plan(versions: Any, base: str) -> list[Rename]:
     validate_base(base)
+    supported_paper = paper_games()
     if not isinstance(versions, list):
         raise RenameError("Modrinth did not return a complete project version list")
     ids: set[str] = set()
@@ -129,8 +146,9 @@ def build_plan(versions: Any, base: str) -> list[Rename]:
         if not isinstance(version.get("name"), str):
             raise RenameError(f"Version {version_id} has an invalid display name")
         games, loaders = version.get("game_versions"), version.get("loaders")
-        if not isinstance(games, list) or len(games) != 1 or not isinstance(games[0], str) or games[0] not in GAMES:
-            raise RenameError(f"Version {version_id} must have exactly one supported game version (26.1.2 or 26.2)")
+        if (not isinstance(games, list) or not games or any(not isinstance(game, str) for game in games)
+                or len(set(games)) != len(games)):
+            raise RenameError(f"Version {version_id} has invalid or duplicate game versions")
         if not isinstance(loaders, list) or not loaders or any(not isinstance(loader, str) for loader in loaders):
             raise RenameError(f"Version {version_id} has invalid loaders")
         loader_set = set(loaders)
@@ -138,11 +156,20 @@ def build_plan(versions: Any, base: str) -> list[Rename]:
             raise RenameError(f"Version {version_id} has duplicate loaders")
         if loader_set == {"fabric"}:
             platform, label = "fabric", "Fabric"
+            if len(games) != 1 or games[0] not in FABRIC_GAMES:
+                raise RenameError(f"Fabric version {version_id} must have one supported game version (26.1.2 or 26.2)")
+            game = games[0]
         elif loader_set <= {"paper", "folia"}:
             platform, label = "paper", "Paper / Folia"
+            if not set(games) <= set(supported_paper):
+                raise RenameError(f"Paper version {version_id} contains unverified game versions")
+            ordered = [game for game in supported_paper if game in games]
+            first, last = supported_paper.index(ordered[0]), supported_paper.index(ordered[-1])
+            if ordered != supported_paper[first:last + 1]:
+                raise RenameError(f"Paper version {version_id} has gaps in its declared compatibility range")
+            game = ordered[0] if len(ordered) == 1 else f"{ordered[0]}-{ordered[-1]}"
         else:
             raise RenameError(f"Version {version_id} is not exclusively Paper/Folia or Fabric")
-        game = games[0]
         target_number = f"{base}+{platform}.{game}"
         if suffix is not None and (suffix != platform or version["version_number"] != target_number):
             raise RenameError(f"Version {version_id} platform suffix does not match its loaders and game version")

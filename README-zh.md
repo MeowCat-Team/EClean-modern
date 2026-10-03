@@ -8,7 +8,7 @@
 
 ## 安装
 
-1. 使用 Java 25，将 Paper 插件 JAR 放入服务器的 `plugins/` 目录。
+1. 使用 **Paper 1.21.5–26.2 和 Java 25**，将插件 JAR 放入服务器的 `plugins/` 目录。具体测试构建及历史 Alpha 构建说明见 [Paper 兼容性文档](docs/Paper-zh.md)。
 2. 启动服务器生成配置，按需调整 `plugins/EClean-Modern/config/normal/config.yml`。
 3. 执行 `/eclean reload`，再用 `/eclean clean --preview` 确认清理范围。
 
@@ -34,6 +34,7 @@ Fabric 服务端请将匹配 **26.1.2 或 26.2** 的模组 JAR、对应 Fabric A
 - [命令与菜单](docs/Commands-zh.md)：完整命令、回收操作和清理历史
 - [配置说明](docs/Configuration-zh.md)：预设、保护规则、调度和语言
 - [权限列表](docs/Permissions-zh.md)
+- [Paper 版本与兼容性验证](docs/Paper-zh.md)
 - [Fabric 安装与兼容性](docs/Fabric-zh.md)
 - [PlaceholderAPI 占位符](docs/Placeholders-zh.md)
 - [构建与依赖更新](docs/Building-zh.md)

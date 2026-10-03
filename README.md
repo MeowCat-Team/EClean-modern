@@ -8,7 +8,7 @@ An entity cleanup plugin for Paper / Folia and a server mod for Fabric 26.1.2 / 
 
 ## Installation
 
-1. Use Java 25 and place the Paper plugin JAR in your server's `plugins/` directory.
+1. Use **Paper 1.21.5–26.2 with Java 25** and place the plugin JAR in your server's `plugins/` directory. See the [Paper compatibility guide](docs/Paper.md) for the exact tested builds, including historical Alpha builds.
 2. Start the server to generate configuration, then adjust `plugins/EClean-Modern/config/normal/config.yml` as needed.
 3. Run `/eclean reload`, then `/eclean clean --preview` to check what would be removed.
 
@@ -34,6 +34,7 @@ The main command is `/eclean`, with `/ecl` as an alias. Commands require OP perm
 - [Commands and menus](docs/Commands.md): full command reference, item recovery, and cleanup history
 - [Configuration](docs/Configuration.md): profiles, protection rules, scheduling, and language
 - [Permissions](docs/Permissions.md)
+- [Paper versions and compatibility checks](docs/Paper.md)
 - [Fabric installation and compatibility](docs/Fabric.md)
 - [PlaceholderAPI variables](docs/Placeholders.md)
 - [Building and updating dependencies](docs/Building.md)
