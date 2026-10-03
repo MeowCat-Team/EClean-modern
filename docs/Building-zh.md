@@ -15,3 +15,9 @@ Windows 使用 `gradlew.bat build`。
 ```shell
 ./gradlew build --write-locks --write-verification-metadata sha256
 ```
+
+## 发布版本
+
+`Release` 工作流会构建并测试 `modern` 分支，从 `build.gradle.kts` 读取版本号，从 `docs/Changelog.md` 提取对应的更新日志。创建 GitHub Release 后，会将同一份 Paper/Folia JAR 和更新日志发布到 [Modrinth 的 EClean-Modern 项目](https://modrinth.com/plugin/ecl-modern)。
+
+请在仓库的 Actions secrets 中配置 `MODRINTH_TOKEN`，使用有权为项目 `VW7EmMIj`（`ecl-modern`）创建版本的 Modrinth 令牌。工作流会在创建 tag 前检查是否已配置令牌。Minecraft 版本从 `gradle/libs.versions.toml` 中固定的 Paper API 版本读取，平台标记为 Paper 和 Folia。若 GitHub Release 已成功、Modrinth 发布失败，可使用 **Re-run failed jobs** 单独重跑 `publish-modrinth`，无需重新创建 tag 或构建。

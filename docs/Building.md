@@ -15,3 +15,9 @@ To update dependencies, first edit the version catalog, then explicitly generate
 ```shell
 ./gradlew build --write-locks --write-verification-metadata sha256
 ```
+
+## Releases
+
+The `Release` workflow builds and tests the `modern` branch, reads the version from `build.gradle.kts`, and extracts its release notes from `docs/Changelog.md`. It creates the GitHub Release, then publishes the same Paper/Folia JAR and release notes to [EClean-Modern on Modrinth](https://modrinth.com/plugin/ecl-modern).
+
+Configure the repository Actions secret `MODRINTH_TOKEN` with a Modrinth token that can create versions for project `VW7EmMIj` (`ecl-modern`). The workflow checks that the secret is present before creating a tag. The Minecraft version follows the pinned Paper API in `gradle/libs.versions.toml`; loader metadata lists Paper and Folia. If Modrinth publishing fails after the GitHub Release succeeds, use **Re-run failed jobs** to retry `publish-modrinth` without creating another tag or rebuilding.

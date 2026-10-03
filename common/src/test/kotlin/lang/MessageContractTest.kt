@@ -80,4 +80,58 @@ class MessageContractTest {
         assertEquals(custom, manager["cleanup.countdown.10"])
     }
 
+    @Test fun `previous defaults in both languages upgrade on reload without rewriting custom language files`() {
+        for (language in listOf("zh_cn", "en_us")) {
+            val dir = Files.createTempDirectory("eclean-$language-wording-upgrade")
+            Files.createDirectories(dir.resolve("lang"))
+            val previous = javaClass.getResourceAsStream("/lang/previous/$language.yml")!!
+                .bufferedReader(Charsets.UTF_8).use { it.readText() }
+            val custom = "<green>Custom reload notice</green>"
+            val target = dir.resolve("lang/$language.yml")
+            val defaults = org.yaml.snakeyaml.Yaml().load<Map<String, String>>(previous)
+            Files.writeString(target, org.yaml.snakeyaml.Yaml().dump(defaults + ("command.reload_done" to custom)))
+            val original = Files.readString(target)
+            val manager = LanguageManager(dir)
+            manager.load(language)
+            val bundled = manager.bundledSnapshot(language).templates
+            assertTrue(defaults.isNotEmpty())
+            defaults.keys.filter { it != "command.reload_done" }.forEach { key ->
+                assertEquals(bundled.getValue(key), manager[key], "$language: $key")
+            }
+            assertEquals(custom, manager["command.reload_done"])
+            assertEquals(original, Files.readString(target))
+            manager.reload(language)
+            assertEquals(bundled["command.config.semantics"], manager["command.config.semantics"])
+            assertEquals(custom, manager["command.reload_done"])
+        }
+    }
+
+    @Test fun `localized command help advertises the same commands arguments and switches`() {
+        val manager = LanguageManager(java.nio.file.Path.of("."))
+        val en = manager.bundledSnapshot("en_us").templates
+        val zh = manager.bundledSnapshot("zh_cn").templates
+        val translatedArguments = mapOf(
+            "世界名" to "world", "实体类型" to "type", "最小数量" to "min-count",
+            "区块 X" to "chunk-x", "区块 Z" to "chunk-z", "数量" to "amount",
+        )
+        val commands = Regex("<green>(/eclean.*?)</green>")
+        val arguments = Regex("\\[([^]]+)]|<([^>]+)>")
+        val switches = Regex("--[a-z]+(?:-[a-z]+)*")
+        fun commandSignatures(template: String): List<String> = commands.findAll(template).map { command ->
+            arguments.replace(command.groupValues[1]) { argument ->
+                val name = argument.groups[1]?.value ?: argument.groupValues[2]
+                val normalized = translatedArguments[name] ?: name
+                if (argument.value.startsWith("[")) "[$normalized]" else "<$normalized>"
+            }
+        }.toList()
+        en.keys.filter { it.startsWith("command.usage.") }.forEach { key ->
+            assertTrue(commandSignatures(en.getValue(key)).isNotEmpty(), key)
+            assertEquals(commandSignatures(en.getValue(key)), commandSignatures(zh.getValue(key)), key)
+            assertEquals(
+                switches.findAll(en.getValue(key)).map { it.value }.toSet(),
+                switches.findAll(zh.getValue(key)).map { it.value }.toSet(), key,
+            )
+        }
+    }
+
 }

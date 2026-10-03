@@ -1,0 +1,210 @@
+# Previous bundled defaults, used only for exact-match wording upgrades.
+# Keep customized translations intact; do not use this file as an active language.
+command.reload_failed: <red>Configuration rejected; the previous configuration remains active. {reason}</red>
+command.teleport.failed: <red>Teleport failed. Check the destination and teleport restrictions.</red>
+command.teleport.return_failed: <red>Return teleport failed. The original location is retained for your next login during this server session.</red>
+command.teleport.busy: <yellow>A teleport is still in progress. Please try again shortly.</yellow>
+cleanup.finish.world: '<white>Cleanup in {world}: {drop} drops, {living} living entities, {dense} dense entities.</white>'
+common.hover.view_distribution: <gray>Click to view chunk distribution</gray>
+debug.console_enable: <white>Temporarily <green>enabled</green> <aqua>Debug</aqua><white> (edit global.debug in the active profile to make it permanent). You will receive debug messages
+  until the next restart. Use this command again to <red>disable</red>.</white>
+debug.console_disable: <white>Temporarily <red>disabled</red> <aqua>Debug</aqua><white> (edit global.debug in the active profile to make it permanent). You will stop receiving debug
+  messages until the next restart. Use this command again to <green>enable</green>.</white>
+debug.player_enable: <white>Debug <green>enabled</green>. You will receive debug messages. Use this command again to <red>disable</red>.</white>
+debug.player_disable: <white>Debug <red>disabled</red>. You will stop receiving debug messages. Use this command again to <green>enable</green>.</white>
+command.invalid.number: '{number} is not a valid number'
+command.invalid.entity_type: <yellow>{type}</yellow><red> is not a valid entity type</red>
+cleanup.countdown.60: <gray>Cleanup in <gold>1 minute</gold>.</gray>
+cleanup.countdown.30: <gray>Cleanup in <gold>30 seconds</gold>.</gray>
+cleanup.countdown.10: <gray>Cleanup in <gold>10 seconds</gold>.</gray>
+cleanup.finish.drop: <white>Cleaned <gold>{cleaned}</gold>/<gold>{total}</gold> dropped items</white>
+cleanup.finish.living: <white>Cleaned <gold>{cleaned}</gold>/<gold>{total}</gold> living entities</white>
+cleanup.finish.chunk: <white>Cleaned <gold>{cleaned}</gold> dense entities</white>
+cleanup.alert.entity: '<red>Entity count alert</red> <white>{world}: {type} has reached {count}</white>'
+cleanup.alert.dense: '<red>Dense chunk detected</red> <white>{chunk}: {entity} has reached {count}</white>'
+menu.dense.item.lore: '<white>{amount}</white>
+
+  <white>{chunk}</white>
+
+  <green>Left click to teleport</green>
+
+  <yellow>Right click to preview density cleanup, then confirm</yellow>'
+menu.dense.temp.name: <gold>Toggle Temporary Teleport</gold>
+menu.dense.temp.lore: '<white>Return to the original location 30 seconds after a successful teleport</white>
+
+  <white>This toggle remains active for this menu session; click again to disable</white>
+
+  <white>Current status: {status}</white>'
+menu.dense.clean: '<white>{type} in chunk {chunk}: removed {count}, failed {failed}.</white>'
+menu.dense.confirm.title: <gold>Confirm Density Cleanup</gold>
+menu.dense.confirm.lore: '<white>Chunk: {chunk}</white>
+
+  <white>Entity: {type}, currently {total}</white>
+
+  <red>Selected for cleanup: {selected}</red>
+
+  <green>Protected or within limit: {retained}</green>
+
+  <gray>Respects density rules and world settings; confirm within 30 seconds</gray>
+
+  <gray>Only previewed targets can be removed; protections are checked again</gray>'
+menu.dense.nothing: <green>No entities are selected by the current rules. Nothing was removed.</green>
+menu.dense.unavailable: <yellow>Configuration changed, preview expired, cleanup was disabled, or the chunk unloaded. Preview again.</yellow>
+menu.trashcan.item.lore: '<white>Total: {amount}</white>
+
+  <green>Left click to take 1</green>
+
+  <green>Right click to take half a stack</green>
+
+  <green>Shift+Left click to take a full stack</green>'
+menu.trashcan.item.expire: <gray>Expires in {expire}</gray>
+menu.trashcan.sort.name_asc: <white>Name</white>
+menu.trashcan.sort.time_asc: <white>Time remaining</white>
+menu.trashcan.search.prompt: <white>Enter an English material ID keyword (e.g. diamond) within 60 seconds. This input is private. Type cancel to cancel.</white>
+menu.trashcan.search.timeout: <yellow>Search timed out. Subsequent chat messages will be public.</yellow>
+menu.trashcan.search.reset: '<white>Search: {query} (click to clear)</white>'
+menu.page.position: <gray>Page <white>{page}</white> / <white>{pages}</white></gray>
+menu.trashcan.category.lore: '<gray>Selected: {category}</gray>
+
+
+  <yellow>Click to cycle categories</yellow>
+
+
+  <gray>Shared with all players</gray>
+
+  <gray>Entries expire individually; restart clears all items</gray>'
+menu.trashcan.sort.lore: '<gray>Selected: {sort}</gray>
+
+
+  <yellow>Click to change sorting</yellow>
+
+
+  <gray>Click items in your inventory to deposit:</gray>
+
+  <white>Left: 1 · Right: half · Shift+Left: whole stack</white>'
+menu.trashcan.search.lore: '<gray>Filter by English material ID, e.g. diamond</gray>
+
+
+  <yellow>Click, then type a keyword in chat</yellow>
+
+  <gray>Private input · 60 seconds · cancel to exit</gray>'
+menu.trashcan.empty.lore: '<gray>The trash can is empty, or no items match.</gray>
+
+  <gray>Try another category or clear the search.</gray>
+
+  <yellow>Click items in your inventory to deposit them.</yellow>'
+command.reload_done: <green>Reload complete</green>
+command.trash_disable: <green>The trash can feature is disabled</green>
+command.trash_open: <green>Trash can opened</green>
+command.trash_clean_done: <green>Trash can cleared</green>
+command.trash_stats_empty: <red>The trash can is empty</red>
+command.trash_stats_header: <aqua>Trash can entries ({count} types)</aqua>
+command.trash_stats_line: <white>{item} x{amount}</white> <gray>Expires in {expire}</gray>
+command.trash_never_expire: No timed expiry during this run (lost on restart)
+command.clean_dry_done: <green>Preview complete — no entities were removed</green>
+command.clean_dry_living: '<green>Preview — Living: <gold>{cleaned}</gold>/<gold>{total}</gold> entities across <gold>{worlds}</gold> worlds</green>'
+command.clean_dry_drop: '<green>Preview — Drop: <gold>{cleaned}</gold>/<gold>{total}</gold> items across <gold>{worlds}</gold> worlds</green>'
+command.clean_dry_chunk: '<green>Preview — Chunk density: <gold>{cleaned}</gold> entities across <gold>{regions}</gold> dense regions</green>'
+command.clean_world_result: 'Cleanup: {cleaned}/{total}'
+command.clean_world_chunk_result: 'Cleanup: {cleaned}'
+command.status.world: '<white>World <gold>{world}</gold>: entities {entities} / chunks {chunks} / force-loaded {force}</white>'
+command.status.total: '<white>Total entities on the server: <gold>{total}</gold></white>'
+command.history_empty: <red>No cleanup history</red>
+command.history_header: <gold>Recent executions (per world/module; drops count entities, trash counts items)</gold>
+command.history_line: '<white>{time} [{source}/{kind}] actor {actor}; world {world}, scope {scope}; config {revision}; {duration}ms; {status}</white>
+
+  <gray>Drop entities {drop} / living {living} / dense {chunk} / trash items {trash}; failed removals {failed}, skipped chunks {skipped}</gray>'
+command.top_header: <gold>Top {type}</gold>
+command.top_entity: '<white>{rank}. {type}: {count}</white>'
+command.top_chunk: '<white>{rank}. {world} x:{x} z:{z}: {count}</white>'
+menu.stats.title: <gold>Statistics - {world}</gold>
+menu.stats.item.lore: '<white>World: {world}</white>
+
+  <white>Count: {count}</white>
+
+  <gray>Click to view chunk distribution</gray>'
+command.invalid.world: <red>World <yellow>{world}</yellow> does not exist</red>
+command.stats_collect_failed: <red>Failed to collect world statistics</red>
+command.player_location: '  <aqua>{player}</aqua><white>: {x} {y} {z}</white>'
+command.teleport.done: <green>Teleport complete</green>
+command.teleport.temp: <green>Teleport complete, returning to the previous location in 30 seconds</green>
+command.teleport.cover: <green>Teleport complete, returning to the previous return location in 30 seconds</green>
+command.teleport.back: <green>Returned to the pre-teleport location</green>
+command.stats.content: '<white>{type}: {count}</white>'
+command.stats.empty: <red>No results</red>
+command.stats.world: '<white>World <green>{world}</green> has {count} loaded chunks ({force} force-loaded)</white>
+
+  <aqua>Entity statistics:</aqua>
+
+  {entity}'
+command.stats.entity: '<white>Entity <yellow>{type}</yellow> statistics</white>
+
+  {entity}'
+command.usage.debug: <green>/eclean debug</green> <white>Toggle debug messages</white>
+command.usage.reload: <green>/eclean reload</green> <white>Reload the plugin</white>
+command.usage.trash: '<green>/eclean trash [open]</green> <white>Open the shared trash can</white>
+
+  <green>/eclean trash stats</green> <white>View item quantities and expiry</white>'
+command.usage.players: <green>/eclean players</green> <white>Show players and their locations</white>
+command.usage.show: <green>/eclean show</green> <white>Open the dense entity statistics menu</white>
+command.usage.stats: '<green>/eclean stats [world]</green> <white>View current or specified world statistics</white>
+
+  <green>/eclean stats gui [world]</green> <white>Open statistics; another world also requires stats.world permission</white>'
+command.usage.entity: '<green>/eclean entity [type] [world] [min-count]</green> <white>Show chunks with a count strictly greater than min-count (default 0)</white>
+
+  <green>/eclean entity [type] [world] [chunk-x] [chunk-z]</green> <white>Show entity coordinates inside a chunk</white>'
+command.usage.clean: '<green>/eclean clean [all|entity|drop|chunk] [world] [--preview]</green> <white>Clean or preview; --preview may appear anywhere after clean</white>
+
+  <green>/eclean clean trash [--preview]</green> <white>Clear the shared trash can or preview its count</white>'
+command.usage.status: '<green>/eclean status all</green> <white>Show server-wide statistics</white>
+
+  <green>/eclean status <world></green> <white>Show a single world''s status</white>'
+command.usage.top: '<green>/eclean top entity|chunk [amount] [world]</green> <white>Defaults to the server-wide top 10. Specify amount before world, e.g. top entity 10 123. Amount: 1–100.</white>'
+command.usage.teleport: <green>/eclean tp <world> <x> <y> <z></green> <white>Teleport to coordinates</white>
+command.no_permission: <red>You do not have permission to use this command</red>
+command.player_only: <red>This command can only be used by a player</red>
+command.usage.config: '<green>/eclean config show|validate|diff</green> <white>Show paths, validate disk files, or compare pending changes</white>
+
+  <green>/eclean config effective [world]</green> <white>Show effective rules and sources</white>
+
+  <green>/eclean config profile normal|dev</green> <white>Switch independent profiles and reload immediately</white>'
+command.config.show: <gold>===== EClean Config Preset =====</gold>
+command.config.current: '<white>Current preset: <yellow>{profile}</yellow></white>'
+command.config.normal_path: '<white>Normal config: <gray>{path}</gray></white>'
+command.config.dev_path: '<white>Dev config directory: <gray>{path}</gray></white>'
+command.config.switched: <green>Switched to config preset <yellow>{profile}</yellow> and reloaded</green>
+command.config.already: <yellow>Already using <yellow>{profile}</yellow> config preset</yellow>
+command.config.invalid_profile: '<red>Invalid config preset: {value} (choose normal / dev)</red>'
+common.complete: complete
+common.incomplete: incomplete
+update.available: '<yellow>Update available: {latest}; installed: {current}. {url}</yellow>'
+update.failed: '<yellow>Update check failed: {reason}. The next scheduled check will retry.</yellow>'
+command.clean_done: <yellow>Cleanup request finished; use /eclean history for per-world and per-module results and failures.</yellow>
+command.clean_result: '<green>Cleanup complete</green> <dark_gray>·</dark_gray> <gray>Removed <gold>{cleaned}</gold> entities</gray>
+
+  <gray>Failed <red>{failed}</red> · Skipped <yellow>{skipped}</yellow> chunks · {status}</gray>'
+command.clean_preview_result: '<aqua>Cleanup preview</aqua> <dark_gray>·</dark_gray> <gray>Selected <gold>{cleaned}</gold> entities</gray>
+
+  <gray>Failed <red>{failed}</red> · Skipped <yellow>{skipped}</yellow> chunks · {status}</gray>
+
+  <gray>No entities were removed.</gray>'
+command.trash_preview: '<white>Preview: the trash can contains {count} items; nothing was cleared.</white>'
+command.trash_cleared: <white>Cleared {count} items from the trash can.</white>
+command.config.valid: <green>Disk configuration {profile} and language files are valid. Runtime state was not changed.</green>
+command.config.invalid: '<red>Configuration validation failed: {reason}. The active configuration was not changed.</red>'
+command.config.diff: '<yellow>Disk changes compared with the active configuration: {changes}. These differences have not been applied.</yellow>'
+command.config.diff_section: '<gold>{section}: - active, + disk candidate; applied after a successful reload.</gold>'
+command.config.effective: '<gold>Effective configuration: {profile}, revision {revision}, world {world} (* means base rules).</gold>'
+command.config.source: '<gray>Source of {field}: {source}</gray>'
+command.config.semantics: '<gray>normal/dev are independent profiles. mode overrides legacy blacklistMode: remove-matching removes matches; keep-matching retains matches. Density protection
+  is independent, limits run in declaration order, and alerts count each entity type separately.</gray>'
+menu.stats.item.lore_blocked: '<white>World: {world}</white>
+
+  <white>Count: {count}</white>
+
+  <gray>Entity distribution permission is required</gray>'
+cleanup.summary.done: "<green>Cleanup complete</green> <dark_gray>·</dark_gray> <aqua>{scope}</aqua>\n  <gray>Drops <gold>{drop}</gold> <dark_gray>·</dark_gray> Living <gold>{living}</gold>\
+  \ <dark_gray>·</dark_gray> Dense <gold>{dense}</gold></gray>"
+cleanup.summary.preview: "<aqua>Cleanup preview</aqua> <dark_gray>·</dark_gray> <aqua>{scope}</aqua>\n  <gray>Drops <gold>{drop}</gold> <dark_gray>·</dark_gray> Living <gold>{living}</gold>\
+  \ <dark_gray>·</dark_gray> Dense <gold>{dense}</gold></gray>\n  <gray>No entities were removed.</gray>"
+cleanup.summary.partial: "  <yellow>Partial result: failed <red>{failed}</red> · skipped <gold>{skipped}</gold> chunk scans</yellow>\n  <gray>Details: <yellow>/eclean history</yellow></gray>"

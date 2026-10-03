@@ -46,6 +46,8 @@ class LanguageManager(
         }
         val user = flattenToMap(source).mapValues { (_, value) -> LegacyLangMigrator.legacyToMiniMessage(value) }
         val fallback = flattenToMap(defaults ?: bundled("zh_cn") ?: error("Missing bundled language"))
+        // Only exact previous defaults are refreshed; server-customized wording remains intact.
+        val previousDefaults = bundled("previous/$language")?.let(::flattenToMap).orEmpty()
         val parameters = Regex("\\{([A-Za-z0-9_]+)\\}")
         fun keys(text: String) = parameters.findAll(text).map { it.groupValues[1] }.toSet()
         val compatible = user.filter { (key, value) ->
@@ -54,7 +56,10 @@ class LanguageManager(
             if (!valid) logger("Language $language: placeholder mismatch at $key; using bundled translation")
             valid
         }
-        val upgraded = compatible.mapValues { (key, value) -> DefaultMessageMigrations.upgrade(key, value, fallback[key]) }
+        val upgraded = compatible.mapValues { (key, value) ->
+            if (value == previousDefaults[key]) fallback[key] ?: value
+            else DefaultMessageMigrations.upgrade(key, value, fallback[key])
+        }
         val candidate = LanguageSnapshot(language, fallback + upgraded)
         // On first use retain the original legacy file, including its comments and custom values.
         if (persistMissing && !Files.exists(target)) AtomicFiles.write(target, source)

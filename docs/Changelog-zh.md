@@ -7,6 +7,16 @@
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，
 并遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/) 版本规范。
 
+## 0.3.3
+
+### 新增
+
+- **Modrinth 发布**：新增独立的发布任务，复用 GitHub Release 的构建产物和更新日志，按固定的 Paper API 版本填写 Minecraft 版本，标记 Paper/Folia 平台。需配置 Actions secret `MODRINTH_TOKEN`，发布失败后可单独重试。
+
+### 变更
+
+- **中英文文案**：同步整理英文与简体中文的命令帮助、菜单、清理结果和配置提示，使两种语言的含义、操作说明及格式一致，修正生硬表达、语序和标点。重载时自动更新两种语言中未经修改的旧版默认文案，保留自定义翻译。
+
 ## 0.3.2
 
 ### 变更

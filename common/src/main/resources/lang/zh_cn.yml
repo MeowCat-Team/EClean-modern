@@ -1,67 +1,86 @@
 prefix: <gray>[<green>EClean</green>]</gray>
-command.reload_failed: '<red>配置加载失败，继续保留原配置。{reason}</red>'
-command.teleport.failed: '<red>传送失败，请检查目标位置和传送限制。</red>'
-command.teleport.return_failed: '<red>返回失败，原位置已保留，本次服务器运行期间下次登录会重试。</red>'
-command.teleport.busy: '<yellow>有一项传送正在进行，请稍后重试。</yellow>'
-cleanup.finish.world: '<white>世界 {world} 清理完成：掉落物 {drop}，生物 {living}，密集实体 {dense}。</white>'
 debug_prefix: <gray>[<gold>ECleanDebug</gold>]</gray>
-common.hover.view_distribution: <gray>点击查看区块分布</gray>
-common.hover.view_chunk: <gray>点击查看该区块实体</gray>
+
+common.hover.view_distribution: <gray>点击查看各区块的实体数量</gray>
+common.hover.view_chunk: <gray>点击查看该区块内的实体</gray>
 common.hover.tp: <gray>点击传送</gray>
-debug.console_enable: <white>已临时(修改当前 profile 的 global.debug 永久设置)<green>启用</green><aqua>Debug</aqua><white>, 下次重启前你将会收到<aqua>Debug</aqua><white>消息, 再使用一次此指令以<red>禁用</red></white>
-debug.console_disable: <white>已临时(修改当前 profile 的 global.debug 永久设置)<red>禁用</red><aqua>Debug</aqua><white>, 下次重启前你不会收到<aqua>Debug</aqua><white>消息, 再使用一次此指令以<green>启用</green></white>
-debug.player_enable: <white>已<green>启用</green><aqua>Debug</aqua><white>, 你将会收到<aqua>Debug</aqua><white>消息, 再使用一次此指令以<red>禁用</red></white>
-debug.player_disable: <white>已<red>禁用</red><aqua>Debug</aqua><white>, 你不会收到<aqua>Debug</aqua><white>消息, 再使用一次此指令以<green>启用</green></white>
-command.invalid.number: '{number}不是有效数字'
-command.invalid.entity_type: <yellow>{type}</yellow><red>不是有效的实体类型</red>
-cleanup.countdown.60: "<gray>将在 <gold>1 分钟</gold> 后清理</gray>"
-cleanup.countdown.30: "<gray>将在 <gold>30 秒</gold> 后清理</gray>"
-cleanup.countdown.10: "<gray>将在 <gold>10 秒</gold> 后清理</gray>"
-cleanup.countdown.0: "<yellow>正在清理...</yellow>"
-cleanup.finish.drop: '<white>已清理 <gold>{cleaned}</gold>/<gold>{total}</gold> 个掉落物</white>'
-cleanup.finish.living: '<white>已清理 <gold>{cleaned}</gold>/<gold>{total}</gold> 个生物</white>'
-cleanup.finish.chunk: '<white>已清理 <gold>{cleaned}</gold> 个密集实体</white>'
-cleanup.alert.entity: '<red>实体数量异常</red> <white>{world} 的 {type} 数量达到 {count}</white>'
-cleanup.alert.dense: '<red>检测到密集区块</red> <white>{chunk} 的 {entity} 数量达到 {count}</white>'
+common.duration: "{hours} 小时 {minutes} 分 {seconds} 秒"
+common.complete: "已完成"
+common.incomplete: "未完成"
+
+debug.console_enable: |-
+  <white>已临时<green>开启</green>调试消息，服务器重启后恢复配置中的设置。再次执行此命令可<red>关闭</red>。</white>
+  <gray>如需永久开启，请将当前配置预设中的 global.debug 设为 true。</gray>
+debug.console_disable: |-
+  <white>已临时<red>关闭</red>调试消息，服务器重启后恢复配置中的设置。再次执行此命令可<green>开启</green>。</white>
+  <gray>如需永久关闭，请将当前配置预设中的 global.debug 设为 false。</gray>
+debug.player_enable: <white>已<green>开启</green>调试消息，再次执行此命令可<red>关闭</red>。</white>
+debug.player_disable: <white>已<red>关闭</red>调试消息，再次执行此命令可<green>开启</green>。</white>
+
+cleanup.countdown.60: "<gray>将在 <gold>1 分钟</gold>后开始清理。</gray>"
+cleanup.countdown.30: "<gray>将在 <gold>30 秒</gold>后开始清理。</gray>"
+cleanup.countdown.10: "<gray>将在 <gold>10 秒</gold>后开始清理。</gray>"
+cleanup.countdown.0: "<yellow>正在清理……</yellow>"
+cleanup.finish.drop: '<white>本次统计 <gold>{total}</gold> 个掉落物，已清理 <gold>{cleaned}</gold> 个。</white>'
+cleanup.finish.living: '<white>本次统计 <gold>{total}</gold> 个生物，已清理 <gold>{cleaned}</gold> 个。</white>'
+cleanup.finish.chunk: '<white>已清理 <gold>{cleaned}</gold> 个密集实体。</white>'
+cleanup.finish.world: '<white>世界 {world} 清理完成：清理了 {drop} 个掉落物、{living} 个生物和 {dense} 个密集实体。</white>'
+cleanup.alert.entity: '<red>实体数量过多：</red><white>世界 {world} 中的 {type} 已达到 {count} 个。</white>'
+cleanup.alert.dense: '<red>检测到实体密集区块：</red><white>区块 {chunk} 中的 {entity} 已达到 {count} 个。</white>'
+cleanup.scope.worlds: "{count} 个世界"
+cleanup.summary.done: |-
+  <green>清理完成</green> <dark_gray>·</dark_gray> <aqua>{scope}</aqua>
+    <gray>已清理：掉落物 <gold>{drop}</gold> 个 <dark_gray>·</dark_gray> 生物 <gold>{living}</gold> 个 <dark_gray>·</dark_gray> 密集实体 <gold>{dense}</gold> 个</gray>
+cleanup.summary.preview: |-
+  <aqua>清理预演</aqua> <dark_gray>·</dark_gray> <aqua>{scope}</aqua>
+    <gray>预计清理：掉落物 <gold>{drop}</gold> 个 <dark_gray>·</dark_gray> 生物 <gold>{living}</gold> 个 <dark_gray>·</dark_gray> 密集实体 <gold>{dense}</gold> 个</gray>
+    <gray>本次仅作预演，未删除任何实体。</gray>
+cleanup.summary.partial: |-
+    <yellow>本次操作未全部完成：失败 <red>{failed}</red> 次，跳过 <gold>{skipped}</gold> 次区块扫描。</yellow>
+    <gray>执行 <yellow>/eclean history</yellow> 查看详细记录。</gray>
+
 menu.dense.title: <gold>密集实体检测</gold>
 menu.dense.item.name: <gold>{type}</gold>
-menu.dense.item.lore: '<white>{amount}</white>
-
-  <white>{chunk}</white>
-
+menu.dense.item.lore: |-
+  <white>数量：{amount}</white>
+  <white>区块：{chunk}</white>
   <green>左键点击传送</green>
-
-  <yellow>右键预览按密度规则清理，确认后执行</yellow>'
+  <yellow>右键点击预览清理范围，确认后清理</yellow>
 menu.dense.prev.name: <gold>上一页</gold>
 menu.dense.prev.lore: <white>点击前往上一页</white>
 menu.dense.next.name: <gold>下一页</gold>
 menu.dense.next.lore: <white>点击前往下一页</white>
-menu.dense.temp.name: <gold>点击切换临时传送功能</gold>
-menu.dense.temp.lore: "<white>传送成功 30 秒后返回原位置</white>\n<white>开关在当前菜单会话内持续生效，可再次点击关闭</white>\n<white>当前状态：{status}</white>"
-menu.dense.temp.status.true: <green>启用</green>
-menu.dense.temp.status.false: <red>禁用</red>
-menu.dense.clean: "<white>区块 {chunk} 的 {type}：已删除 {count} 个，失败 {failed} 个。</white>"
-menu.dense.confirm.title: <gold>确认密集实体清理</gold>
+menu.dense.temp.name: <gold>临时传送</gold>
+menu.dense.temp.lore: |-
+  <white>传送成功后，等待 30 秒自动返回原位置。</white>
+  <white>点击开启或关闭；关闭菜单后恢复默认关闭。</white>
+  <white>当前状态：{status}</white>
+menu.dense.temp.status.true: <green>已开启</green>
+menu.dense.temp.status.false: <red>已关闭</red>
+menu.dense.clean: "<white>已清理区块 {chunk} 中的 {type}：成功 {count} 个，失败 {failed} 个。</white>"
+menu.dense.confirm.title: <gold>确认清理密集实体</gold>
 menu.dense.confirm.target: <gold>本次清理范围</gold>
 menu.dense.confirm.lore: |-
   <white>区块：{chunk}</white>
-  <white>实体：{type}，当前共 {total} 个</white>
-  <red>预计清理：{selected} 个</red>
-  <green>保护或限额内保留：{retained} 个</green>
-  <gray>遵守密度规则与世界开关；30 秒内确认</gray>
-  <gray>只处理已预览的目标，执行前再次检查保护</gray>
-menu.dense.confirm.accept: <red>左键确认清理</red>
+  <white>实体类型：{type}，当前共 {total} 个</white>
+  <red>预计清理 {selected} 个</red>
+  <green>因保护规则或数量未超过上限，保留 {retained} 个</green>
+  <gray>按当前世界的密度规则清理，请在 30 秒内确认。</gray>
+  <gray>仅清理本次预览中的实体，执行前会再次检查保护规则。</gray>
+menu.dense.confirm.accept: <red>左键点击确认清理</red>
 menu.dense.confirm.cancel: <green>取消并返回</green>
-menu.dense.nothing: <green>当前规则没有选中可清理的实体，未执行删除。</green>
-menu.dense.unavailable: <yellow>配置已变化、预览已过期、清理已禁用或区块已卸载，请重新预览。</yellow>
-menu.trashcan.item.lore: '<white>共{amount}个</white>
+menu.dense.nothing: <green>按当前规则，没有需要清理的实体。</green>
+menu.dense.unavailable: |-
+  <yellow>本次预览已失效，请重新预览。</yellow>
+  <gray>可能是配置已更改、预览已超时、清理功能已关闭，或区块已卸载。</gray>
 
-  <green>左键点击拿取一个</green>
-
-  <green>右键点击拿取半组</green>
-
-  <green>Shift+左键点击拿取一组</green>'
-menu.trashcan.item.expire: <gray>剩余 {expire}</gray>
+menu.trashcan.title: <gold>共享垃圾桶</gold>
+menu.trashcan.item.lore: |-
+  <white>共 {amount} 个</white>
+  <green>左键点击取出 1 个</green>
+  <green>右键点击取出半组</green>
+  <green>Shift+左键点击取出一组</green>
+menu.trashcan.item.expire: <gray>剩余时间：{expire}</gray>
 menu.trashcan.prev.name: <gold>上一页</gold>
 menu.trashcan.prev.lore: <white>点击前往上一页</white>
 menu.trashcan.next.name: <gold>下一页</gold>
@@ -73,139 +92,179 @@ menu.trashcan.category.equipment: <white>装备</white>
 menu.trashcan.category.food: <white>食物</white>
 menu.trashcan.category.tool: <white>工具</white>
 menu.trashcan.category.misc: <white>其他</white>
-menu.trashcan.sort.name: <gold>排序</gold>
-menu.trashcan.sort.count_desc: <white>按数量降序</white>
-menu.trashcan.sort.name_asc: <white>按名称排序</white>
-menu.trashcan.sort.time_asc: <white>按剩余时间排序</white>
-menu.trashcan.search.name: <gold>搜索</gold>
-menu.trashcan.search.prompt: "<white>请在 60 秒内输入英文物品 ID 关键词（如 diamond）；本次输入不会公开发送。输入 cancel 取消。</white>"
-menu.trashcan.search.timeout: <yellow>搜索已超时，后续聊天将正常公开发送。</yellow>
-menu.trashcan.search.cancelled: <yellow>已取消搜索。</yellow>
-menu.trashcan.deposit_failed: <red>物品存入失败，请稍后重试。</red>
-menu.trashcan.search.reset: '<white>当前搜索: {query}（点击清除）</white>'
-menu.trashcan.title: "<gold>共享垃圾桶</gold>"
-menu.page.position: "<gray>第 <white>{page}</white> / <white>{pages}</white> 页</gray>"
-menu.page.first: "<gray>已经是第一页</gray>"
-menu.page.last: "<gray>已经是最后一页</gray>"
 menu.trashcan.category.lore: |-
   <gray>当前分类：{category}</gray>
 
   <yellow>点击切换分类</yellow>
 
-  <gray>所有玩家共享桶内物品</gray>
-  <gray>物品逐条过期，服务器重启后清空</gray>
+  <gray>桶内物品由所有玩家共享。</gray>
+  <gray>物品到期后会被清除，服务器重启后垃圾桶清空。</gray>
+menu.trashcan.sort.name: <gold>排序</gold>
+menu.trashcan.sort.count_desc: <white>数量从多到少</white>
+menu.trashcan.sort.name_asc: <white>按物品 ID 排序</white>
+menu.trashcan.sort.time_asc: <white>剩余时间从短到长</white>
 menu.trashcan.sort.lore: |-
   <gray>当前排序：{sort}</gray>
 
-  <yellow>点击切换排序</yellow>
+  <yellow>点击切换排序方式</yellow>
 
-  <gray>点击下方背包中的物品即可存入：</gray>
-  <white>左键 1 件 · 右键一半 · Shift+左键整组</white>
+  <gray>点击下方背包中的物品可存入垃圾桶：</gray>
+  <white>左键存入 1 个，右键存入一半，Shift+左键存入整组。</white>
+menu.trashcan.search.name: <gold>搜索</gold>
+menu.trashcan.search.prompt: |-
+  <white>请在 60 秒内输入物品 ID 的关键词，例如 diamond。</white>
+  <gray>搜索内容不会发送到公共聊天，输入 cancel 可取消搜索。</gray>
+menu.trashcan.search.timeout: <yellow>搜索已超时，之后的消息将正常发送到公共聊天。</yellow>
+menu.trashcan.search.cancelled: <yellow>已取消搜索。</yellow>
+menu.trashcan.search.reset: '<white>当前搜索：{query}（点击清除）</white>'
 menu.trashcan.search.lore: |-
-  <gray>按英文物品 ID 筛选，例如 diamond</gray>
+  <gray>按物品 ID 搜索，例如 diamond。</gray>
 
-  <yellow>点击后在聊天栏输入关键词</yellow>
-  <gray>私密输入 · 60 秒内有效 · cancel 取消</gray>
-menu.trashcan.empty.name: "<gray>暂无可显示的物品</gray>"
+  <yellow>点击后在聊天栏输入关键词。</yellow>
+  <gray>搜索内容不会公开发送，请在 60 秒内输入。</gray>
+  <gray>输入 cancel 可取消搜索。</gray>
+menu.trashcan.deposit_failed: <red>未能存入物品，请稍后重试。</red>
+menu.trashcan.empty.name: <gray>暂无可显示的物品</gray>
 menu.trashcan.empty.lore: |-
   <gray>垃圾桶为空，或没有符合筛选条件的物品。</gray>
   <gray>可以切换分类或清除搜索条件。</gray>
-  <yellow>点击下方背包中的物品即可存入。</yellow>
-update.rate_limited: "GitHub API 请求已达到限额"
-command.reload_done: <green>重载完成</green>
-command.trash_disable: <green>垃圾桶功能已被禁用</green>
-command.trash_open: <green>已打开垃圾桶</green>
-command.trash_clean_done: <green>垃圾桶已清空</green>
-command.trash_stats_empty: <red>垃圾桶是空的</red>
-command.trash_stats_header: <aqua>垃圾桶条目统计(共{count}类)</aqua>
-command.trash_stats_line: <white>{item} x{amount}</white> <gray>剩余 {expire}</gray>
-command.trash_never_expire: "本次运行内不按时间过期（重启丢失）"
-command.clean_dry_done: <green>预演完成 — 未删除任何实体</green>
-command.clean_dry_living: '<green>预演 — 生物: <gold>{cleaned}</gold>/<gold>{total}</gold> 个，共 <gold>{worlds}</gold> 个世界</green>'
-command.clean_dry_drop: '<green>预演 — 掉落物: <gold>{cleaned}</gold>/<gold>{total}</gold> 个，共 <gold>{worlds}</gold> 个世界</green>'
-command.clean_dry_chunk: '<green>预演 — 密集实体: <gold>{cleaned}</gold> 个，共 <gold>{regions}</gold> 个密集区域</green>'
-command.clean_world_result: '<green>清理: {cleaned}/{total}</green>'
-command.clean_world_chunk_result: '<green>清理: {cleaned}</green>'
-command.status.header: <gold>全服统计</gold>
-command.status.world: '<white>世界 <gold>{world}</gold>: 实体{entities} 区块{chunks} 强加载{force}</white>'
-command.status.total: '<white>全服实体总数: <gold>{total}</gold></white>'
-command.history_empty: <red>暂无清理记录</red>
-command.history_header: "<gold>最近执行记录（每世界、每模块；掉落按实体数，垃圾桶按物品件数）</gold>"
-command.history_line: "<white>{time} [{source}/{kind}] 操作者 {actor}；世界 {world} 范围 {scope}；配置 {revision}；{duration}ms；{status}</white>\n<gray>掉落实体 {drop} / 生物 {living} / 密集 {chunk} / 桶内物品 {trash}；删除失败 {failed}，跳过区块 {skipped}</gray>"
-command.top_header: <gold>Top {type}</gold>
-command.top_entity: '<white>{rank}. {type}: {count}</white>'
-command.top_chunk: '<white>{rank}. {world} x:{x} z:{z}: {count}</white>'
-menu.stats.title: <gold>统计 - {world}</gold>
+  <yellow>点击下方背包中的物品可存入垃圾桶。</yellow>
+
+menu.page.position: "<gray>第 <white>{page}</white> 页，共 <white>{pages}</white> 页</gray>"
+menu.page.first: <gray>已经是第一页</gray>
+menu.page.last: <gray>已经是最后一页</gray>
+menu.stats.title: <gold>实体统计 - {world}</gold>
 menu.stats.item.name: <gold>{type}</gold>
-menu.stats.item.lore: '<white>世界: {world}</white>
+menu.stats.item.lore: |-
+  <white>世界：{world}</white>
+  <white>数量：{count}</white>
+  <gray>点击查看各区块的实体数量</gray>
+menu.stats.item.lore_blocked: |-
+  <white>世界：{world}</white>
+  <white>数量：{count}</white>
+  <gray>你没有查看实体分布的权限。</gray>
 
-  <white>数量: {count}</white>
+command.no_permission: <red>你没有权限使用该命令。</red>
+command.player_only: <red>该命令只能由玩家执行。</red>
+command.invalid.number: '<red>{number} 不是有效数字。</red>'
+command.invalid.entity_type: <red><yellow>{type}</yellow> 不是有效的实体类型。</red>
+command.invalid.world: <red>不存在名为 <yellow>{world}</yellow> 的世界。</red>
+command.reload_done: <green>配置和语言文件已重新加载。</green>
+command.reload_failed: '<red>配置加载失败，仍使用原配置。原因：{reason}</red>'
+command.stats_collect_failed: <red>未能获取世界统计信息，请稍后重试。</red>
 
-  <gray>点击查看区块分布</gray>'
-command.invalid.world: <red>不存在名为<yellow>{world}</yellow>的世界</red>
-command.stats_collect_failed: <red>收集世界统计信息失败</red>
-command.players_header: <gold>{world}</gold>:{lines}
-command.player_location: '  <aqua>{player}</aqua><white>: {x} {y} {z}</white>'
-command.teleport.done: <green>传送完成</green>
-command.teleport.temp: <green>传送完成, 将在30秒后传送回之前的位置</green>
-command.teleport.cover: <green>传送完成, 将在30秒后传送回上一个传送的返回位置</green>
-command.teleport.back: <green>已返回传送前的位置</green>
-command.stats.spacing: <gray>, </gray>
-command.stats.content: '<white>{type}: {count}个</white>'
-command.stats.empty: <red>无结果</red>
-command.stats.world: '<white>世界<green>{world}</green>共加载区块{count}个(强加载{force}个)</white>
+command.trash_disable: <yellow>垃圾桶功能已关闭。</yellow>
+command.trash_open: <green>已打开垃圾桶。</green>
+command.trash_clean_done: <green>垃圾桶已清空。</green>
+command.trash_stats_empty: <gray>垃圾桶是空的。</gray>
+command.trash_stats_header: <aqua>垃圾桶物品统计（共 {count} 类）</aqua>
+command.trash_stats_line: <white>{item} × {amount}</white> <gray>剩余时间：{expire}</gray>
+command.trash_never_expire: "无到期时间，服务器重启后清空"
+command.trash_preview: "<white>垃圾桶中共有 {count} 件物品，本次仅作预演，未清空垃圾桶。</white>"
+command.trash_cleared: "<white>已清空垃圾桶，共清除 {count} 件物品。</white>"
 
-  <aqua>实体统计信息:</aqua>
+command.clean_done: <yellow>本次清理已结束，执行 /eclean history 查看各世界的详细结果。</yellow>
+command.clean_dry_done: <green>预演完成，未删除任何实体。</green>
+command.clean_dry_living: '<green>预演结果：在 {worlds} 个世界中统计了 <gold>{total}</gold> 个生物，预计清理 <gold>{cleaned}</gold> 个。</green>'
+command.clean_dry_drop: '<green>预演结果：在 {worlds} 个世界中统计了 <gold>{total}</gold> 个掉落物，预计清理 <gold>{cleaned}</gold> 个。</green>'
+command.clean_dry_chunk: '<green>预演结果：共 {regions} 个密集区域，预计清理 <gold>{cleaned}</gold> 个实体。</green>'
+command.clean_world_result: '<green>本次统计 {total} 个实体，已清理 {cleaned} 个。</green>'
+command.clean_world_chunk_result: '<green>已清理 {cleaned} 个密集实体。</green>'
+command.clean_result: |-
+  <green>清理结果</green> <dark_gray>·</dark_gray> <gray>已清理 <gold>{cleaned}</gold> 个实体</gray>
+  <gray>清理失败 <red>{failed}</red> 次，跳过 <yellow>{skipped}</yellow> 次区块扫描；状态：{status}</gray>
+command.clean_preview_result: |-
+  <aqua>清理预演</aqua> <dark_gray>·</dark_gray> <gray>预计清理 <gold>{cleaned}</gold> 个实体</gray>
+  <gray>失败 <red>{failed}</red> 次，跳过 <yellow>{skipped}</yellow> 次区块扫描；状态：{status}</gray>
+  <gray>本次仅作预演，未删除任何实体。</gray>
 
-  {entity}'
-command.stats.entity: '<white>实体<yellow>{type}</yellow>的统计信息</white>
+command.status.header: <gold>全服统计</gold>
+command.status.world: '<white>世界 <gold>{world}</gold>：共 {entities} 个实体，已加载 {chunks} 个区块，其中 {force} 个为强加载区块。</white>'
+command.status.total: '<white>全服共有 <gold>{total}</gold> 个实体。</white>'
+command.history_empty: <gray>暂无清理记录。</gray>
+command.history_header: |-
+  <gold>最近的清理记录</gold>
+  <gray>各世界的每项清理分别记录；掉落物按实体数统计，垃圾桶按物品件数统计。</gray>
+command.history_line: |-
+  <white>{time} [{source}/{kind}] 操作者：{actor}；世界：{world}；范围：{scope}；配置版本：{revision}；耗时：{duration} 毫秒；状态：{status}</white>
+  <gray>清理数量：掉落物 {drop} 个，生物 {living} 个，密集实体 {chunk} 个，垃圾桶物品 {trash} 件；删除失败 {failed} 次，跳过 {skipped} 次区块扫描。</gray>
+command.top_header: <gold>数量排行（{type}）</gold>
+command.top_entity: '<white>{rank}. {type}：{count} 个</white>'
+command.top_chunk: '<white>{rank}. 世界 {world}，坐标 X: {x} Z: {z}，共 {count} 个实体</white>'
+command.players_header: <gold>{world}</gold>：{lines}
+command.player_location: '  <aqua>{player}</aqua><white>：X: {x} Y: {y} Z: {z}</white>'
 
-  {entity}'
-command.usage.debug: <green>/eclean debug</green> <white>切换debug消息的接受与否</white>
-command.usage.reload: <green>/eclean reload</green> <white>重载插件</white>
-command.usage.trash: "<green>/eclean trash [open]</green> <white>打开共享垃圾桶</white>\n<green>/eclean trash stats</green> <white>查看物品件数与到期时间</white>"
-command.usage.players: <green>/eclean players</green> <white>展示玩家及其所在的位置</white>
-command.usage.show: <green>/eclean show</green> <white>打开密集实体统计信息菜单</white>
-command.usage.stats: "<green>/eclean stats [world]</green> <white>查看当前或指定世界统计</white>\n<green>/eclean stats gui [world]</green> <white>打开统计菜单；跨世界另需 stats.world 权限</white>"
-command.usage.entity: "<green>/eclean entity [type] [world] [min-count]</green> <white>查询数量严格大于 min-count 的区块（默认 0）</white>\n<green>/eclean entity [type] [world] [chunk-x] [chunk-z]</green> <white>查看区块内实体坐标</white>"
-command.usage.clean: "<green>/eclean clean [all|entity|drop|chunk] [world] [--preview]</green> <white>清理或预演；--preview 可放在子命令后的任意位置</white>\n<green>/eclean clean trash [--preview]</green> <white>清空共享垃圾桶或查看数量</white>"
-command.usage.status: '<green>/eclean status all</green> <white>查看全服统计</white>
+command.teleport.done: <green>传送完成。</green>
+command.teleport.temp: <green>传送完成，30 秒后将自动返回传送前的位置。</green>
+command.teleport.cover: <green>传送完成，30 秒后将返回首次临时传送前的位置。</green>
+command.teleport.back: <green>已返回传送前的位置。</green>
+command.teleport.failed: <red>传送失败，请检查目标位置及服务器的传送限制。</red>
+command.teleport.return_failed: <red>未能返回原位置。返回位置已保留，服务器重启前再次登录时会重试。</red>
+command.teleport.busy: <yellow>正在传送，请稍后重试。</yellow>
 
-  <green>/eclean status <世界名></green> <white>查看单个世界状态</white>'
-command.usage.history: <green>/eclean history [数量]</green> <white>查看最近清理记录</white>
-command.usage.top: "<green>/eclean top entity|chunk [amount] [world]</green> <white>默认全服前 10 项。指定世界时先填写数量，如 top entity 10 123；数量范围 1–100。</white>"
-command.usage.teleport: '<green>/eclean tp <世界名> <x> <y> <z></green> <white>传送到指定坐标</white>'
-command.no_permission: <red>你没有权限使用该命令</red>
-command.player_only: <red>该命令只能由玩家执行</red>
+command.stats.spacing: <gray>，</gray>
+command.stats.content: '<white>{type}：{count} 个</white>'
+command.stats.empty: <gray>没有符合条件的统计结果。</gray>
+command.stats.world: |-
+  <white>世界 <green>{world}</green> 已加载 {count} 个区块，其中 {force} 个为强加载区块。</white>
+  <aqua>实体统计：</aqua>
+  {entity}
+command.stats.entity: |-
+  <white><yellow>{type}</yellow> 的区块分布：</white>
+  {entity}
 
-command.usage.config: "<green>/eclean config show|validate|diff</green> <white>查看配置路径、校验磁盘配置、比较尚未应用的变化</white>\n<green>/eclean config effective [world]</green> <white>查看生效规则与来源</white>\n<green>/eclean config profile normal|dev</green> <white>切换独立配置并立即重载</white>"
-command.config.show: <gold>===== EClean 配置预设 =====</gold>
-command.config.current: '<white>当前预设: <yellow>{profile}</yellow></white>'
-command.config.normal_path: '<white>Normal 配置: <gray>{path}</gray></white>'
-command.config.dev_path: '<white>Dev 配置目录: <gray>{path}</gray></white>'
-command.config.switched: <green>已切换到配置预设 <yellow>{profile}</yellow>，配置已重新加载</green>
-command.config.already: <yellow>当前已经是 <yellow>{profile}</yellow> 配置预设</yellow>
-command.config.invalid_profile: '<red>无效的配置预设: {value}（可选 normal / dev）</red>'
-common.duration: "{hours}小时 {minutes}分 {seconds}秒"
-common.complete: "完成"
-common.incomplete: "未完整执行"
-update.available: "<yellow>有可用更新：{latest}，当前版本：{current}。{url}</yellow>"
-update.failed: "<yellow>更新检查失败：{reason}。将在下次计划检查时重试。</yellow>"
-command.clean_done: "<yellow>清理请求已结束；各世界、各模块的结果及异常请查看 /eclean history。</yellow>"
-command.clean_result: "<green>清理完成</green> <dark_gray>·</dark_gray> <gray>已删除 <gold>{cleaned}</gold> 个实体</gray>\n<gray>失败 <red>{failed}</red> · 跳过 <yellow>{skipped}</yellow> 区块 · {status}</gray>"
-command.clean_preview_result: "<aqua>清理预演</aqua> <dark_gray>·</dark_gray> <gray>选中 <gold>{cleaned}</gold> 个实体</gray>\n<gray>失败 <red>{failed}</red> · 跳过 <yellow>{skipped}</yellow> 区块 · {status}</gray>\n<gray>未删除任何实体。</gray>"
-command.trash_preview: "<white>预演：垃圾桶当前有 {count} 件物品，未清空。</white>"
-command.trash_cleared: "<white>已从垃圾桶清除 {count} 件物品。</white>"
-command.config.valid: "<green>磁盘配置 {profile} 与语言文件校验通过，未修改运行状态。</green>"
-command.config.invalid: "<red>配置校验失败：{reason}。运行中配置未变化。</red>"
-command.config.diff: "<yellow>磁盘配置相对运行中配置的变化：{changes}。以下差异尚未应用。</yellow>"
-command.config.diff_section: "<gold>{section}：- 运行中，+ 磁盘候选；重载成功后应用。</gold>"
-command.config.effective: "<gold>生效配置：{profile}，版本 {revision}，世界 {world}（* 为基础规则）。</gold>"
-command.config.source: "<gray>{field} 的来源：{source}</gray>"
+command.usage.debug: <green>/eclean debug</green> <white>开启或关闭调试消息</white>
+command.usage.reload: <green>/eclean reload</green> <white>重新加载配置和语言文件</white>
+command.usage.trash: |-
+  <green>/eclean trash [open]</green> <white>打开共享垃圾桶</white>
+  <green>/eclean trash stats</green> <white>查看垃圾桶中的物品数量和剩余时间</white>
+command.usage.players: <green>/eclean players</green> <white>查看在线玩家及其位置</white>
+command.usage.show: <green>/eclean show</green> <white>打开密集实体检测菜单</white>
+command.usage.stats: |-
+  <green>/eclean stats [世界名]</green> <white>查看当前或指定世界的实体和区块统计</white>
+  <green>/eclean stats gui [世界名]</green> <white>打开统计菜单；查看其他世界需要 stats.world 权限</white>
+command.usage.entity: |-
+  <green>/eclean entity [实体类型] [世界名] [最小数量]</green> <white>查看各区块的实体数量，仅显示超过最小数量的区块（默认为 0）</white>
+  <green>/eclean entity [实体类型] [世界名] [区块 X] [区块 Z]</green> <white>查看指定区块内的实体坐标</white>
+command.usage.clean: |-
+  <green>/eclean clean [all|entity|drop|chunk] [世界名] [--preview]</green> <white>立即清理；加上 --preview 仅预演，不删除实体</white>
+  <gray>--preview 可放在 clean 之后的任意位置。</gray>
+  <green>/eclean clean trash [--preview]</green> <white>清空共享垃圾桶；加上 --preview 仅查看待清除的物品数量</white>
+command.usage.status: |-
+  <green>/eclean status all</green> <white>查看全服统计</white>
+  <green>/eclean status <世界名></green> <white>查看指定世界的统计</white>
+command.usage.history: <green>/eclean history [数量]</green> <white>查看最近的清理记录</white>
+command.usage.top: |-
+  <green>/eclean top entity|chunk [数量] [世界名]</green> <white>查看实体或区块的数量排行，默认显示全服前 10 项。</white>
+  <gray>数量范围为 1–100。指定世界时需先填写数量，例如 /eclean top entity 10 world。</gray>
+command.usage.teleport: '<green>/eclean tp <世界名> <x> <y> <z></green> <white>传送到指定世界的坐标</white>'
+command.usage.config: |-
+  <green>/eclean config show</green> <white>查看当前配置预设及文件路径</white>
+  <green>/eclean config validate</green> <white>检查配置和语言文件是否有效</white>
+  <green>/eclean config diff</green> <white>查看配置文件中尚未生效的修改</white>
+  <green>/eclean config effective [世界名]</green> <white>查看当前生效的规则及其来源</white>
+  <green>/eclean config profile normal|dev</green> <white>切换配置预设并立即重新加载</white>
+
+command.config.show: <gold>EClean 配置预设</gold>
+command.config.current: '<white>当前预设：<yellow>{profile}</yellow></white>'
+command.config.normal_path: '<white>normal 配置文件：<gray>{path}</gray></white>'
+command.config.dev_path: '<white>dev 配置目录：<gray>{path}</gray></white>'
+command.config.switched: <green>已切换到 <yellow>{profile}</yellow> 配置预设，并重新加载配置。</green>
+command.config.already: <yellow>当前已使用 {profile} 配置预设。</yellow>
+command.config.invalid_profile: '<red>无效的配置预设：{value}，请选择 normal 或 dev。</red>'
+command.config.valid: "<green>{profile} 配置和语言文件检查通过；本次仅检查，未应用修改。</green>"
+command.config.invalid: "<red>配置检查失败：{reason}。仍使用当前配置。</red>"
+command.config.diff: "<yellow>配置文件与当前生效配置的差异：{changes}。以下修改尚未生效。</yellow>"
+command.config.diff_section: "<gold>{section}：- 表示当前生效的配置，+ 表示文件中的修改；重新加载成功后生效。</gold>"
+command.config.effective: "<gold>当前生效的配置：预设 {profile}，配置版本 {revision}，世界 {world}（* 表示默认规则）。</gold>"
+command.config.source: "<gray>{field} 来自：{source}</gray>"
 command.config.line: "<white>{line}</white>"
-command.config.semantics: "<gray>normal/dev 为独立配置。mode 优先于旧 blacklistMode；remove-matching 只清匹配项，keep-matching 保留匹配项。密度保护独立配置，限额按声明顺序处理，告警按单一实体类型计数。</gray>"
-menu.stats.item.lore_blocked: "<white>世界：{world}</white>\n<white>数量：{count}</white>\n<gray>缺少实体分布查询权限</gray>"
-cleanup.scope.worlds: "{count} 个世界"
-cleanup.summary.done: "<green>清理完成</green> <dark_gray>·</dark_gray> <aqua>{scope}</aqua>\n  <gray>掉落物 <gold>{drop}</gold> <dark_gray>·</dark_gray> 生物 <gold>{living}</gold> <dark_gray>·</dark_gray> 密集实体 <gold>{dense}</gold></gray>"
-cleanup.summary.preview: "<aqua>清理预演</aqua> <dark_gray>·</dark_gray> <aqua>{scope}</aqua>\n  <gray>掉落物 <gold>{drop}</gold> <dark_gray>·</dark_gray> 生物 <gold>{living}</gold> <dark_gray>·</dark_gray> 密集实体 <gold>{dense}</gold></gray>\n  <gray>未删除任何实体。</gray>"
-cleanup.summary.partial: "  <yellow>部分完成：失败 <red>{failed}</red> · 跳过 <gold>{skipped}</gold> 次区块扫描</yellow>\n  <gray>详情：<yellow>/eclean history</yellow></gray>"
+command.config.semantics: |-
+  <gray>normal 和 dev 是两套独立配置，切换时不会互相继承。</gray>
+  <gray>mode 优先于旧版 blacklistMode：remove-matching 清理匹配的实体，keep-matching 保留匹配的实体。</gray>
+  <gray>密集实体的保护规则单独设置，数量限制按配置中的顺序执行。</gray>
+  <gray>数量告警按每种实体分别统计。</gray>
+
+update.available: "<yellow>发现新版本 {latest}，当前版本为 {current}。下载地址：{url}</yellow>"
+update.failed: "<yellow>检查更新失败：{reason}。下次检查时将自动重试。</yellow>"
+update.rate_limited: "GitHub API 请求次数已达到上限"

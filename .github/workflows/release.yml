@@ -9,6 +9,9 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      game-version: ${{ steps.version.outputs.game-version }}
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -25,7 +28,18 @@ jobs:
             exit 1
           fi
           echo "version=$V" >> "$GITHUB_OUTPUT"
+          MC=$(python3 -c 'import tomllib; print(tomllib.load(open("gradle/libs.versions.toml", "rb"))["versions"]["paper"].split(".build.")[0])')
+          echo "game-version=$MC" >> "$GITHUB_OUTPUT"
           echo "本次发版版本: $V"
+
+      - name: Check Modrinth credentials
+        env:
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+        run: |
+          if [ -z "$MODRINTH_TOKEN" ]; then
+            echo "::error::请先在仓库 Actions secrets 中配置 MODRINTH_TOKEN"
+            exit 1
+          fi
 
       - name: Check tag does not exist
         run: |
@@ -74,3 +88,36 @@ jobs:
           body_path: release_notes.md
           files: paper/build/libs/EClean-Modern-*.jar
           fail_on_unmatched_files: true
+
+  publish-modrinth:
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Download GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ needs.release.outputs.version }}
+        run: |
+          gh release download "v$RELEASE_VERSION" --repo "$GITHUB_REPOSITORY" \
+            --pattern 'EClean-Modern-*-paper.jar' --dir release
+          gh release view "v$RELEASE_VERSION" --repo "$GITHUB_REPOSITORY" \
+            --json body --jq .body > release_notes.md
+
+      - name: Publish to Modrinth
+        uses: Kira-NT/mc-publish@52307b03863581dec6b652b83e597aec02ebb075 # v3.3
+        with:
+          modrinth-id: VW7EmMIj # ecl-modern
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          files: release/EClean-Modern-*-paper.jar
+          name: EClean Modern ${{ needs.release.outputs.version }}
+          version: ${{ needs.release.outputs.version }}
+          version-type: release
+          changelog-file: release_notes.md
+          loaders: |
+            paper
+            folia
+          environment: server
+          game-versions: ${{ needs.release.outputs.game-version }}
+          java: '25'

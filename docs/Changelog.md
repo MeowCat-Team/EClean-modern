@@ -7,6 +7,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.3.3
+
+### Added
+
+- **Modrinth publishing**: publish the GitHub Release artifact and changelog to Modrinth in a separately retryable job, using the pinned Paper API's Minecraft version and Paper/Folia loader metadata. Requires the `MODRINTH_TOKEN` Actions secret.
+
+### Changed
+
+- **Messages and translations**: rewrite English and Simplified Chinese command help, menus, cleanup results, and configuration diagnostics with matching meanings, controls, and formatting. Refresh unchanged previous defaults in both languages on reload while preserving custom translations.
+
 ## 0.3.2
 
 ### Changed
