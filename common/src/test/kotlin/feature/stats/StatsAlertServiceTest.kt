@@ -3,9 +3,9 @@ package feature.stats
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import net.kyori.adventure.text.Component
-import top.e404.eclean.common.api.*
-import top.e404.eclean.config.ConfigBundle
-import top.e404.eclean.feature.stats.*
+import org.meowcat.eclean.common.api.*
+import org.meowcat.eclean.config.ConfigBundle
+import org.meowcat.eclean.feature.stats.*
 
 class StatsAlertServiceTest {
     private val config = ConfigBundle(cleanup = ConfigBundle().cleanup.copy(

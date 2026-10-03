@@ -8,15 +8,15 @@ import org.mockbukkit.mockbukkit.MockBukkit
 import org.mockbukkit.mockbukkit.ServerMock
 import org.mockbukkit.mockbukkit.entity.PlayerMock
 import org.mockbukkit.mockbukkit.world.WorldMock
-import top.e404.eclean.EClean
-import top.e404.eclean.config.Config
-import top.e404.eclean.config.ConfigBundle
-import top.e404.eclean.config.model.ChunkDensityConfig
-import top.e404.eclean.config.model.CleanupConfig
-import top.e404.eclean.config.model.DropConfig
-import top.e404.eclean.config.model.GlobalConfig
-import top.e404.eclean.config.model.LivingConfig
-import top.e404.eclean.config.model.TrashcanConfig
+import org.meowcat.eclean.EClean
+import org.meowcat.eclean.config.Config
+import org.meowcat.eclean.config.ConfigBundle
+import org.meowcat.eclean.config.model.ChunkDensityConfig
+import org.meowcat.eclean.config.model.CleanupConfig
+import org.meowcat.eclean.config.model.DropConfig
+import org.meowcat.eclean.config.model.GlobalConfig
+import org.meowcat.eclean.config.model.LivingConfig
+import org.meowcat.eclean.config.model.TrashcanConfig
 
 lateinit var server: ServerMock
 lateinit var plugin: EClean

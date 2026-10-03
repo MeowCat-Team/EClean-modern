@@ -1,6 +1,6 @@
 package ui
 
-import top.e404.eclean.ui.SearchSessions
+import org.meowcat.eclean.ui.SearchSessions
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertNull

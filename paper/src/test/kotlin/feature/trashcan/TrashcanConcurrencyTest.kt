@@ -4,7 +4,7 @@ import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 import org.junit.jupiter.api.BeforeAll
 import setupMockBukkit
-import top.e404.eclean.feature.trashcan.TrashcanItemStore
+import org.meowcat.eclean.feature.trashcan.TrashcanItemStore
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit

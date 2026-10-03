@@ -3,8 +3,8 @@ package lang
 import java.nio.file.Files
 import kotlin.test.*
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
-import top.e404.eclean.lang.LanguageManager
-import top.e404.eclean.util.*
+import org.meowcat.eclean.lang.LanguageManager
+import org.meowcat.eclean.util.*
 
 class MessageContractTest {
     private val parameters = Regex("\\{([A-Za-z0-9_]+)\\}")

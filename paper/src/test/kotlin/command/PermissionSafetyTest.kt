@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import plugin
 import server
 import setupMockBukkit
-import top.e404.eclean.command.*
+import org.meowcat.eclean.command.*
 import kotlin.test.*
 
 class PermissionSafetyTest {

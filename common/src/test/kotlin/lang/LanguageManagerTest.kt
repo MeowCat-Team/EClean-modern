@@ -3,7 +3,7 @@ package lang
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import top.e404.eclean.lang.LanguageManager
+import org.meowcat.eclean.lang.LanguageManager
 import java.nio.file.Files
 
 class LanguageManagerTest {

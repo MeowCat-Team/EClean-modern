@@ -1,6 +1,6 @@
 package util
 
-import top.e404.eclean.util.formatAsConst
+import org.meowcat.eclean.util.formatAsConst
 import java.util.Locale
 import kotlin.test.Test
 import kotlin.test.assertEquals

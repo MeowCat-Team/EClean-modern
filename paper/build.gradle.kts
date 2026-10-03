@@ -46,10 +46,10 @@ tasks {
 
         // Paper already provides Adventure at runtime.
         exclude("net/kyori/**")
-        relocate("org.bstats", "top.e404.eclean.relocate.bstats")
-        relocate("kotlin", "top.e404.eclean.relocate.kotlin")
-        relocate("com.charleskorn.kaml", "top.e404.eclean.relocate.kaml")
-        relocate("org.yaml", "top.e404.eclean.relocate.snakeyaml")
+        relocate("org.bstats", "org.meowcat.eclean.relocate.bstats")
+        relocate("kotlin", "org.meowcat.eclean.relocate.kotlin")
+        relocate("com.charleskorn.kaml", "org.meowcat.eclean.relocate.kaml")
+        relocate("org.yaml", "org.meowcat.eclean.relocate.snakeyaml")
         exclude("META-INF/**")
 
         doLast {

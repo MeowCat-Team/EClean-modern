@@ -1,8 +1,8 @@
 package config
 
 import kotlin.test.*
-import top.e404.eclean.config.*
-import top.e404.eclean.config.model.*
+import org.meowcat.eclean.config.*
+import org.meowcat.eclean.config.model.*
 
 class ConfigurationSafetyTest {
     @Test fun `rejects unsafe numbers and ambiguous cron overrides`() {

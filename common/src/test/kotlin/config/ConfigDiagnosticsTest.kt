@@ -1,10 +1,10 @@
 package config
 
 import kotlin.test.*
-import top.e404.eclean.config.*
-import top.e404.eclean.config.model.*
-import top.e404.eclean.feature.cleanup.drop.DropCleanupRule
-import top.e404.eclean.feature.cleanup.living.LivingCleanupRule
+import org.meowcat.eclean.config.*
+import org.meowcat.eclean.config.model.*
+import org.meowcat.eclean.feature.cleanup.drop.DropCleanupRule
+import org.meowcat.eclean.feature.cleanup.living.LivingCleanupRule
 
 class ConfigDiagnosticsTest {
     @Test fun `effective display includes defaults and runtime generation does not produce rule differences`() {

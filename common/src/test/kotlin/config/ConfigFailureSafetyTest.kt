@@ -3,8 +3,8 @@ package config
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.test.*
-import top.e404.eclean.config.*
-import top.e404.eclean.config.model.ConfigProfile
+import org.meowcat.eclean.config.*
+import org.meowcat.eclean.config.model.ConfigProfile
 
 class ConfigFailureSafetyTest {
     private val directory: Path = Files.createTempDirectory("eclean-config-safety")

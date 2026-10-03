@@ -6,15 +6,15 @@ import java.util.concurrent.TimeUnit
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
-import top.e404.eclean.common.api.CommonLocation
-import top.e404.eclean.common.api.ScheduledTask
-import top.e404.eclean.common.api.Scheduler
-import top.e404.eclean.config.ConfigLoader
-import top.e404.eclean.config.ConfigurationInspection
-import top.e404.eclean.config.ConfigurationJobs
-import top.e404.eclean.config.ConfigurationManager
-import top.e404.eclean.config.ConfigurationReloadResult
-import top.e404.eclean.lang.LanguageManager
+import org.meowcat.eclean.common.api.CommonLocation
+import org.meowcat.eclean.common.api.ScheduledTask
+import org.meowcat.eclean.common.api.Scheduler
+import org.meowcat.eclean.config.ConfigLoader
+import org.meowcat.eclean.config.ConfigurationInspection
+import org.meowcat.eclean.config.ConfigurationJobs
+import org.meowcat.eclean.config.ConfigurationManager
+import org.meowcat.eclean.config.ConfigurationReloadResult
+import org.meowcat.eclean.lang.LanguageManager
 
 class ConfigurationJobsTest {
     private open class DirectScheduler : Scheduler {

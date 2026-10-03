@@ -1,9 +1,9 @@
 package feature.cleanup
 
 import kotlin.test.*
-import top.e404.eclean.config.ConfigBundle
-import top.e404.eclean.config.model.*
-import top.e404.eclean.feature.cleanup.CleanupSchedule
+import org.meowcat.eclean.config.ConfigBundle
+import org.meowcat.eclean.config.model.*
+import org.meowcat.eclean.feature.cleanup.CleanupSchedule
 import java.time.ZonedDateTime
 
 class CleanupScheduleTest {

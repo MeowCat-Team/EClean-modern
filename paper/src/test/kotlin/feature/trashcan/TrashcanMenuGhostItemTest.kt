@@ -8,9 +8,9 @@ import org.mockbukkit.mockbukkit.entity.PlayerMock
 import plugin
 import server
 import setupMockBukkit
-import top.e404.eclean.app.MessageService
-import top.e404.eclean.feature.trashcan.TrashcanItemStore
-import top.e404.eclean.feature.trashcan.TrashcanManager
+import org.meowcat.eclean.app.MessageService
+import org.meowcat.eclean.feature.trashcan.TrashcanItemStore
+import org.meowcat.eclean.feature.trashcan.TrashcanManager
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 

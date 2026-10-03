@@ -7,6 +7,13 @@
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，
 并遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/) 版本规范。
 
+## 0.3.5
+
+### 变更
+
+- **发布名称**：统一 Modrinth 中 Paper/Folia 与 Fabric 的平台、游戏版本后缀，显示名称均包含版本、平台和游戏版本。
+- **包命名空间**：源码包、插件入口、Fabric Mixin 和内嵌依赖统一迁移到 `org.meowcat.eclean`。
+
 ## 0.3.4
 
 ### 新增

@@ -4,8 +4,8 @@ import java.nio.file.Files
 import java.nio.file.Path
 import org.junit.jupiter.api.io.TempDir
 import kotlin.test.*
-import top.e404.eclean.lang.LanguageManager
-import top.e404.eclean.lang.LegacyLangMigrator
+import org.meowcat.eclean.lang.LanguageManager
+import org.meowcat.eclean.lang.LegacyLangMigrator
 
 class LanguageTransactionTest {
     @TempDir lateinit var directory: Path

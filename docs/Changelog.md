@@ -7,6 +7,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.3.5
+
+### Changed
+
+- **Release names**: use matching platform and Minecraft version suffixes for Paper/Folia and Fabric releases on Modrinth, with consistent version, platform, and game version display names.
+- **Package namespace**: move source packages, plugin entrypoints, Fabric Mixins, and bundled library namespaces to `org.meowcat.eclean`.
+
 ## 0.3.4
 
 ### Added

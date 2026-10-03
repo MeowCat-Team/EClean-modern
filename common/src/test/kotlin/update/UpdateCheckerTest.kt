@@ -1,12 +1,12 @@
 package update
 
-import top.e404.eclean.update.AvailableUpdate
-import top.e404.eclean.update.ReleaseCandidate
-import top.e404.eclean.update.ReleaseFeed
-import top.e404.eclean.update.ReleaseRateLimitedException
-import top.e404.eclean.update.UpdateChecker
-import top.e404.eclean.update.UpdateFailure
-import top.e404.eclean.update.parseReleaseCandidates
+import org.meowcat.eclean.update.AvailableUpdate
+import org.meowcat.eclean.update.ReleaseCandidate
+import org.meowcat.eclean.update.ReleaseFeed
+import org.meowcat.eclean.update.ReleaseRateLimitedException
+import org.meowcat.eclean.update.UpdateChecker
+import org.meowcat.eclean.update.UpdateFailure
+import org.meowcat.eclean.update.parseReleaseCandidates
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

@@ -8,9 +8,9 @@ import org.mockbukkit.mockbukkit.entity.PlayerMock
 import plugin
 import server
 import setupMockBukkit
-import top.e404.eclean.command.Commands
-import top.e404.eclean.command.PermissionNode
-import top.e404.eclean.command.hasPermission
+import org.meowcat.eclean.command.Commands
+import org.meowcat.eclean.command.PermissionNode
+import org.meowcat.eclean.command.hasPermission
 import java.util.UUID
 import kotlin.test.assertTrue
 

@@ -7,9 +7,9 @@ import plugin
 import server
 import setupMockBukkit
 import kotlin.test.*
-import top.e404.eclean.feature.stats.WorldStatsResult
-import top.e404.eclean.feature.stats.WorldStatsService
-import top.e404.eclean.platform.Schedulers
+import org.meowcat.eclean.feature.stats.WorldStatsResult
+import org.meowcat.eclean.feature.stats.WorldStatsService
+import org.meowcat.eclean.platform.Schedulers
 
 class WorldStatsSnapshotTest {
     @Test fun `mixed empty and occupied chunks all contribute to loaded chunk count`() {

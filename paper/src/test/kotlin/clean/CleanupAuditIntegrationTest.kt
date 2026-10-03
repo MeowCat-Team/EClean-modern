@@ -13,8 +13,8 @@ import removeNonPlayerEntities
 import world
 import server
 import plugin
-import top.e404.eclean.feature.cleanup.CleanupContext
-import top.e404.eclean.feature.cleanup.drop.DropCleanupService
+import org.meowcat.eclean.feature.cleanup.CleanupContext
+import org.meowcat.eclean.feature.cleanup.drop.DropCleanupService
 
 class CleanupAuditIntegrationTest {
     companion object {
@@ -24,7 +24,7 @@ class CleanupAuditIntegrationTest {
     @AfterEach fun clean() = removeNonPlayerEntities()
 
     @Test fun `single world commands publish actual entity counts and actor while preview stays unaudited`() {
-        top.e404.eclean.config.Config.update { it.copy(drop = top.e404.eclean.config.model.DropConfig()) }
+        org.meowcat.eclean.config.Config.update { it.copy(drop = org.meowcat.eclean.config.model.DropConfig()) }
         world.dropItem(Location(world, 8.0, 64.0, 8.0), ItemStack(Material.STONE, 32))
         val source = CleanupContext("command", "audit-test")
         val before = plugin.services.cleanupHistory.count()

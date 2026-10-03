@@ -14,7 +14,7 @@ import removeNonPlayerEntities
 import resetConfig
 import server
 import setupMockBukkit
-import top.e404.eclean.feature.cleanup.drop.DropCleanupService
+import org.meowcat.eclean.feature.cleanup.drop.DropCleanupService
 import updateDropConfig
 import world
 

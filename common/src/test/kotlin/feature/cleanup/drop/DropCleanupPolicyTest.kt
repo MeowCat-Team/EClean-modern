@@ -4,10 +4,10 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import top.e404.eclean.feature.cleanup.drop.DropCleanupCandidate
-import top.e404.eclean.feature.cleanup.drop.DropCleanupCollection
-import top.e404.eclean.feature.cleanup.drop.DropCleanupPolicy
-import top.e404.eclean.feature.cleanup.drop.DropCleanupRule
+import org.meowcat.eclean.feature.cleanup.drop.DropCleanupCandidate
+import org.meowcat.eclean.feature.cleanup.drop.DropCleanupCollection
+import org.meowcat.eclean.feature.cleanup.drop.DropCleanupPolicy
+import org.meowcat.eclean.feature.cleanup.drop.DropCleanupRule
 import java.util.UUID
 
 class DropCleanupPolicyTest {

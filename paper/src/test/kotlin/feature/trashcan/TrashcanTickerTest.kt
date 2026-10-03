@@ -9,10 +9,10 @@ import resetConfig
 import server
 import setupMockBukkit
 import plugin
-import top.e404.eclean.feature.trashcan.TrashcanItemStore
-import top.e404.eclean.feature.trashcan.TrashcanTicker
-import top.e404.eclean.config.Config
-import top.e404.eclean.menu.MenuManager
+import org.meowcat.eclean.feature.trashcan.TrashcanItemStore
+import org.meowcat.eclean.feature.trashcan.TrashcanTicker
+import org.meowcat.eclean.config.Config
+import org.meowcat.eclean.menu.MenuManager
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 

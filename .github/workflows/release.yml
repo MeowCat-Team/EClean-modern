@@ -136,8 +136,8 @@ jobs:
           modrinth-id: VW7EmMIj # ecl-modern
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           files: release/EClean-Modern-*-paper.jar
-          name: EClean Modern ${{ needs.release.outputs.version }} (Paper / Folia)
-          version: ${{ needs.release.outputs.version }}
+          modrinth-name: ${{ needs.release.outputs.version }} (Paper / Folia, MC ${{ needs.release.outputs.game-version }})
+          modrinth-version: ${{ needs.release.outputs.version }}+paper.${{ needs.release.outputs.game-version }}
           version-type: release
           changelog-file: release_notes.md
           loaders: |
@@ -174,8 +174,8 @@ jobs:
           modrinth-id: VW7EmMIj # ecl-modern
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           files: release/EClean-Modern-*-fabric-mc${{ matrix.minecraft }}.jar
-          name: EClean Modern ${{ needs.release.outputs.version }} (Fabric ${{ matrix.minecraft }})
-          version: ${{ needs.release.outputs.version }}+fabric.${{ matrix.minecraft }}
+          modrinth-name: ${{ needs.release.outputs.version }} (Fabric, MC ${{ matrix.minecraft }})
+          modrinth-version: ${{ needs.release.outputs.version }}+fabric.${{ matrix.minecraft }}
           version-type: release
           changelog-file: release_notes.md
           loaders: fabric

@@ -25,4 +25,15 @@ To update dependencies, first edit the version catalog, then explicitly generate
 
 The `Release` workflow builds and tests the `modern` branch, including both Fabric targets, and runs each packaged Fabric mod on a real server before creating a tag. It reads the version from `build.gradle.kts` and extracts release notes from `docs/Changelog.md`. The GitHub Release contains the Paper/Folia JAR and both Fabric JARs. Separate jobs publish those same artifacts and notes to [EClean-Modern on Modrinth](https://modrinth.com/plugin/ecl-modern).
 
-Configure the repository Actions secret `MODRINTH_TOKEN` with a Modrinth token that can create versions for project `VW7EmMIj` (`ecl-modern`). The workflow checks that the secret is present before creating a tag. Paper/Folia game metadata follows the pinned Paper API. Fabric versions use `<version>+fabric.<minecraft>`, exact game metadata, and a required Fabric API dependency. If Modrinth publishing fails after the GitHub Release succeeds, use **Re-run failed jobs** to retry the affected publishing job without creating another tag or rebuilding.
+Configure the repository Actions secret `MODRINTH_TOKEN` with a Modrinth token that can create versions for project `VW7EmMIj` (`ecl-modern`). The workflow checks that the secret is present before creating a tag. Paper/Folia game metadata follows the pinned Paper API. Fabric uses exact game metadata and a required Fabric API dependency.
+
+Modrinth version numbers and display names use the same format for both platforms:
+
+| Artifact | Version number | Display name |
+| --- | --- | --- |
+| Paper/Folia | `<version>+paper.<minecraft>` | `<version> (Paper / Folia, MC <minecraft>)` |
+| Fabric | `<version>+fabric.<minecraft>` | `<version> (Fabric, MC <minecraft>)` |
+
+The workflow sets `modrinth-version` and `modrinth-name` explicitly; Modrinth may show the version number in lists and selectors. If Modrinth publishing fails after the GitHub Release succeeds, use **Re-run failed jobs** to retry the affected publishing job without creating another tag or rebuilding.
+
+For an already published release, run the **Modrinth version names** workflow with its base version (for example, `0.3.4`). It updates that release's existing version names and numbers using the same format. To preview the changes locally, run `python .github/scripts/modrinth-names.py --base-version 0.3.4 --check`.

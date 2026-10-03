@@ -5,13 +5,13 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import top.e404.eclean.common.api.*
-import top.e404.eclean.config.ConfigBundle
-import top.e404.eclean.config.model.*
-import top.e404.eclean.feature.cleanup.chunk.ChunkDensityEngine
-import top.e404.eclean.feature.cleanup.drop.DropCleanupEngine
-import top.e404.eclean.feature.cleanup.living.LivingCleanupEngine
-import top.e404.eclean.platform.execution.ChunkRef
+import org.meowcat.eclean.common.api.*
+import org.meowcat.eclean.config.ConfigBundle
+import org.meowcat.eclean.config.model.*
+import org.meowcat.eclean.feature.cleanup.chunk.ChunkDensityEngine
+import org.meowcat.eclean.feature.cleanup.drop.DropCleanupEngine
+import org.meowcat.eclean.feature.cleanup.living.LivingCleanupEngine
+import org.meowcat.eclean.platform.execution.ChunkRef
 
 class CleanupSafetyTest {
     @Test

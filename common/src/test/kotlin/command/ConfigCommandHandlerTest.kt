@@ -5,12 +5,12 @@ import net.kyori.adventure.text.Component
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import top.e404.eclean.command.ConfigCommandHandler
-import top.e404.eclean.common.api.CommonCommandSender
-import top.e404.eclean.config.ConfigLoader
-import top.e404.eclean.config.ConfigurationManager
-import top.e404.eclean.config.model.ConfigProfile
-import top.e404.eclean.lang.LanguageManager
+import org.meowcat.eclean.command.ConfigCommandHandler
+import org.meowcat.eclean.common.api.CommonCommandSender
+import org.meowcat.eclean.config.ConfigLoader
+import org.meowcat.eclean.config.ConfigurationManager
+import org.meowcat.eclean.config.model.ConfigProfile
+import org.meowcat.eclean.lang.LanguageManager
 
 class ConfigCommandHandlerTest {
     private class Sender(private val allowed: Boolean) : CommonCommandSender {

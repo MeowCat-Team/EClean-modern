@@ -1,7 +1,7 @@
 package feature.trashcan
 
-import top.e404.eclean.feature.trashcan.StoredItemAdapter
-import top.e404.eclean.feature.trashcan.TrashcanStore
+import org.meowcat.eclean.feature.trashcan.StoredItemAdapter
+import org.meowcat.eclean.feature.trashcan.TrashcanStore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

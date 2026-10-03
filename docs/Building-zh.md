@@ -25,4 +25,15 @@ Fabric 使用 Mojang 的公开 API 编译，关闭 Loom 可选的访问与接口
 
 `Release` 工作流会构建并测试 `modern` 分支及两个 Fabric 目标版本，创建 tag 前会使用两份 Fabric 最终产物分别启动真实服务端进行验证。工作流从 `build.gradle.kts` 读取版本号，从 `docs/Changelog.md` 提取更新日志。GitHub Release 包含 Paper/Folia JAR 和两份 Fabric JAR，之后分别发布同一份产物和日志到 [Modrinth 的 EClean-Modern 项目](https://modrinth.com/plugin/ecl-modern)。
 
-请在仓库的 Actions secrets 中配置 `MODRINTH_TOKEN`，使用有权为项目 `VW7EmMIj`（`ecl-modern`）创建版本的 Modrinth 令牌。工作流会在创建 tag 前检查令牌。Paper/Folia 的游戏版本跟随固定的 Paper API；Fabric 使用 `<version>+fabric.<minecraft>` 作为发布版本号，标注精确游戏版本与必需的 Fabric API。若 GitHub Release 已成功、Modrinth 发布失败，可使用 **Re-run failed jobs** 重跑失败的发布任务，无需重新创建 tag 或构建。
+请在仓库的 Actions secrets 中配置 `MODRINTH_TOKEN`，使用有权为项目 `VW7EmMIj`（`ecl-modern`）创建版本的 Modrinth 令牌。工作流会在创建 tag 前检查令牌。Paper/Folia 的游戏版本跟随固定的 Paper API；Fabric 标注精确游戏版本与必需的 Fabric API。
+
+两种平台的 Modrinth 版本号与显示名称使用统一格式：
+
+| 产物 | 版本号 | 显示名称 |
+| --- | --- | --- |
+| Paper/Folia | `<version>+paper.<minecraft>` | `<version> (Paper / Folia, MC <minecraft>)` |
+| Fabric | `<version>+fabric.<minecraft>` | `<version> (Fabric, MC <minecraft>)` |
+
+工作流显式设置 `modrinth-version` 与 `modrinth-name`；Modrinth 的部分列表与选择器可能显示版本号。若 GitHub Release 已成功、Modrinth 发布失败，可使用 **Re-run failed jobs** 重跑失败的发布任务，无需重新创建 tag 或构建。
+
+已发布的版本可运行 **Modrinth version names** 工作流，填写基础版本号（例如 `0.3.4`），将该版本现有的名称和版本号更新为相同格式。可先在本地运行 `python .github/scripts/modrinth-names.py --base-version 0.3.4 --check` 预览改名计划。

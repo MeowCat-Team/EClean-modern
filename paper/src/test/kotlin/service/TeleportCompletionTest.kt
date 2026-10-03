@@ -7,9 +7,9 @@ import kotlin.test.*
 import org.bukkit.Location
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
-import top.e404.eclean.common.api.ScheduledTask
-import top.e404.eclean.platform.execution.*
-import top.e404.eclean.service.*
+import org.meowcat.eclean.common.api.ScheduledTask
+import org.meowcat.eclean.platform.execution.*
+import org.meowcat.eclean.service.*
 
 class TeleportCompletionTest {
     private class Gateway : ExecutionGateway {

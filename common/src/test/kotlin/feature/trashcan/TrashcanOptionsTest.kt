@@ -1,7 +1,7 @@
 package feature.trashcan
 
-import top.e404.eclean.menu.trashcan.TrashcanCategory
-import top.e404.eclean.menu.trashcan.TrashcanItemKind
+import org.meowcat.eclean.menu.trashcan.TrashcanCategory
+import org.meowcat.eclean.menu.trashcan.TrashcanItemKind
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue

@@ -2,7 +2,7 @@ package lang
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import top.e404.eclean.lang.LegacyLangMigrator
+import org.meowcat.eclean.lang.LegacyLangMigrator
 
 class LegacyLangMigratorTest {
 

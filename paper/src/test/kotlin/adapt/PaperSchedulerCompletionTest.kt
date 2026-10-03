@@ -4,7 +4,7 @@ import io.papermc.paper.threadedregions.scheduler.EntityScheduler
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask as NativeTask
 import org.bukkit.entity.Entity
 import org.bukkit.plugin.Plugin
-import top.e404.eclean.paper.adapt.PaperScheduler
+import org.meowcat.eclean.paper.adapt.PaperScheduler
 import java.lang.reflect.Proxy
 import java.util.function.Consumer
 import java.util.logging.Logger

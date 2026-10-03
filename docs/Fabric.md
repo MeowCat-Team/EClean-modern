@@ -6,8 +6,8 @@ EClean runs on Fabric dedicated servers for Minecraft **26.1.2 and 26.2**. Each 
 
 | Minecraft | Artifact | Minimum Fabric API |
 | --- | --- | --- |
-| 26.1.2 | `EClean-Modern-0.3.4-fabric-mc26.1.2.jar` | `0.155.3+26.1.2` |
-| 26.2 | `EClean-Modern-0.3.4-fabric-mc26.2.jar` | `0.161.0+26.2` |
+| 26.1.2 | `EClean-Modern-0.3.5-fabric-mc26.1.2.jar` | `0.155.3+26.1.2` |
+| 26.2 | `EClean-Modern-0.3.5-fabric-mc26.2.jar` | `0.161.0+26.2` |
 
 Both require Java 25 and Fabric Loader 0.19.5 or newer. Install EClean and the matching Fabric API in the server's `mods/` directory, then start the server. Kotlin and configuration libraries are included; Fabric Language Kotlin is unnecessary. Clients can use vanilla Minecraft: menus use the vanilla chest protocol.
 

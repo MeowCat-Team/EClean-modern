@@ -5,14 +5,14 @@ import java.util.concurrent.CompletableFuture
 import kotlin.test.*
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
-import top.e404.eclean.command.*
-import top.e404.eclean.common.api.*
-import top.e404.eclean.feature.cleanup.CleanupCommandService
-import top.e404.eclean.feature.stats.*
-import top.e404.eclean.feature.trashcan.*
-import top.e404.eclean.lang.LanguageManager
-import top.e404.eclean.platform.execution.ChunkRef
-import top.e404.eclean.util.placeholder
+import org.meowcat.eclean.command.*
+import org.meowcat.eclean.common.api.*
+import org.meowcat.eclean.feature.cleanup.CleanupCommandService
+import org.meowcat.eclean.feature.stats.*
+import org.meowcat.eclean.feature.trashcan.*
+import org.meowcat.eclean.lang.LanguageManager
+import org.meowcat.eclean.platform.execution.ChunkRef
+import org.meowcat.eclean.util.placeholder
 
 class CommandBehaviorTest {
     private val templates = LanguageManager(Path.of(".")).bundledSnapshot("en_us").templates

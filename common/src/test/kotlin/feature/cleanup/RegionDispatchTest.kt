@@ -1,13 +1,13 @@
 package feature.cleanup
 
 import kotlin.test.*
-import top.e404.eclean.common.api.*
-import top.e404.eclean.config.ConfigBundle
-import top.e404.eclean.config.model.SchedulerAdvancedConfig
-import top.e404.eclean.feature.cleanup.CleanupFlights
-import top.e404.eclean.feature.cleanup.drop.DropCleanupEngine
-import top.e404.eclean.platform.dispatch.RegionBatchDispatcher
-import top.e404.eclean.platform.execution.ChunkRef
+import org.meowcat.eclean.common.api.*
+import org.meowcat.eclean.config.ConfigBundle
+import org.meowcat.eclean.config.model.SchedulerAdvancedConfig
+import org.meowcat.eclean.feature.cleanup.CleanupFlights
+import org.meowcat.eclean.feature.cleanup.drop.DropCleanupEngine
+import org.meowcat.eclean.platform.dispatch.RegionBatchDispatcher
+import org.meowcat.eclean.platform.execution.ChunkRef
 import java.util.concurrent.CompletableFuture
 
 class RegionDispatchTest {
@@ -39,7 +39,7 @@ class RegionDispatchTest {
             override fun getChunk(worldName: String, ref: ChunkRef): CommonChunk? = null
         }
         var audited = 0
-        val results = mutableListOf<top.e404.eclean.feature.cleanup.drop.DropCleanupResult>()
+        val results = mutableListOf<org.meowcat.eclean.feature.cleanup.drop.DropCleanupResult>()
         repeat(2) {
             DropCleanupEngine(access, scheduler, onExecuted = { _, _ -> audited++ })
                 .cleanWorld("world", ConfigBundle()) { results += it }
@@ -75,7 +75,7 @@ class RegionDispatchTest {
             override fun getChunk(worldName: String, ref: ChunkRef) = chunk
         }
         val scheduler = QueuedScheduler()
-        var result: top.e404.eclean.feature.cleanup.drop.DropCleanupResult? = null
+        var result: org.meowcat.eclean.feature.cleanup.drop.DropCleanupResult? = null
         DropCleanupEngine(access, scheduler).cleanWorld("world", ConfigBundle()) { result = it }
         scheduler.finishRegions()
         assertEquals(2, result?.cleaned)

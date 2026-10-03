@@ -6,8 +6,8 @@ plugins {
 }
 
 allprojects {
-    group = "top.e404"
-    version = "0.3.4"
+    group = "org.meowcat"
+    version = "0.3.5"
 
     repositories {
         mavenCentral()

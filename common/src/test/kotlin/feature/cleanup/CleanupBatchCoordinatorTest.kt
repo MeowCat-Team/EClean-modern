@@ -1,14 +1,14 @@
 package feature.cleanup
 
-import top.e404.eclean.config.ConfigBundle
-import top.e404.eclean.feature.cleanup.CleanupBatchCoordinator
-import top.e404.eclean.feature.cleanup.CleanupBatchOperations
-import top.e404.eclean.feature.cleanup.CleanupContext
-import top.e404.eclean.feature.cleanup.CleanupSummary
-import top.e404.eclean.feature.cleanup.chunk.ChunkDensityResult
-import top.e404.eclean.feature.cleanup.drop.DropCleanupResult
-import top.e404.eclean.feature.cleanup.living.LivingCleanupResult
-import top.e404.eclean.service.StatusSnapshotService
+import org.meowcat.eclean.config.ConfigBundle
+import org.meowcat.eclean.feature.cleanup.CleanupBatchCoordinator
+import org.meowcat.eclean.feature.cleanup.CleanupBatchOperations
+import org.meowcat.eclean.feature.cleanup.CleanupContext
+import org.meowcat.eclean.feature.cleanup.CleanupSummary
+import org.meowcat.eclean.feature.cleanup.chunk.ChunkDensityResult
+import org.meowcat.eclean.feature.cleanup.drop.DropCleanupResult
+import org.meowcat.eclean.feature.cleanup.living.LivingCleanupResult
+import org.meowcat.eclean.service.StatusSnapshotService
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

@@ -1,0 +1,34 @@
+name: Modrinth version names
+run-name: Update Modrinth names for ${{ inputs.base_version }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_version:
+        description: Existing release version to rename (for example, 0.3.4)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: modrinth-version-names-VW7EmMIj
+  cancel-in-progress: false
+
+jobs:
+  rename:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: modern
+          persist-credentials: false
+
+      - name: Validate and apply version names
+        env:
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+          BASE_VERSION: ${{ inputs.base_version }}
+        run: python3 .github/scripts/modrinth-names.py --base-version "$BASE_VERSION" --apply

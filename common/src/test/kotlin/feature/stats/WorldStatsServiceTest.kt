@@ -3,11 +3,11 @@ package feature.stats
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
-import top.e404.eclean.common.api.*
-import top.e404.eclean.config.model.SchedulerAdvancedConfig
-import top.e404.eclean.feature.stats.WorldStatsResult
-import top.e404.eclean.feature.stats.WorldStatsService
-import top.e404.eclean.platform.execution.ChunkRef
+import org.meowcat.eclean.common.api.*
+import org.meowcat.eclean.config.model.SchedulerAdvancedConfig
+import org.meowcat.eclean.feature.stats.WorldStatsResult
+import org.meowcat.eclean.feature.stats.WorldStatsService
+import org.meowcat.eclean.platform.execution.ChunkRef
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 
@@ -55,7 +55,7 @@ class WorldStatsServiceTest {
     }
 
     @Test fun `unloaded target has no entity snapshot`() {
-        var result: List<top.e404.eclean.feature.stats.EntityLocationDetail>? = emptyList()
+        var result: List<org.meowcat.eclean.feature.stats.EntityLocationDetail>? = emptyList()
         service.collectChunkEntities("world", "ZOMBIE", 1, 0) { result = it }
         scheduler.finishRegions()
         assertNull(result)

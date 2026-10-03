@@ -6,8 +6,8 @@ EClean 支持 Minecraft **26.1.2 和 26.2** 的 Fabric 独立服务端。两个�
 
 | Minecraft | 文件 | 最低 Fabric API 版本 |
 | --- | --- | --- |
-| 26.1.2 | `EClean-Modern-0.3.4-fabric-mc26.1.2.jar` | `0.155.3+26.1.2` |
-| 26.2 | `EClean-Modern-0.3.4-fabric-mc26.2.jar` | `0.161.0+26.2` |
+| 26.1.2 | `EClean-Modern-0.3.5-fabric-mc26.1.2.jar` | `0.155.3+26.1.2` |
+| 26.2 | `EClean-Modern-0.3.5-fabric-mc26.2.jar` | `0.161.0+26.2` |
 
 两个版本均需 Java 25、Fabric Loader 0.19.5 或更新版本。将 EClean 与对应版本的 Fabric API 放入服务器的 `mods/` 后启动。模组已包含 Kotlin 与配置库，无需 Fabric Language Kotlin；菜单使用原版箱子协议，客户端无需安装模组。
 

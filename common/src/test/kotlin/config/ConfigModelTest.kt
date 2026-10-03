@@ -4,7 +4,7 @@ import com.charleskorn.kaml.Yaml
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import top.e404.eclean.config.model.DropConfig
+import org.meowcat.eclean.config.model.DropConfig
 
 class ConfigModelTest {
     private val yaml = Yaml.default

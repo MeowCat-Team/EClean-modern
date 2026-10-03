@@ -3,11 +3,11 @@ package feature.cleanup.chunk
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import top.e404.eclean.feature.cleanup.chunk.ChunkDensityPolicy
-import top.e404.eclean.feature.cleanup.chunk.ChunkDensityRule
-import top.e404.eclean.platform.execution.ChunkRef
-import top.e404.eclean.platform.snapshot.ChunkEntitySnapshot
-import top.e404.eclean.platform.snapshot.ChunkEntityState
+import org.meowcat.eclean.feature.cleanup.chunk.ChunkDensityPolicy
+import org.meowcat.eclean.feature.cleanup.chunk.ChunkDensityRule
+import org.meowcat.eclean.platform.execution.ChunkRef
+import org.meowcat.eclean.platform.snapshot.ChunkEntitySnapshot
+import org.meowcat.eclean.platform.snapshot.ChunkEntityState
 import java.util.UUID
 
 class ChunkDensityPolicyTest {

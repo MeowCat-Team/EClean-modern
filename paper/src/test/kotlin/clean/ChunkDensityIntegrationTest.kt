@@ -13,8 +13,8 @@ import removeNonPlayerEntities
 import resetConfig
 import server
 import setupMockBukkit
-import top.e404.eclean.feature.cleanup.AuditedDenseCleanup
-import top.e404.eclean.feature.cleanup.CleanupContext
+import org.meowcat.eclean.feature.cleanup.AuditedDenseCleanup
+import org.meowcat.eclean.feature.cleanup.CleanupContext
 import plugin
 import updateChunkDensityConfig
 import world

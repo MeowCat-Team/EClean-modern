@@ -6,8 +6,8 @@ import org.bukkit.inventory.meta.Damageable
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import setupMockBukkit
-import top.e404.eclean.feature.trashcan.TrashcanItemStore
-import top.e404.eclean.menu.trashcan.TrashcanDisplayItem
+import org.meowcat.eclean.feature.trashcan.TrashcanItemStore
+import org.meowcat.eclean.menu.trashcan.TrashcanDisplayItem
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull

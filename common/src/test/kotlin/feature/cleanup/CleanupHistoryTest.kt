@@ -1,7 +1,7 @@
 package feature.cleanup
 
 import kotlin.test.*
-import top.e404.eclean.feature.cleanup.*
+import org.meowcat.eclean.feature.cleanup.*
 
 class CleanupHistoryTest {
     @Test fun `shared execution cannot duplicate history or cumulative counts`() {

@@ -13,7 +13,7 @@
   "license": "GPL-3.0-only",
   "environment": "server",
   "entrypoints": {
-    "main": ["top.e404.eclean.fabric.ECleanFabric"]
+    "main": ["org.meowcat.eclean.fabric.ECleanFabric"]
   },
   "mixins": ["eclean.fabric.mixins.json"],
   "depends": {

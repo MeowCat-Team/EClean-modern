@@ -3,9 +3,9 @@ package config
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import top.e404.eclean.config.toBundle
-import top.e404.eclean.config.model.ConfigProfile
-import top.e404.eclean.config.model.NormalConfig
+import org.meowcat.eclean.config.toBundle
+import org.meowcat.eclean.config.model.ConfigProfile
+import org.meowcat.eclean.config.model.NormalConfig
 
 class ConfigProfileTest {
 

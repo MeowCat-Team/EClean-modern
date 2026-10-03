@@ -1,0 +1,81 @@
+package org.meowcat.eclean.menu.stats
+
+import org.bukkit.Material
+import org.bukkit.entity.Player
+import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.inventory.ItemStack
+import org.meowcat.eclean.PL
+import org.meowcat.eclean.command.PermissionNode
+import org.meowcat.eclean.command.hasPermission
+import org.meowcat.eclean.lang.MLang
+import org.meowcat.eclean.ui.UiDisplayable
+import org.meowcat.eclean.ui.PageButton
+import org.meowcat.eclean.ui.UiMenu
+import org.meowcat.eclean.ui.UiPager
+import org.meowcat.eclean.ui.buildItemStack
+import org.meowcat.eclean.ui.menuSpacer
+
+class StatsMenu(
+    private val worldName: String,
+    entries: List<Pair<String, Int>>,
+    private val canInspect: Boolean = true,
+) : UiMenu(PL, MLang["menu.stats.title", "world" to worldName], 6, true) {
+
+    override fun isAllowed(player: Player): Boolean = player.hasPermission(PermissionNode.STATS_GUI) &&
+        (player.world.name == worldName || player.hasPermission(PermissionNode.STATS_WORLD))
+
+    private val data = entries.map { StatsEntry(it.first, it.second, worldName, canInspect) }.toMutableList()
+
+    private val pager = UiPager(
+        data = data,
+        pageSize = 45,
+        startSlot = 0,
+        onClickHandler = { index, event -> handleClick(index, event) },
+    )
+
+    init {
+        addPager(pager)
+        val spacer = menuSpacer()
+        (45..53).forEach { setButton(it, spacer) }
+        setButton(47, pageButton(false).button)
+        setButton(51, pageButton(true).button)
+    }
+
+    private fun pageButton(next: Boolean) = PageButton(
+        isNext = next,
+        hasPage = { if (next) pager.hasNext else pager.hasPrev },
+        currentPage = { pager.page },
+        totalPages = { pager.totalPages },
+        pageAction = { if (next) pager.nextPage() else pager.prevPage() },
+        refresh = { updateIcon() },
+        name = if (next) MLang["menu.trashcan.next.name"] else MLang["menu.trashcan.prev.name"],
+        lore = (if (next) MLang["menu.trashcan.next.lore"] else MLang["menu.trashcan.prev.lore"]).lines(),
+    )
+
+    private fun handleClick(index: Int, event: InventoryClickEvent): Boolean {
+        val entry = data.getOrNull(index) ?: return true
+        val player = event.whoClicked as? Player ?: return true
+        player.performCommand("eclean entity ${entry.type} $worldName")
+        return true
+    }
+}
+
+private class StatsEntry(
+    val type: String,
+    val count: Int,
+    val world: String,
+    val canInspect: Boolean,
+) : UiDisplayable {
+    override var needUpdate = true
+    override lateinit var item: ItemStack
+
+    override fun update() {
+        item = buildItemStack(
+            Material.PAPER,
+            1,
+            MLang["menu.stats.item.name", "type" to org.meowcat.eclean.command.PaperMessageProvider().entityName(type)],
+            MLang[if (canInspect) "menu.stats.item.lore" else "menu.stats.item.lore_blocked", "world" to world, "count" to count].lines(),
+        )
+        needUpdate = false
+    }
+}

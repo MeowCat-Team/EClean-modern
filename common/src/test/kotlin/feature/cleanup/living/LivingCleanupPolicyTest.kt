@@ -4,10 +4,10 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import top.e404.eclean.feature.cleanup.living.LivingCleanupCandidate
-import top.e404.eclean.feature.cleanup.living.LivingCleanupCollection
-import top.e404.eclean.feature.cleanup.living.LivingCleanupPolicy
-import top.e404.eclean.feature.cleanup.living.LivingCleanupRule
+import org.meowcat.eclean.feature.cleanup.living.LivingCleanupCandidate
+import org.meowcat.eclean.feature.cleanup.living.LivingCleanupCollection
+import org.meowcat.eclean.feature.cleanup.living.LivingCleanupPolicy
+import org.meowcat.eclean.feature.cleanup.living.LivingCleanupRule
 import java.util.UUID
 
 class LivingCleanupPolicyTest {

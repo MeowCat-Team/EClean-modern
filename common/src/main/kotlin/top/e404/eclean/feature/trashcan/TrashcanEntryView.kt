@@ -1,7 +1,0 @@
-package top.e404.eclean.feature.trashcan
-
-data class TrashcanEntryView(
-    val type: String,
-    val count: Long,
-    val deadline: Long,
-)

@@ -4,15 +4,15 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import plugin
 import setupMockBukkit
-import top.e404.eclean.common.api.PlatformType
-import top.e404.eclean.common.api.TeleportService
-import top.e404.eclean.feature.cleanup.chunk.DenseShowService
-import top.e404.eclean.feature.stats.StatsMenuService
-import top.e404.eclean.feature.trashcan.TrashcanService
-import top.e404.eclean.feature.stats.WorldStatsProvider
-import top.e404.eclean.feature.stats.WorldStatsResult
-import top.e404.eclean.feature.stats.ChunkTotal
-import top.e404.eclean.paper.adapt.PaperPlatform
+import org.meowcat.eclean.common.api.PlatformType
+import org.meowcat.eclean.common.api.TeleportService
+import org.meowcat.eclean.feature.cleanup.chunk.DenseShowService
+import org.meowcat.eclean.feature.stats.StatsMenuService
+import org.meowcat.eclean.feature.trashcan.TrashcanService
+import org.meowcat.eclean.feature.stats.WorldStatsProvider
+import org.meowcat.eclean.feature.stats.WorldStatsResult
+import org.meowcat.eclean.feature.stats.ChunkTotal
+import org.meowcat.eclean.paper.adapt.PaperPlatform
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
@@ -27,15 +27,15 @@ class PaperPlatformTest {
 
     private val fakeTeleport = object : TeleportService {
         override fun teleport(
-            player: top.e404.eclean.common.api.CommonPlayer,
-            target: top.e404.eclean.common.api.CommonLocation,
+            player: org.meowcat.eclean.common.api.CommonPlayer,
+            target: org.meowcat.eclean.common.api.CommonLocation,
         ) = java.util.concurrent.CompletableFuture.completedFuture(true)
     }
 
     private val fakeTrashcan = object : TrashcanService {
         override val enabled: Boolean = true
-        override fun open(player: top.e404.eclean.common.api.CommonPlayer) = Unit
-        override fun entries(): List<top.e404.eclean.feature.trashcan.TrashcanEntryView> = emptyList()
+        override fun open(player: org.meowcat.eclean.common.api.CommonPlayer) = Unit
+        override fun entries(): List<org.meowcat.eclean.feature.trashcan.TrashcanEntryView> = emptyList()
     }
 
     private val fakeWorldStats = object : WorldStatsProvider {
@@ -53,7 +53,7 @@ class PaperPlatformTest {
             worldName: String,
             type: String,
             minCount: Int,
-            onComplete: (List<top.e404.eclean.feature.stats.ChunkEntityCount>?) -> Unit,
+            onComplete: (List<org.meowcat.eclean.feature.stats.ChunkEntityCount>?) -> Unit,
         ) = onComplete(emptyList())
 
         override fun collectChunkEntities(
@@ -61,18 +61,18 @@ class PaperPlatformTest {
             type: String,
             chunkX: Int,
             chunkZ: Int,
-            onComplete: (List<top.e404.eclean.feature.stats.EntityLocationDetail>?) -> Unit,
+            onComplete: (List<org.meowcat.eclean.feature.stats.EntityLocationDetail>?) -> Unit,
         ) = onComplete(emptyList())
 
         override fun isValidEntityType(type: String): Boolean = false
     }
 
     private val fakeDenseShow = object : DenseShowService {
-        override fun show(player: top.e404.eclean.common.api.CommonPlayer) = Unit
+        override fun show(player: org.meowcat.eclean.common.api.CommonPlayer) = Unit
     }
 
     private val fakeStatsMenu = object : StatsMenuService {
-        override fun openStatsGui(player: top.e404.eclean.common.api.CommonPlayer, worldName: String) = Unit
+        override fun openStatsGui(player: org.meowcat.eclean.common.api.CommonPlayer, worldName: String) = Unit
     }
 
     @Test

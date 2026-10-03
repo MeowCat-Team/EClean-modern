@@ -1,7 +1,7 @@
 package update
 
 import kotlin.test.*
-import top.e404.eclean.update.*
+import org.meowcat.eclean.update.*
 
 class ReleaseVersionTest {
     @Test fun `semver precedence including prerelease identifiers is numeric and ordered`() {
