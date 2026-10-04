@@ -2,9 +2,9 @@ name: Build
 
 on:
   pull_request:
-    branches: [modern]
+    branches: [architectury]
   push:
-    branches: [modern]
+    branches: [architectury]
 
 permissions:
   contents: read
@@ -111,11 +111,12 @@ jobs:
           include-hidden-files: true
           if-no-files-found: ignore
 
-  fabric:
+  mods:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
+        loader: [fabric, neoforge]
         minecraft: ["26.1.2", "26.2"]
     steps:
       - name: Checkout
@@ -130,27 +131,28 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@0b6dd653ba04f4f93bf581ec31e66cbd7dcb644d # v4
 
-      - name: Build and test Fabric
-        run: ./gradlew :common:check :fabric:build -PminecraftVersion=${{ matrix.minecraft }}
+      - name: Build and test server mod
+        run: ./gradlew :common:check :mod-common:check :${{ matrix.loader }}:build -PminecraftVersion=${{ matrix.minecraft }}
 
-      - name: Smoke test packaged Fabric mod
+      - name: Smoke test packaged server mod
         timeout-minutes: 10
-        run: python3 .github/scripts/fabric-smoke.py ${{ matrix.minecraft }}
+        run: python3 .github/scripts/mod-smoke.py ${{ matrix.loader }} ${{ matrix.minecraft }}
 
-      - name: Upload Fabric smoke logs
+      - name: Upload server mod smoke logs and report
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: EClean-Fabric-smoke-${{ matrix.minecraft }}
+          name: EClean-${{ matrix.loader }}-smoke-${{ matrix.minecraft }}
           path: |
-            .local/fabric-smoke/${{ matrix.minecraft }}/smoke-console.log
-            .local/fabric-smoke/${{ matrix.minecraft }}/logs/latest.log
+            .local/${{ matrix.loader }}-smoke/${{ matrix.minecraft }}/smoke-console.log
+            .local/${{ matrix.loader }}-smoke/${{ matrix.minecraft }}/smoke-report.json
+            .local/${{ matrix.loader }}-smoke/${{ matrix.minecraft }}/logs/latest.log
           include-hidden-files: true
           if-no-files-found: ignore
 
-      - name: Upload Fabric mod
+      - name: Upload server mod
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: EClean-Modern-Fabric-${{ matrix.minecraft }}
-          path: fabric/build/${{ matrix.minecraft }}/libs/EClean-Modern-*-fabric-mc${{ matrix.minecraft }}.jar
+          name: EClean-Modern-${{ matrix.loader }}-${{ matrix.minecraft }}
+          path: ${{ matrix.loader }}/build/${{ matrix.minecraft }}/libs/EClean-Modern-*-${{ matrix.loader }}-mc${{ matrix.minecraft }}.jar
           if-no-files-found: error

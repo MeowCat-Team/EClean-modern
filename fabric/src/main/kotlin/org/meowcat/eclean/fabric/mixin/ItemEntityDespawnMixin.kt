@@ -6,7 +6,7 @@ import org.spongepowered.asm.mixin.Mixin
 import org.spongepowered.asm.mixin.injection.At
 import org.spongepowered.asm.mixin.injection.Inject
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
-import org.meowcat.eclean.fabric.ECleanFabric
+import org.meowcat.eclean.mod.ECleanMod
 
 @Mixin(ItemEntity::class)
 abstract class ItemEntityDespawnMixin {
@@ -20,6 +20,6 @@ abstract class ItemEntityDespawnMixin {
         val target: Any = this
         val item = target as ItemEntity
         if (item.level() !is ServerLevel || item.age < 6000 || item.item.isEmpty) return
-        if (ECleanFabric.tryRecoverDespawn(item)) callback.cancel()
+        if (ECleanMod.tryRecoverDespawn(item)) callback.cancel()
     }
 }

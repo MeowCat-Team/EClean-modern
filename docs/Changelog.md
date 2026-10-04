@@ -7,6 +7,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.3.6
+
+### Added
+
+- **NeoForge 26.1.2 and 26.2**: provide dedicated server artifacts with the same native commands, loaded-chunk cleanup, statistics, item recovery, menus, reloads, temporary teleports, and update checks as Fabric.
+- **NeoForge permissions**: integrate with the native PermissionAPI, register canonical nodes and compatibility aliases, and respect the selected handler's final boolean decisions.
+- **NeoForge item expiry**: recover items through the native expiration event, respecting custom item lifespans and extensions from other mods. Real-server checks cover both early expiration and delayed recovery after a longer lifespan.
+- **Mod platform verification**: use one real-server smoke suite for both loaders and both game versions, verify the packaged mod and matching Architectury API, and include all four mod artifacts in the manual Release workflow and separate Modrinth versions.
+
+### Changed
+
+- **Architectury modules**: organize the project into `common`, `paper`, `mod-common`, `fabric`, and `neoforge`. Both mod loaders share the native server implementation under `org.meowcat.eclean.mod`; loader entrypoints remain in their own packages.
+- **Development branch**: use `architectury` as the default branch and the target of CI, release, and version-name maintenance workflows.
+
+### Upgrade notes
+
+- Fabric and NeoForge now require the Architectury API JAR matching the server's game version. Fabric still requires Fabric API. Install these dependencies on the server; vanilla clients can continue to connect.
+
 ## 0.3.5
 
 ### Changed

@@ -6,6 +6,8 @@ EClean Modern 0.3.5 使用同一份 Paper 插件 JAR 支持 **Minecraft 1.21.5�
 
 ## 已测试构建
 
+0.3.6 继承 0.3.5 建立的兼容清单；CI 与发布检查会使用当前 Paper 最终产物重复相同的十个版本测试。
+
 以下官方 Paper 构建于 2026-10-03 验证。[`paper/compatibility.json`](../paper/compatibility.json) 记录具体构建号、渠道和 SHA-256，同时用于生成 CI 矩阵与发布时的游戏版本元数据。
 
 | Minecraft | Paper 构建 | 渠道 |

@@ -7,6 +7,24 @@
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，
 并遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/) 版本规范。
 
+## 0.3.6
+
+### 新增
+
+- **NeoForge 26.1.2 和 26.2**：生成独立服务端产物，与 Fabric 共用原生命令、已加载区块清理、统计、物品回收、菜单、重载、临时传送和更新检查。
+- **NeoForge 权限**：接入原生 PermissionAPI，注册规范权限节点与兼容别名，遵循所选处理器返回的最终布尔结果。
+- **NeoForge 物品到期回收**：使用原生到期事件，遵循物品自定义存活时长以及其他模组提供的延寿；实服验证同时覆盖提前到期与延长寿命后再回收。
+- **模组平台验证**：两种加载器、两个游戏版本使用同一套真实服务端 smoke，核对最终模组与匹配的 Architectury API；手动 Release 包含四份模组产物，并分别发布 Modrinth 版本。
+
+### 变更
+
+- **Architectury 模块**：项目划分为 `common`、`paper`、`mod-common`、`fabric`、`neoforge` 五个模块。两种模组加载器共用 `org.meowcat.eclean.mod` 下的原生服务端实现，入口仍位于各自平台包中。
+- **开发分支**：默认分支改为 `architectury`，CI、发布与版本名称维护工作流统一使用此分支。
+
+### 升级注意事项
+
+- Fabric 与 NeoForge 现在都需要安装匹配游戏版本的 Architectury API。Fabric 仍需 Fabric API。依赖安装在服务端，原版客户端仍可连接。
+
 ## 0.3.5
 
 ### 变更

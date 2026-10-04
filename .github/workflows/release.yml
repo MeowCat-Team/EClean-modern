@@ -17,7 +17,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: modern
+          ref: architectury
           fetch-depth: 0
 
       - name: Read project version
@@ -82,8 +82,8 @@ jobs:
       - name: Build and test
         run: ./gradlew build
 
-      - name: Build and test Fabric 26.2
-        run: ./gradlew :fabric:build -PminecraftVersion=26.2
+      - name: Build and test Fabric and NeoForge 26.2
+        run: ./gradlew :mod-common:check :fabric:build :neoforge:build -PminecraftVersion=26.2
 
       - name: Test packaged Paper plugin on every supported version
         timeout-minutes: 30
@@ -121,20 +121,32 @@ jobs:
 
       - name: Test packaged Fabric 26.1.2 server
         timeout-minutes: 10
-        run: python3 .github/scripts/fabric-smoke.py 26.1.2
+        run: python3 .github/scripts/mod-smoke.py fabric 26.1.2
 
       - name: Test packaged Fabric 26.2 server
         timeout-minutes: 10
-        run: python3 .github/scripts/fabric-smoke.py 26.2
+        run: python3 .github/scripts/mod-smoke.py fabric 26.2
 
-      - name: Upload Fabric server test logs
+      - name: Test packaged NeoForge 26.1.2 server
+        timeout-minutes: 10
+        run: python3 .github/scripts/mod-smoke.py neoforge 26.1.2
+
+      - name: Test packaged NeoForge 26.2 server
+        timeout-minutes: 10
+        run: python3 .github/scripts/mod-smoke.py neoforge 26.2
+
+      - name: Upload server mod test logs and reports
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: Fabric-release-server-logs
+          name: Mod-release-server-logs
           path: |
             .local/fabric-smoke/*/smoke-console.log
+            .local/fabric-smoke/*/smoke-report.json
             .local/fabric-smoke/*/logs/latest.log
+            .local/neoforge-smoke/*/smoke-console.log
+            .local/neoforge-smoke/*/smoke-report.json
+            .local/neoforge-smoke/*/logs/latest.log
           include-hidden-files: true
           if-no-files-found: ignore
 
@@ -167,6 +179,8 @@ jobs:
             paper/build/libs/EClean-Modern-*-paper.jar
             fabric/build/26.1.2/libs/EClean-Modern-*-fabric-mc26.1.2.jar
             fabric/build/26.2/libs/EClean-Modern-*-fabric-mc26.2.jar
+            neoforge/build/26.1.2/libs/EClean-Modern-*-neoforge-mc26.1.2.jar
+            neoforge/build/26.2/libs/EClean-Modern-*-neoforge-mc26.2.jar
           fail_on_unmatched_files: true
 
   publish-modrinth:
@@ -202,7 +216,7 @@ jobs:
           game-versions: ${{ needs.release.outputs.game-versions }}
           java: '25'
 
-  publish-modrinth-fabric:
+  publish-modrinth-mods:
     needs: release
     runs-on: ubuntu-latest
     permissions:
@@ -210,31 +224,52 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        minecraft: ['26.1.2', '26.2']
+        include:
+          - loader: fabric
+            label: Fabric
+            minecraft: '26.1.2'
+            dependencies: |
+              fabric-api(required)
+              architectury-api(required)
+          - loader: fabric
+            label: Fabric
+            minecraft: '26.2'
+            dependencies: |
+              fabric-api(required)
+              architectury-api(required)
+          - loader: neoforge
+            label: NeoForge
+            minecraft: '26.1.2'
+            dependencies: 'architectury-api(required)'
+          - loader: neoforge
+            label: NeoForge
+            minecraft: '26.2'
+            dependencies: 'architectury-api(required)'
     steps:
-      - name: Download Fabric release artifact
+      - name: Download server mod release artifact
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_VERSION: ${{ needs.release.outputs.version }}
           MINECRAFT_VERSION: ${{ matrix.minecraft }}
+          MOD_LOADER: ${{ matrix.loader }}
         run: |
           gh release download "v$RELEASE_VERSION" --repo "$GITHUB_REPOSITORY" \
-            --pattern "EClean-Modern-*-fabric-mc$MINECRAFT_VERSION.jar" --dir release
+            --pattern "EClean-Modern-*-$MOD_LOADER-mc$MINECRAFT_VERSION.jar" --dir release
           gh release view "v$RELEASE_VERSION" --repo "$GITHUB_REPOSITORY" \
             --json body --jq .body > release_notes.md
 
-      - name: Publish Fabric to Modrinth
+      - name: Publish server mod to Modrinth
         uses: Kira-NT/mc-publish@52307b03863581dec6b652b83e597aec02ebb075 # v3.3
         with:
           modrinth-id: VW7EmMIj # ecl-modern
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          files: release/EClean-Modern-*-fabric-mc${{ matrix.minecraft }}.jar
-          modrinth-name: ${{ needs.release.outputs.version }} (Fabric, MC ${{ matrix.minecraft }})
-          modrinth-version: ${{ needs.release.outputs.version }}+fabric.${{ matrix.minecraft }}
+          files: release/EClean-Modern-*-${{ matrix.loader }}-mc${{ matrix.minecraft }}.jar
+          modrinth-name: ${{ needs.release.outputs.version }} (${{ matrix.label }}, MC ${{ matrix.minecraft }})
+          modrinth-version: ${{ needs.release.outputs.version }}+${{ matrix.loader }}.${{ matrix.minecraft }}
           version-type: release
           changelog-file: release_notes.md
-          loaders: fabric
+          loaders: ${{ matrix.loader }}
           environment: server
           game-versions: ${{ matrix.minecraft }}
-          modrinth-dependencies: fabric-api(required)
+          modrinth-dependencies: ${{ matrix.dependencies }}
           java: '25'

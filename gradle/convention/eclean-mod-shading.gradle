@@ -1,0 +1,17 @@
+// Common JVM dependencies are private to each packaged mod. Loader APIs stay external.
+tasks.named('shadowJar') {
+    relocate('kotlin', 'org.meowcat.eclean.relocate.kotlin')
+    relocate('kotlinx', 'org.meowcat.eclean.relocate.kotlinx')
+    relocate('net.kyori', 'org.meowcat.eclean.relocate.kyori')
+    relocate('com.charleskorn.kaml', 'org.meowcat.eclean.relocate.kaml')
+    relocate('com.cronutils', 'org.meowcat.eclean.relocate.cronutils')
+    relocate('org.yaml', 'org.meowcat.eclean.relocate.snakeyaml')
+    relocate('it.krzeminski', 'org.meowcat.eclean.relocate.snakeyamlengine')
+    relocate('okio', 'org.meowcat.eclean.relocate.okio')
+    relocate('net.thauvin.erik.urlencoder', 'org.meowcat.eclean.relocate.urlencoder')
+    exclude('META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'architectury.common.json')
+    filesMatching(['META-INF/services/**', 'META-INF/*.kotlin_module']) {
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    }
+    mergeServiceFiles()
+}

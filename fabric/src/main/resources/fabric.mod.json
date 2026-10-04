@@ -15,11 +15,12 @@
   "entrypoints": {
     "main": ["org.meowcat.eclean.fabric.ECleanFabric"]
   },
-  "mixins": ["eclean.fabric.mixins.json"],
+  "mixins": ["eclean.mod.mixins.json", "eclean.fabric.mixins.json"],
   "depends": {
     "fabricloader": ">=${fabricLoaderVersion}",
     "minecraft": "${minecraftVersion}",
     "java": ">=25",
-    "fabric-api": ">=${fabricApiVersion}"
+    "fabric-api": ">=${fabricApiVersion}",
+    "architectury": ">=${architecturyApiVersion}"
   }
 }

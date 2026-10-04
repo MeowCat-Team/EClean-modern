@@ -6,6 +6,8 @@ EClean Modern 0.3.5 uses one Paper plugin JAR for **Minecraft 1.21.5–26.2**. *
 
 ## Tested builds
 
+0.3.6 inherits the compatibility list established for 0.3.5. Its CI and release checks repeat the same ten cases against the current packaged Paper artifact.
+
 The following exact official Paper builds were checked on 2026-10-03. [`paper/compatibility.json`](../paper/compatibility.json) records their build numbers, channels, and SHA-256 checksums and supplies both the CI matrix and release game metadata.
 
 | Minecraft | Paper build | Channel |

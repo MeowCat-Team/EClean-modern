@@ -1,0 +1,45 @@
+modLoader="javafml"
+loaderVersion="[1,)"
+license="GPL-3.0-only"
+issueTrackerURL="https://github.com/MeowCat-Team/EClean-modern/issues"
+
+[[mods]]
+modId="eclean"
+version="${version}"
+displayName="EClean Modern"
+authors="MeowCat Team, 4o4E"
+displayURL="https://github.com/MeowCat-Team/EClean-modern"
+description='''
+Server-side entity cleanup and administration tools.
+Vanilla clients can connect without installing EClean.
+'''
+
+[features.eclean]
+javaVersion="[25,)"
+
+[[mixins]]
+config="eclean.mod.mixins.json"
+
+[[mixins]]
+config="eclean.neoforge.mixins.json"
+
+[[dependencies.eclean]]
+modId="minecraft"
+type="required"
+versionRange="[${minecraftVersion}]"
+ordering="NONE"
+side="SERVER"
+
+[[dependencies.eclean]]
+modId="neoforge"
+type="required"
+versionRange="${neoforgeVersionRange}"
+ordering="NONE"
+side="SERVER"
+
+[[dependencies.eclean]]
+modId="architectury"
+type="required"
+versionRange="${architecturyApiVersionRange}"
+ordering="AFTER"
+side="SERVER"

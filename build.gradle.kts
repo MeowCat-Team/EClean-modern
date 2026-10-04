@@ -3,11 +3,23 @@ plugins {
     alias(libs.plugins.kotlin.serialization) apply false
     alias(libs.plugins.shadow) apply false
     alias(libs.plugins.run.paper) apply false
+    alias(libs.plugins.architectury.loom) apply false
+    alias(libs.plugins.architectury.plugin)
 }
+
+val minecraftVersion = providers.gradleProperty("minecraftVersion").getOrElse("26.1.2")
+require(minecraftVersion in setOf("26.1.2", "26.2")) {
+    "EClean mods support Minecraft 26.1.2 and 26.2; received '$minecraftVersion'."
+}
+architectury {
+    minecraft = minecraftVersion
+}
+// Select NeoForge before its Loom plugin is applied. Paper and common never apply Loom.
+project(":neoforge").extensions.extraProperties["loom.platform"] = "neoforge"
 
 allprojects {
     group = "org.meowcat"
-    version = "0.3.5"
+    version = "0.3.6"
 
     repositories {
         mavenCentral()

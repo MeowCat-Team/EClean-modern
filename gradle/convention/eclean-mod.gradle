@@ -1,0 +1,44 @@
+// Shared native-Minecraft build settings. The loader-neutral common and Paper do not use this.
+apply from: rootProject.file('gradle/convention/eclean-common.gradle')
+
+def gameVersion = providers.gradleProperty('minecraftVersion').getOrElse('26.1.2')
+if (!(gameVersion in ['26.1.2', '26.2'])) {
+    throw new GradleException("Unsupported Minecraft version: ${gameVersion}")
+}
+layout.buildDirectory.set(layout.projectDirectory.dir("build/${gameVersion}"))
+dependencyLocking.lockFile.set(layout.projectDirectory.file("gradle-${gameVersion}.lockfile"))
+
+repositories {
+    exclusiveContent {
+        forRepository { maven { url = 'https://maven.architectury.dev/' } }
+        filter { includeGroupByRegex('dev\\.architectury(\\..*)?') }
+    }
+    exclusiveContent {
+        forRepository { maven { url = 'https://maven.fabricmc.net/' } }
+        filter { includeGroupByRegex('net\\.fabricmc(\\..*)?') }
+    }
+    exclusiveContent {
+        forRepository { maven { url = 'https://maven.neoforged.net/releases/' } }
+        filter { includeGroupByRegex('net\\.neoforged(\\..*)?') }
+    }
+}
+
+loom {
+    if (project.name != 'neoforge') {
+        serverOnlyMinecraftJar()
+    }
+    // Native names are already public. Accessors use explicit, shared Mixins at runtime.
+    enableTransitiveAccessWideners.set(false)
+    enableModProvidedJavadoc.set(false)
+    interfaceInjection {
+        getIsEnabled().set(false)
+        enableDependencyInterfaceInjection.set(false)
+    }
+    runs {
+        server {
+            runDir("run/${gameVersion}")
+            programArg('nogui')
+        }
+    }
+}
+apply from: rootProject.file('gradle/convention/eclean-minecraft-reproducible.gradle')

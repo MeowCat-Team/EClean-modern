@@ -9,4 +9,5 @@ run
 .local
 /.planning/
 /fabric/logs/
+/mod-common/logs/
 __pycache__/

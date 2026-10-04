@@ -20,7 +20,7 @@ from urllib.request import Request, urlopen
 
 PROJECT_ID = "VW7EmMIj"
 API = "https://api.modrinth.com/v2"
-FABRIC_GAMES = {"26.1.2", "26.2"}
+MOD_GAMES = {"26.1.2", "26.2"}
 USER_AGENT = "EClean-Modern/version-names (https://github.com/MeowCat-Team/EClean-modern)"
 GUARDED_FIELDS = (
     "id", "project_id", "files", "dependencies", "loaders", "game_versions", "changelog",
@@ -136,6 +136,8 @@ def build_plan(versions: Any, base: str) -> list[Rename]:
             selected.append((version, "paper"))
         elif number.startswith(base + "+fabric."):
             selected.append((version, "fabric"))
+        elif number.startswith(base + "+neoforge."):
+            selected.append((version, "neoforge"))
     if not selected:
         raise RenameError(f"No existing versions match base_version {base}; nothing was modified")
 
@@ -154,10 +156,11 @@ def build_plan(versions: Any, base: str) -> list[Rename]:
         loader_set = set(loaders)
         if len(loader_set) != len(loaders):
             raise RenameError(f"Version {version_id} has duplicate loaders")
-        if loader_set == {"fabric"}:
-            platform, label = "fabric", "Fabric"
-            if len(games) != 1 or games[0] not in FABRIC_GAMES:
-                raise RenameError(f"Fabric version {version_id} must have one supported game version (26.1.2 or 26.2)")
+        if loader_set in ({"fabric"}, {"neoforge"}):
+            platform = next(iter(loader_set))
+            label = "Fabric" if platform == "fabric" else "NeoForge"
+            if len(games) != 1 or games[0] not in MOD_GAMES:
+                raise RenameError(f"{label} version {version_id} must have one supported game version (26.1.2 or 26.2)")
             game = games[0]
         elif loader_set <= {"paper", "folia"}:
             platform, label = "paper", "Paper / Folia"
@@ -169,7 +172,7 @@ def build_plan(versions: Any, base: str) -> list[Rename]:
                 raise RenameError(f"Paper version {version_id} has gaps in its declared compatibility range")
             game = ordered[0] if len(ordered) == 1 else f"{ordered[0]}-{ordered[-1]}"
         else:
-            raise RenameError(f"Version {version_id} is not exclusively Paper/Folia or Fabric")
+            raise RenameError(f"Version {version_id} is not exclusively Paper/Folia, Fabric, or NeoForge")
         target_number = f"{base}+{platform}.{game}"
         if suffix is not None and (suffix != platform or version["version_number"] != target_number):
             raise RenameError(f"Version {version_id} platform suffix does not match its loaders and game version")

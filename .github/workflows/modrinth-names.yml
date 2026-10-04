@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: modern
+          ref: architectury
           persist-credentials: false
 
       - name: Validate and apply version names

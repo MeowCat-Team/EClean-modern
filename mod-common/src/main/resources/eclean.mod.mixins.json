@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "org.meowcat.eclean.mod.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "server": [
+    "ChunkMapAccessor",
+    "ServerLevelAccessor",
+    "PersistentEntitySectionManagerAccessor",
+    "MinecraftServerPauseMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

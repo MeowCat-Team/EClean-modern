@@ -2,7 +2,7 @@
 
 English | [简体中文](README-zh.md)
 
-An entity cleanup plugin for Paper / Folia and a server mod for Fabric 26.1.2 / 26.2, based on [EClean](https://github.com/4o4E/EClean). Supports scheduled cleanup, protection rules, cleanup previews, a shared trash can, and visual statistics.
+An entity cleanup plugin for Paper / Folia and an Architectury server mod for Fabric and NeoForge 26.1.2 / 26.2, based on [EClean](https://github.com/4o4E/EClean). Supports scheduled cleanup, protection rules, cleanup previews, a shared trash can, and visual statistics. Development takes place on the `architectury` branch.
 
 [Download](https://github.com/MeowCat-Team/EClean-modern/releases/latest) · [Changelog](docs/Changelog.md)
 
@@ -14,7 +14,7 @@ An entity cleanup plugin for Paper / Folia and a server mod for Fabric 26.1.2 / 
 
 Trash-can contents do not survive server restarts. Shut down the server completely before replacing the plugin JAR.
 
-For Fabric, install the JAR matching **26.1.2 or 26.2**, Fabric Loader 0.19.5 or newer, and the matching Fabric API in `mods/`. Configuration is generated under `config/eclean/`. Clients need no mod. See the [Fabric guide](docs/Fabric.md) for versions, permissions, and platform differences.
+For Fabric or NeoForge, install the EClean JAR and Architectury API matching **26.1.2 or 26.2** in `mods/`. Fabric additionally requires Fabric API. Configuration is generated under `config/eclean/`; clients need no mod. See the [Fabric guide](docs/Fabric.md) or [NeoForge guide](docs/NeoForge.md) for exact dependencies, permissions, and installation.
 
 ## Common commands
 
@@ -36,5 +36,6 @@ The main command is `/eclean`, with `/ecl` as an alias. Commands require OP perm
 - [Permissions](docs/Permissions.md)
 - [Paper versions and compatibility checks](docs/Paper.md)
 - [Fabric installation and compatibility](docs/Fabric.md)
+- [NeoForge installation and compatibility](docs/NeoForge.md)
 - [PlaceholderAPI variables](docs/Placeholders.md)
 - [Building and updating dependencies](docs/Building.md)

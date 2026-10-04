@@ -12,7 +12,12 @@ slf4j = "2.0.18"
 snakeyaml = "2.2"
 shadow = "9.6.1"
 run-paper = "3.1.0"
-fabric-loom = "1.18.2"
+architectury-loom = "1.17.493"
+architectury-plugin = "3.5.170"
+architectury-api-mc2612 = "20.1.16"
+architectury-api-mc262 = "21.1.11"
+neoforge-mc2612 = "26.1.2.114"
+neoforge-mc262 = "26.2.0.88"
 fabric-loader = "0.19.5"
 fabric-installer = "1.1.2"
 fabric-api-mc2612 = "0.155.3+26.1.2"
@@ -43,4 +48,5 @@ kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
 run-paper = { id = "xyz.jpenilla.run-paper", version.ref = "run-paper" }
-fabric-loom = { id = "net.fabricmc.fabric-loom", version.ref = "fabric-loom" }
+architectury-loom = { id = "dev.architectury.loom-no-remap", version.ref = "architectury-loom" }
+architectury-plugin = { id = "architectury-plugin", version.ref = "architectury-plugin" }
