@@ -21,11 +21,12 @@ import urllib.error
 import zipfile
 
 
-USER_AGENT = "EClean-compatibility-audit/0.3.5 (https://github.com/MeowCat-Team/EClean-modern)"
+USER_AGENT = "EClean-compatibility-audit/0.3.7 (https://github.com/MeowCat-Team/EClean-modern)"
 API = "https://fill.papermc.io/v3/projects/paper"
 VERSION = re.compile(r"\d+(?:\.\d+){1,2}")
 FATAL = re.compile(
-    r"Exception executing command|Error occurred while (?:enabling|disabling) EClean|"
+    r"Exception executing command|An unexpected error occurred (?:while )?trying to execute that command|"
+    r"Error occurred while (?:enabling|disabling) EClean|"
     r"Could not load .*EClean|InvalidPluginException|Unsupported API version|"
     r"NoSuchMethodError|NoSuchFieldError|AbstractMethodError|IncompatibleClassChangeError|VerifyError|UnsupportedClassVersionError|"
     r"Unsupported class file major version|NoClassDefFoundError|"
@@ -154,7 +155,7 @@ def main() -> None:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("minecraft", help="Exact stable Minecraft version, for example 1.21.8 or 26.2")
+    parser.add_argument("minecraft", help="Exact released Minecraft version, for example 1.21.8 or 26.3")
     parser.add_argument("--build", type=int, help="Pin an official Paper build number")
     parser.add_argument("--plugin", type=Path, help="Packaged shaded Paper plugin; defaults to the newest build artifact")
     parser.add_argument("--server-jar", type=Path, help="Existing official server JAR, still verified against API metadata")
@@ -295,7 +296,7 @@ def main() -> None:
             # Disable natural spawning while allowing the mobs summoned for protection tests.
             # Legacy Paper rejects COMMAND spawns when spawn-monsters is false.
             send(f"gamerule {mob_rule} false")
-            wait_for(r"[Gg]ame ?rule .* is now set to: false")
+            wait_for(r"[Gg]ame ?rule .* is now set to:? false")
             send("forceload add 0 0")
             for _ in range(30):
                 send("execute if loaded 0 80 0 run say ECLEAN_PAPER_CHUNK_LOADED")

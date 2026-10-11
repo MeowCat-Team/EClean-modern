@@ -21,7 +21,7 @@ import zipfile
 
 
 LABELS = {"fabric": "Fabric", "neoforge": "NeoForge"}
-FATAL = re.compile(r"Exception executing command|An unexpected error occurred trying to execute that command|Mixin apply failed|NoSuch(?:Method|Field)Error|AbstractMethodError|NoClassDefFoundError|IncompatibleClassChangeError|VerifyError")
+FATAL = re.compile(r"Exception executing command|An unexpected error occurred (?:while )?trying to execute that command|Mixin apply failed|NoSuch(?:Method|Field)Error|AbstractMethodError|NoClassDefFoundError|IncompatibleClassChangeError|VerifyError")
 
 
 def digest(path: Path, algorithm: str = "sha256") -> str:
@@ -132,7 +132,7 @@ def verify_production(root: Path, run_dir: Path, gradle_home: Path, loader: str,
         mod_paths = {path.name: path for path in (run_dir / "mods").glob("*.jar")}
     if artifact.name not in mod_paths or digest(mod_paths[artifact.name]) != actual_artifact_sha256:
         raise RuntimeError("Production mods directory does not contain the exact packaged EClean artifact")
-    game_key = "mc2612" if minecraft == "26.1.2" else "mc262"
+    game_key = {"26.1.2": "mc2612", "26.2": "mc262", "26.3": "mc263"}[minecraft]
     dependencies = [("dev.architectury", f"architectury-{loader}", versions[f"architectury-api-{game_key}"])]
     if loader == "fabric":
         dependencies.append(("net.fabricmc.fabric-api", "fabric-api", versions[f"fabric-api-{game_key}"]))
@@ -211,7 +211,7 @@ def main() -> None:
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("loader", choices=tuple(LABELS))
-    parser.add_argument("minecraft", choices=("26.1.2", "26.2"))
+    parser.add_argument("minecraft", choices=("26.1.2", "26.2", "26.3"))
     parser.add_argument("--gradle", type=Path)
     parser.add_argument("--gradle-user-home", type=Path)
     parser.add_argument("--offline", action="store_true")

@@ -2,19 +2,19 @@
 
 English | [简体中文](README-zh.md)
 
-An entity cleanup plugin for Paper / Folia and an Architectury server mod for Fabric and NeoForge 26.1.2 / 26.2, based on [EClean](https://github.com/4o4E/EClean). Supports scheduled cleanup, protection rules, cleanup previews, a shared trash can, and visual statistics. Development takes place on the `architectury` branch.
+An entity cleanup plugin for Paper / Folia and an Architectury server mod for Fabric and NeoForge 26.1.2 / 26.2 / 26.3, based on [EClean](https://github.com/4o4E/EClean). Supports scheduled cleanup, protection rules, cleanup previews, a shared trash can, and visual statistics. Development takes place on the `architectury` branch.
 
 [Download](https://github.com/MeowCat-Team/EClean-modern/releases/latest) · [Changelog](docs/Changelog.md)
 
 ## Installation
 
-1. Use **Paper 1.21.5–26.2 with Java 25** and place the plugin JAR in your server's `plugins/` directory. See the [Paper compatibility guide](docs/Paper.md) for the exact tested builds, including historical Alpha builds.
+1. Use **Paper 1.21.5–26.3 with Java 25** and place the plugin JAR in your server's `plugins/` directory. See the [Paper compatibility guide](docs/Paper.md) for the exact tested builds, including historical Alpha builds and the 26.3 Beta build.
 2. Start the server to generate configuration, then adjust `plugins/EClean-Modern/config/normal/config.yml` as needed.
 3. Run `/eclean reload`, then `/eclean clean --preview` to check what would be removed.
 
 Trash-can contents do not survive server restarts. Shut down the server completely before replacing the plugin JAR.
 
-For Fabric or NeoForge, install the EClean JAR and Architectury API matching **26.1.2 or 26.2** in `mods/`. Fabric additionally requires Fabric API. Configuration is generated under `config/eclean/`; clients need no mod. See the [Fabric guide](docs/Fabric.md) or [NeoForge guide](docs/NeoForge.md) for exact dependencies, permissions, and installation.
+For Fabric or NeoForge, install the EClean JAR and Architectury API matching **26.1.2, 26.2 or 26.3** in `mods/`. Fabric additionally requires Fabric API. The 26.3 NeoForge loader and Paper build are currently Beta; see the platform guides for the pinned builds. Configuration is generated under `config/eclean/`; clients need no mod. See the [Fabric guide](docs/Fabric.md) or [NeoForge guide](docs/NeoForge.md) for exact dependencies, permissions, and installation.
 
 ## Common commands
 

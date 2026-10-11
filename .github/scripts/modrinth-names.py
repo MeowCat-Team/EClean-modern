@@ -20,7 +20,7 @@ from urllib.request import Request, urlopen
 
 PROJECT_ID = "VW7EmMIj"
 API = "https://api.modrinth.com/v2"
-MOD_GAMES = {"26.1.2", "26.2"}
+MOD_GAMES = {"26.1.2", "26.2", "26.3"}
 USER_AGENT = "EClean-Modern/version-names (https://github.com/MeowCat-Team/EClean-modern)"
 GUARDED_FIELDS = (
     "id", "project_id", "files", "dependencies", "loaders", "game_versions", "changelog",
@@ -160,7 +160,7 @@ def build_plan(versions: Any, base: str) -> list[Rename]:
             platform = next(iter(loader_set))
             label = "Fabric" if platform == "fabric" else "NeoForge"
             if len(games) != 1 or games[0] not in MOD_GAMES:
-                raise RenameError(f"{label} version {version_id} must have one supported game version (26.1.2 or 26.2)")
+                raise RenameError(f"{label} version {version_id} must have one supported game version ({', '.join(sorted(MOD_GAMES))})")
             game = games[0]
         elif loader_set <= {"paper", "folia"}:
             platform, label = "paper", "Paper / Folia"

@@ -10,15 +10,17 @@ apply(from = rootProject.file("gradle/convention/eclean-mod.gradle"))
 apply(from = rootProject.file("gradle/convention/eclean-mod-shading.gradle"))
 
 val minecraftVersion = providers.gradleProperty("minecraftVersion").getOrElse("26.1.2")
-val neoforgeVersion = if (minecraftVersion == "26.1.2") {
-    libs.versions.neoforge.mc2612.get()
-} else {
-    libs.versions.neoforge.mc262.get()
+val neoforgeVersion = when (minecraftVersion) {
+    "26.1.2" -> libs.versions.neoforge.mc2612.get()
+    "26.2" -> libs.versions.neoforge.mc262.get()
+    "26.3" -> libs.versions.neoforge.mc263.get()
+    else -> error("Unsupported Minecraft version: $minecraftVersion")
 }
-val architecturyApiVersion = if (minecraftVersion == "26.1.2") {
-    libs.versions.architectury.api.mc2612.get()
-} else {
-    libs.versions.architectury.api.mc262.get()
+val architecturyApiVersion = when (minecraftVersion) {
+    "26.1.2" -> libs.versions.architectury.api.mc2612.get()
+    "26.2" -> libs.versions.architectury.api.mc262.get()
+    "26.3" -> libs.versions.architectury.api.mc263.get()
+    else -> error("Unsupported Minecraft version: $minecraftVersion")
 }
 
 architectury {
@@ -119,8 +121,16 @@ tasks {
             "minecraftVersion" to minecraftVersion,
             "neoforgeVersion" to neoforgeVersion,
             "architecturyApiVersion" to architecturyApiVersion,
-            "neoforgeVersionRange" to if (minecraftVersion == "26.1.2") "[$neoforgeVersion,26.1.3)" else "[$neoforgeVersion,26.3)",
-            "architecturyApiVersionRange" to if (minecraftVersion == "26.1.2") "[$architecturyApiVersion,21)" else "[$architecturyApiVersion,22)",
+            "neoforgeVersionRange" to "[$neoforgeVersion,${when (minecraftVersion) {
+                "26.1.2" -> "26.1.3"
+                "26.2" -> "26.3"
+                else -> "26.4"
+            }})",
+            "architecturyApiVersionRange" to "[$architecturyApiVersion,${when (minecraftVersion) {
+                "26.1.2" -> "21"
+                "26.2" -> "22"
+                else -> "23"
+            }})",
         )
         inputs.properties(properties)
         filesMatching("META-INF/neoforge.mods.toml") { expand(properties) }

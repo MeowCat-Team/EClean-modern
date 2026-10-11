@@ -2,14 +2,15 @@
 
 [Home](../README.md) · English | [简体中文](Fabric-zh.md)
 
-EClean runs on Fabric dedicated servers for Minecraft **26.1.2 and 26.2**. Each game version has its own artifact with an exact Minecraft dependency; install only the matching one.
+EClean runs on Fabric dedicated servers for Minecraft **26.1.2, 26.2 and 26.3**. Each game version has its own artifact with an exact Minecraft dependency; install only the matching one.
 
 | Minecraft | Artifact | Minimum Fabric API | Architectury API |
 | --- | --- | --- | --- |
-| 26.1.2 | `EClean-Modern-0.3.6-fabric-mc26.1.2.jar` | `0.155.3+26.1.2` | `20.1.16` |
-| 26.2 | `EClean-Modern-0.3.6-fabric-mc26.2.jar` | `0.161.0+26.2` | `21.1.11` |
+| 26.1.2 | `EClean-Modern-0.3.7-fabric-mc26.1.2.jar` | `0.155.3+26.1.2` | `20.1.16` |
+| 26.2 | `EClean-Modern-0.3.7-fabric-mc26.2.jar` | `0.161.0+26.2` | `21.1.11` |
+| 26.3 | `EClean-Modern-0.3.7-fabric-mc26.3.jar` | `0.162.0+26.3` | `22.0.5` |
 
-Both require Java 25 and Fabric Loader 0.19.5 or newer. Install EClean, Fabric API, and the Fabric build of [Architectury API](https://modrinth.com/mod/architectury-api) matching your game version in the server's `mods/` directory, then start the server. Kotlin and configuration libraries are included; Fabric Language Kotlin is unnecessary. Clients can use vanilla Minecraft: menus use the vanilla chest protocol. Fabric and [NeoForge](NeoForge.md) share their native server implementation through `mod-common`.
+All three require Java 25 and Fabric Loader 0.19.5 or newer. Install EClean, Fabric API, and the Fabric build of [Architectury API](https://modrinth.com/mod/architectury-api) matching your game version in the server's `mods/` directory, then start the server. Kotlin and configuration libraries are included; Fabric Language Kotlin is unnecessary. Clients can use vanilla Minecraft: menus use the vanilla chest protocol. Fabric and [NeoForge](NeoForge.md) share their native server implementation through `mod-common`.
 
 ## Configuration and commands
 
@@ -43,8 +44,9 @@ Update checks run asynchronously and respect `global.updateCheck` and `advanced.
 ```shell
 ./gradlew :common:check :mod-common:check :fabric:build -PminecraftVersion=26.1.2
 ./gradlew :common:check :mod-common:check :fabric:build -PminecraftVersion=26.2
+./gradlew :common:check :mod-common:check :fabric:build -PminecraftVersion=26.3
 ```
 
-Run `python .github/scripts/mod-smoke.py fabric 26.1.2` or `fabric 26.2` to exercise the packaged mod on a real server. The test binds to localhost, creates a dedicated world and configuration under `.local/fabric-smoke/`, and verifies the final artifact, external API dependencies, protection rules, previews, item recovery, reloads, and empty-server ticks. CI and Release both run it and retain the logs and JSON report as build artifacts. `fabric-smoke.py` remains a compatibility wrapper for the shared suite.
+Run `python .github/scripts/mod-smoke.py fabric 26.1.2` or `fabric 26.2` / `fabric 26.3` to exercise the packaged mod on a real server. The test binds to localhost, creates a dedicated world and configuration under `.local/fabric-smoke/`, and verifies the final artifact, external API dependencies, protection rules, previews, item recovery, reloads, and empty-server ticks. CI and Release both run it and retain the logs and JSON report as build artifacts. `fabric-smoke.py` remains a compatibility wrapper for the shared suite.
 
 Outputs live in `fabric/build/<minecraftVersion>/libs/`. Use the final `EClean-Modern-*-fabric-mc*.jar`, which includes the domain and transformed mod code, resources, and shaded libraries. The `dev` JAR is for development. Release publishing creates separate Fabric Modrinth versions with exact game metadata and required Fabric API and Architectury API dependencies.

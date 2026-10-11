@@ -38,7 +38,7 @@ jobs:
           for entry in versions:
               assert re.fullmatch(r"\d+(?:\.\d+){1,2}", entry["minecraft"]), "Invalid Minecraft version"
               assert type(entry["build"]) is int and entry["build"] > 0, "Invalid Paper build"
-              assert entry["channel"] in {"STABLE", "ALPHA"}, "Unapproved Paper channel"
+              assert entry["channel"] in {"STABLE", "ALPHA", "BETA"}, "Unapproved Paper channel"
               assert re.fullmatch(r"[a-f0-9]{64}", entry["sha256"]), "Invalid Paper SHA-256"
           names = [entry["minecraft"] for entry in versions]
           assert len(names) == len(set(names)), "Duplicate Minecraft version"
@@ -85,6 +85,9 @@ jobs:
       - name: Build and test Fabric and NeoForge 26.2
         run: ./gradlew :mod-common:check :fabric:build :neoforge:build -PminecraftVersion=26.2
 
+      - name: Build and test Fabric and NeoForge 26.3
+        run: ./gradlew :mod-common:check :fabric:build :neoforge:build -PminecraftVersion=26.3
+
       - name: Test packaged Paper plugin on every supported version
         timeout-minutes: 30
         run: |
@@ -96,7 +99,7 @@ jobs:
           for entry in data["versions"]:
               command = [sys.executable, ".github/scripts/paper-smoke.py", entry["minecraft"],
                          "--build", str(entry["build"]), "--expected-sha256", entry["sha256"]]
-              if entry["channel"] == "ALPHA":
+              if entry["channel"] != "STABLE":
                   command.append("--allow-unstable")
               print(f"::group::Paper {entry['minecraft']} build {entry['build']} ({entry['channel']})", flush=True)
               result = subprocess.run(command)
@@ -134,6 +137,14 @@ jobs:
       - name: Test packaged NeoForge 26.2 server
         timeout-minutes: 10
         run: python3 .github/scripts/mod-smoke.py neoforge 26.2
+
+      - name: Test packaged Fabric 26.3 server
+        timeout-minutes: 10
+        run: python3 .github/scripts/mod-smoke.py fabric 26.3
+
+      - name: Test packaged NeoForge 26.3 server
+        timeout-minutes: 10
+        run: python3 .github/scripts/mod-smoke.py neoforge 26.3
 
       - name: Upload server mod test logs and reports
         if: always()
@@ -179,8 +190,10 @@ jobs:
             paper/build/libs/EClean-Modern-*-paper.jar
             fabric/build/26.1.2/libs/EClean-Modern-*-fabric-mc26.1.2.jar
             fabric/build/26.2/libs/EClean-Modern-*-fabric-mc26.2.jar
+            fabric/build/26.3/libs/EClean-Modern-*-fabric-mc26.3.jar
             neoforge/build/26.1.2/libs/EClean-Modern-*-neoforge-mc26.1.2.jar
             neoforge/build/26.2/libs/EClean-Modern-*-neoforge-mc26.2.jar
+            neoforge/build/26.3/libs/EClean-Modern-*-neoforge-mc26.3.jar
           fail_on_unmatched_files: true
 
   publish-modrinth:
@@ -228,22 +241,38 @@ jobs:
           - loader: fabric
             label: Fabric
             minecraft: '26.1.2'
+            version-type: release
             dependencies: |
               fabric-api(required)
               architectury-api(required)
           - loader: fabric
             label: Fabric
             minecraft: '26.2'
+            version-type: release
+            dependencies: |
+              fabric-api(required)
+              architectury-api(required)
+          - loader: fabric
+            label: Fabric
+            minecraft: '26.3'
+            version-type: release
             dependencies: |
               fabric-api(required)
               architectury-api(required)
           - loader: neoforge
             label: NeoForge
             minecraft: '26.1.2'
+            version-type: release
             dependencies: 'architectury-api(required)'
           - loader: neoforge
             label: NeoForge
             minecraft: '26.2'
+            version-type: release
+            dependencies: 'architectury-api(required)'
+          - loader: neoforge
+            label: NeoForge
+            minecraft: '26.3'
+            version-type: beta
             dependencies: 'architectury-api(required)'
     steps:
       - name: Download server mod release artifact
@@ -266,7 +295,7 @@ jobs:
           files: release/EClean-Modern-*-${{ matrix.loader }}-mc${{ matrix.minecraft }}.jar
           modrinth-name: ${{ needs.release.outputs.version }} (${{ matrix.label }}, MC ${{ matrix.minecraft }})
           modrinth-version: ${{ needs.release.outputs.version }}+${{ matrix.loader }}.${{ matrix.minecraft }}
-          version-type: release
+          version-type: ${{ matrix.version-type }}
           changelog-file: release_notes.md
           loaders: ${{ matrix.loader }}
           environment: server

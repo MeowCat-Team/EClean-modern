@@ -2,13 +2,13 @@
 
 [Home](../README.md) · English | [简体中文](Paper-zh.md)
 
-EClean Modern 0.3.5 uses one Paper plugin JAR for **Minecraft 1.21.5–26.2**. **Java 25 is required on every listed version**, including older servers that normally use an older Java version. Install the shaded `EClean-Modern-*-paper.jar` in `plugins/` and restart the server.
+EClean Modern 0.3.7 uses one Paper plugin JAR for **Minecraft 1.21.5–26.3**. **Java 25 is required on every listed version**, including older servers that normally use an older Java version. Install the shaded `EClean-Modern-*-paper.jar` in `plugins/` and restart the server.
 
 ## Tested builds
 
-0.3.6 inherits the compatibility list established for 0.3.5. Its CI and release checks repeat the same ten cases against the current packaged Paper artifact.
+0.3.7 retains the compatibility list established for 0.3.5/0.3.6 and adds Paper 26.3 build 169 (Beta). CI and release checks run all eleven cases against the current packaged Paper artifact.
 
-The following exact official Paper builds were checked on 2026-10-03. [`paper/compatibility.json`](../paper/compatibility.json) records their build numbers, channels, and SHA-256 checksums and supplies both the CI matrix and release game metadata.
+The original official Paper builds were checked on 2026-10-03; the 26.3 entry was added on 2026-10-10. [`paper/compatibility.json`](../paper/compatibility.json) records their build numbers, channels, and SHA-256 checksums and supplies both the CI matrix and release game metadata.
 
 | Minecraft | Paper build | Channel |
 | --- | --- | --- |
@@ -22,8 +22,9 @@ The following exact official Paper builds were checked on 2026-10-03. [`paper/co
 | 26.1.1 | 29 | Alpha |
 | 26.1.2 | 74 | Stable |
 | 26.2 | 129 | Stable |
+| 26.3 | 169 | Beta |
 
-The official download service has no Stable build for the three Alpha entries. Those historical builds passed the same plugin checks, but their experimental channel still applies. Prefer a Stable entry for a production server. See Paper's [download service documentation](https://docs.papermc.io/misc/downloads-service/) for channel definitions.
+The official download service has no Stable build for the three Alpha entries. Paper 26.3 currently offers Beta builds without a Stable build. Those historical and Beta builds passed the same plugin checks, but their experimental channel still applies. Prefer a Stable entry for a production server. See Paper's [download service documentation](https://docs.papermc.io/misc/downloads-service/) for channel definitions.
 
 ## Why the minimum is 1.21.5
 
@@ -43,6 +44,6 @@ Build CI repeats these server checks for every version. Release repeats them bef
 python .github/scripts/paper-smoke.py 1.21.6 --build 48 --expected-sha256 35e2dfa66b3491b9d2f0bb033679fa5aca1e1fdf097e7a06a80ce8afeda5c214
 ```
 
-Use `--allow-unstable` for a pinned Alpha entry. Logs and JSON reports are saved under `.local/paper-smoke/<minecraft>/`.
+Use `--allow-unstable` for a pinned Alpha or Beta entry. Logs and JSON reports are saved under `.local/paper-smoke/<minecraft>/`.
 
-These are Paper server checks without a connected player. Player menu interactions, third-party plugin combinations, and real Folia region-thread execution require separate testing. The JAR retains its Folia adapter, but this matrix establishes the Paper range. Versions outside the manifest, including 26.3 Beta, have no compatibility claim from these checks.
+These are Paper server checks without a connected player. Player menu interactions, third-party plugin combinations, and real Folia region-thread execution require separate testing. The JAR retains its Folia adapter, but this matrix establishes the Paper range. Versions outside the manifest have no compatibility claim from these checks.

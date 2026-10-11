@@ -2,7 +2,7 @@
 apply from: rootProject.file('gradle/convention/eclean-common.gradle')
 
 def gameVersion = providers.gradleProperty('minecraftVersion').getOrElse('26.1.2')
-if (!(gameVersion in ['26.1.2', '26.2'])) {
+if (!(gameVersion in ['26.1.2', '26.2', '26.3'])) {
     throw new GradleException("Unsupported Minecraft version: ${gameVersion}")
 }
 layout.buildDirectory.set(layout.projectDirectory.dir("build/${gameVersion}"))

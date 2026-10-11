@@ -16,12 +16,15 @@ architectury-loom = "1.17.493"
 architectury-plugin = "3.5.170"
 architectury-api-mc2612 = "20.1.16"
 architectury-api-mc262 = "21.1.11"
+architectury-api-mc263 = "22.0.5"
 neoforge-mc2612 = "26.1.2.114"
 neoforge-mc262 = "26.2.0.88"
+neoforge-mc263 = "26.3.0.66-beta"
 fabric-loader = "0.19.5"
 fabric-installer = "1.1.2"
 fabric-api-mc2612 = "0.155.3+26.1.2"
 fabric-api-mc262 = "0.161.0+26.2"
+fabric-api-mc263 = "0.162.0+26.3"
 
 [libraries]
 adventure-api = { module = "net.kyori:adventure-api", version.ref = "adventure" }
@@ -42,6 +45,7 @@ kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotl
 fabric-loader = { module = "net.fabricmc:fabric-loader", version.ref = "fabric-loader" }
 fabric-api-mc2612 = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabric-api-mc2612" }
 fabric-api-mc262 = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabric-api-mc262" }
+fabric-api-mc263 = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabric-api-mc263" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

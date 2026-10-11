@@ -8,10 +8,11 @@ plugins {
 apply(from = rootProject.file("gradle/convention/eclean-mod.gradle"))
 
 val minecraftVersion = providers.gradleProperty("minecraftVersion").getOrElse("26.1.2")
-val architecturyApiVersion = if (minecraftVersion == "26.1.2") {
-    libs.versions.architectury.api.mc2612.get()
-} else {
-    libs.versions.architectury.api.mc262.get()
+val architecturyApiVersion = when (minecraftVersion) {
+    "26.1.2" -> libs.versions.architectury.api.mc2612.get()
+    "26.2" -> libs.versions.architectury.api.mc262.get()
+    "26.3" -> libs.versions.architectury.api.mc263.get()
+    else -> error("Unsupported Minecraft version: $minecraftVersion")
 }
 
 architectury {

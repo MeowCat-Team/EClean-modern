@@ -10,15 +10,17 @@ apply(from = rootProject.file("gradle/convention/eclean-mod.gradle"))
 apply(from = rootProject.file("gradle/convention/eclean-mod-shading.gradle"))
 
 val minecraftVersion = providers.gradleProperty("minecraftVersion").getOrElse("26.1.2")
-val fabricApiVersion = if (minecraftVersion == "26.1.2") {
-    libs.versions.fabric.api.mc2612.get()
-} else {
-    libs.versions.fabric.api.mc262.get()
+val fabricApiVersion = when (minecraftVersion) {
+    "26.1.2" -> libs.versions.fabric.api.mc2612.get()
+    "26.2" -> libs.versions.fabric.api.mc262.get()
+    "26.3" -> libs.versions.fabric.api.mc263.get()
+    else -> error("Unsupported Minecraft version: $minecraftVersion")
 }
-val architecturyApiVersion = if (minecraftVersion == "26.1.2") {
-    libs.versions.architectury.api.mc2612.get()
-} else {
-    libs.versions.architectury.api.mc262.get()
+val architecturyApiVersion = when (minecraftVersion) {
+    "26.1.2" -> libs.versions.architectury.api.mc2612.get()
+    "26.2" -> libs.versions.architectury.api.mc262.get()
+    "26.3" -> libs.versions.architectury.api.mc263.get()
+    else -> error("Unsupported Minecraft version: $minecraftVersion")
 }
 
 architectury {

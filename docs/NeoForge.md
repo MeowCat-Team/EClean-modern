@@ -2,12 +2,15 @@
 
 [Home](../README.md) · English | [简体中文](NeoForge-zh.md)
 
-EClean runs on NeoForge dedicated servers for Minecraft **26.1.2 and 26.2**. Install the NeoForge server for the exact game version, then place the matching EClean and NeoForge build of [Architectury API](https://modrinth.com/mod/architectury-api) in `mods/`. Both require **Java 25**; vanilla clients need no mod.
+EClean runs on NeoForge dedicated servers for Minecraft **26.1.2, 26.2 and 26.3**. Install the NeoForge server for the exact game version, then place the matching EClean and NeoForge build of [Architectury API](https://modrinth.com/mod/architectury-api) in `mods/`. All require **Java 25**; vanilla clients need no mod.
 
 | Minecraft | Verified NeoForge | Artifact | Architectury API |
 | --- | --- | --- | --- |
-| 26.1.2 | `26.1.2.114` | `EClean-Modern-0.3.6-neoforge-mc26.1.2.jar` | `20.1.16` |
-| 26.2 | `26.2.0.88` | `EClean-Modern-0.3.6-neoforge-mc26.2.jar` | `21.1.11` |
+| 26.1.2 | `26.1.2.114` | `EClean-Modern-0.3.7-neoforge-mc26.1.2.jar` | `20.1.16` |
+| 26.2 | `26.2.0.88` | `EClean-Modern-0.3.7-neoforge-mc26.2.jar` | `21.1.11` |
+| 26.3 | `26.3.0.66-beta` | `EClean-Modern-0.3.7-neoforge-mc26.3.jar` | `22.0.5` |
+
+NeoForge 26.3 is currently Beta; its EClean Modrinth artifact is also marked Beta. The 26.1.2 and 26.2 release channels remain unchanged.
 
 Kotlin and configuration libraries are included in the EClean artifact. Architectury API is an external server dependency. Each EClean artifact declares its exact Minecraft version.
 
@@ -38,8 +41,10 @@ With a cleanup module enabled and `cleanup.cleanWhenNoPlayers: true`, cleanup ke
 ```shell
 ./gradlew :common:check :mod-common:check :neoforge:build -PminecraftVersion=26.1.2
 ./gradlew :common:check :mod-common:check :neoforge:build -PminecraftVersion=26.2
+./gradlew :common:check :mod-common:check :neoforge:build -PminecraftVersion=26.3
 python .github/scripts/mod-smoke.py neoforge 26.1.2
 python .github/scripts/mod-smoke.py neoforge 26.2
+python .github/scripts/mod-smoke.py neoforge 26.3
 ```
 
 Final artifacts live under `neoforge/build/<minecraftVersion>/libs/`. Use `EClean-Modern-*-neoforge-mc*.jar`. CI and the manual Release workflow use the same real-server suite as Fabric, verify the packaged artifact and API dependencies, and retain logs and JSON reports under `.local/neoforge-smoke/<minecraftVersion>/`. Release publishing creates one NeoForge version per game version with an Architectury API dependency.

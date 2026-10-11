@@ -2,13 +2,13 @@
 
 [返回首页](../README-zh.md) · [English](Paper.md) | 简体中文
 
-EClean Modern 0.3.5 使用同一份 Paper 插件 JAR 支持 **Minecraft 1.21.5–26.2**。**清单中所有版本都需要 Java 25**，包括通常使用较低 Java 版本的旧服务端。将带有内嵌依赖的 `EClean-Modern-*-paper.jar` 放入 `plugins/`，然后重启服务器。
+EClean Modern 0.3.7 使用同一份 Paper 插件 JAR 支持 **Minecraft 1.21.5–26.3**。**清单中所有版本都需要 Java 25**，包括通常使用较低 Java 版本的旧服务端。将带有内嵌依赖的 `EClean-Modern-*-paper.jar` 放入 `plugins/`，然后重启服务器。
 
 ## 已测试构建
 
-0.3.6 继承 0.3.5 建立的兼容清单；CI 与发布检查会使用当前 Paper 最终产物重复相同的十个版本测试。
+0.3.7 保留 0.3.5/0.3.6 建立的兼容清单，并新增 Paper 26.3 build 169（Beta）。CI 与发布检查使用当前 Paper 最终产物验证全部十一个版本。
 
-以下官方 Paper 构建于 2026-10-03 验证。[`paper/compatibility.json`](../paper/compatibility.json) 记录具体构建号、渠道和 SHA-256，同时用于生成 CI 矩阵与发布时的游戏版本元数据。
+原有官方 Paper 构建于 2026-10-03 验证，26.3 条目于 2026-10-10 新增。[`paper/compatibility.json`](../paper/compatibility.json) 记录具体构建号、渠道和 SHA-256，同时用于生成 CI 矩阵与发布时的游戏版本元数据。
 
 | Minecraft | Paper 构建 | 渠道 |
 | --- | --- | --- |
@@ -22,8 +22,9 @@ EClean Modern 0.3.5 使用同一份 Paper 插件 JAR 支持 **Minecraft 1.21.5�
 | 26.1.1 | 29 | Alpha |
 | 26.1.2 | 74 | Stable |
 | 26.2 | 129 | Stable |
+| 26.3 | 169 | Beta |
 
-三个 Alpha 条目在官方下载服务中没有 Stable 构建。这些历史构建通过了相同的插件检查，但仍属于实验渠道，生产服务器建议选择 Stable 条目。渠道定义见 Paper 的 [下载服务文档](https://docs.papermc.io/misc/downloads-service/)。
+三个 Alpha 条目在官方下载服务中没有 Stable 构建。Paper 26.3 当前仅有 Beta 构建，没有 Stable。这些历史与 Beta 构建通过了相同的插件检查，但仍属于实验渠道，生产服务器建议选择 Stable 条目。渠道定义见 Paper 的 [下载服务文档](https://docs.papermc.io/misc/downloads-service/)。
 
 ## 为什么下界是 1.21.5
 
@@ -43,6 +44,6 @@ Build CI 会对每个版本重复这些服务端检查，Release 也会在创建
 python .github/scripts/paper-smoke.py 1.21.6 --build 48 --expected-sha256 35e2dfa66b3491b9d2f0bb033679fa5aca1e1fdf097e7a06a80ce8afeda5c214
 ```
 
-固定的 Alpha 条目需添加 `--allow-unstable`。日志和 JSON 报告保存于 `.local/paper-smoke/<minecraft>/`。
+固定的 Alpha 与 Beta 条目需添加 `--allow-unstable`。日志和 JSON 报告保存于 `.local/paper-smoke/<minecraft>/`。
 
-这些检查在无玩家连接的 Paper 服务端上完成。玩家菜单交互、第三方插件组合和真实 Folia 区域线程运行需要单独测试。插件保留 Folia 适配，但本矩阵确定的是 Paper 范围；清单以外的版本，包括 26.3 Beta，没有本次检查提供的兼容结论。
+这些检查在无玩家连接的 Paper 服务端上完成。玩家菜单交互、第三方插件组合和真实 Folia 区域线程运行需要单独测试。插件保留 Folia 适配，但本矩阵确定的是 Paper 范围；清单以外的版本，没有本次检查提供的兼容结论。

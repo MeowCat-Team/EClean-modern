@@ -14,7 +14,8 @@ afterEvaluate {
     def moduleName = 'minecraft-server-deobf'
     if (project.name == 'neoforge') {
         def versions = extensions.getByType(org.gradle.api.artifacts.VersionCatalogsExtension).named('libs')
-        def neoVersion = versions.findVersion(gameVersion == '26.1.2' ? 'neoforge-mc2612' : 'neoforge-mc262').get().requiredVersion
+        def gameKey = ['26.1.2': 'mc2612', '26.2': 'mc262', '26.3': 'mc263'][gameVersion]
+        def neoVersion = versions.findVersion("neoforge-${gameKey}").get().requiredVersion
         moduleName = "neoforge-${neoVersion}-minecraft-merged-deobf"
     }
     def generated = new File(gradle.gradleUserHomeDir,

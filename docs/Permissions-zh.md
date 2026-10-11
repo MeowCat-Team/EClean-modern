@@ -6,7 +6,7 @@
 
 Fabric 默认要求 OP 等级 2，原生权限标识将第一个点转换为冒号，如 `eclean:command.clean.all`、`eclean:admin`。安装与权限提供方行为见 [Fabric 文档](Fabric-zh.md)。
 
-NeoForge 将下列点分权限节点注册到原生 PermissionAPI。默认处理器支持 OP 等级 2，以及父节点、兼容别名和 `eclean.admin` 的授权；自定义权限处理器对当前能力返回的布尔值为最终结果，EClean 不会通过自身回退绕过 `false`。权限处理器由 NeoForge 服务端配置选择，详见 [NeoForge 文档](NeoForge-zh.md)。
+NeoForge 将下列点分权限节点注册到原生 PermissionAPI。默认处理器支持 OP 等级 2，以及父节点、兼容别名和 `eclean.admin` 的授权；自定义权限处理器对当前能力返回的布尔值为最终结果，EClean 不会通过自身回退绕过 `false`。26.3 在 `config/neoforge-synced.toml` 设置 `permissionHandler`，26.1.2/26.2 则在 `<世界目录>/serverconfig/neoforge-server.toml` 设置。详见 [NeoForge 文档](NeoForge-zh.md)。
 
 命令、菜单和补全使用一致的平台权限策略。在 Paper 和 Fabric 上，权限插件显式撤销某项能力（包括其父权限或兼容别名）时，拒绝优先于其他别名、父权限或 `eclean.admin` 的授权；未授权非 OP 玩家的默认拒绝不会阻止单独授予叶子权限。
 

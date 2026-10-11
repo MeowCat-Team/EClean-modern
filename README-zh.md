@@ -2,19 +2,19 @@
 
 [English](README.md) | 简体中文
 
-面向 Paper / Folia 的实体清理插件，同时通过 Architectury 支持 Fabric 和 NeoForge 26.1.2 / 26.2 服务端，基于 [EClean](https://github.com/4o4E/EClean) 开发。支持定时清理、规则保护、清理预览、共享垃圾桶和可视化统计。开发主分支为 `architectury`。
+面向 Paper / Folia 的实体清理插件，同时通过 Architectury 支持 Fabric 和 NeoForge 26.1.2 / 26.2 / 26.3 服务端，基于 [EClean](https://github.com/4o4E/EClean) 开发。支持定时清理、规则保护、清理预览、共享垃圾桶和可视化统计。开发主分支为 `architectury`。
 
 [下载](https://github.com/MeowCat-Team/EClean-modern/releases/latest) · [更新日志](docs/Changelog-zh.md) · [English changelog](docs/Changelog.md)
 
 ## 安装
 
-1. 使用 **Paper 1.21.5–26.2 和 Java 25**，将插件 JAR 放入服务器的 `plugins/` 目录。具体测试构建及历史 Alpha 构建说明见 [Paper 兼容性文档](docs/Paper-zh.md)。
+1. 使用 **Paper 1.21.5–26.3 和 Java 25**，将插件 JAR 放入服务器的 `plugins/` 目录。具体测试构建、历史 Alpha 与 26.3 Beta 构建说明见 [Paper 兼容性文档](docs/Paper-zh.md)。
 2. 启动服务器生成配置，按需调整 `plugins/EClean-Modern/config/normal/config.yml`。
 3. 执行 `/eclean reload`，再用 `/eclean clean --preview` 确认清理范围。
 
 垃圾桶内容不跨重启保留。更新插件时请完整停服后替换 JAR。
 
-Fabric 或 NeoForge 服务端请将匹配 **26.1.2 或 26.2** 的 EClean 与 Architectury API 放入 `mods/`；Fabric 还需对应的 Fabric API。配置生成于 `config/eclean/`，客户端无需安装模组。具体依赖、权限与安装方法见 [Fabric 使用说明](docs/Fabric-zh.md) 或 [NeoForge 使用说明](docs/NeoForge-zh.md)。
+Fabric 或 NeoForge 服务端请将匹配 **26.1.2、26.2 或 26.3** 的 EClean 与 Architectury API 放入 `mods/`；Fabric 还需对应的 Fabric API。26.3 的 NeoForge 加载器和 Paper 构建目前处于 Beta，具体固定构建见平台文档。配置生成于 `config/eclean/`，客户端无需安装模组。具体依赖、权限与安装方法见 [Fabric 使用说明](docs/Fabric-zh.md) 或 [NeoForge 使用说明](docs/NeoForge-zh.md)。
 
 ## 常用命令
 

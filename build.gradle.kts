@@ -8,8 +8,8 @@ plugins {
 }
 
 val minecraftVersion = providers.gradleProperty("minecraftVersion").getOrElse("26.1.2")
-require(minecraftVersion in setOf("26.1.2", "26.2")) {
-    "EClean mods support Minecraft 26.1.2 and 26.2; received '$minecraftVersion'."
+require(minecraftVersion in setOf("26.1.2", "26.2", "26.3")) {
+    "EClean mods support Minecraft 26.1.2, 26.2 and 26.3; received '$minecraftVersion'."
 }
 architectury {
     minecraft = minecraftVersion
@@ -19,7 +19,7 @@ project(":neoforge").extensions.extraProperties["loom.platform"] = "neoforge"
 
 allprojects {
     group = "org.meowcat"
-    version = "0.3.6"
+    version = "0.3.7"
 
     repositories {
         mavenCentral()

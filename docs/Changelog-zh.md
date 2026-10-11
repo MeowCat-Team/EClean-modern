@@ -7,6 +7,19 @@
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，
 并遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/) 版本规范。
 
+## 0.3.7
+
+### 新增
+
+- **Minecraft 26.3**：新增独立 Fabric 与 NeoForge 服务端产物，使用 Fabric API `0.162.0+26.3`、Architectury API `22.0.5` 和 NeoForge `26.3.0.66-beta`，保留 26.1.2 与 26.2 产物。
+- **Paper 26.3**：以固定校验值的 Paper build 169（Beta）扩大已测试范围至 1.21.5–26.3，保留原有编译 API 和最低 `api-version`。
+
+### 变更
+
+- **构建与发布**：验证六种模组组合与十一个 Paper 构建，发布一份 Paper/Folia 产物和六份模组产物，同步依赖和版本名称。
+- **Beta 渠道**：显式启用固定的 Paper 26.3 Beta 测试，并将 NeoForge 26.3 的 Modrinth 变体标记为 Beta。
+- **26.3 验证**：适配注册表测试初始化和服务端命令回显检查，补充 NeoForge 权限处理器的新配置路径。
+
 ## 0.3.6
 
 ### 新增

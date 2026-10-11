@@ -7,6 +7,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.3.7
+
+### Added
+
+- **Minecraft 26.3**: add separate Fabric and NeoForge server artifacts, using Fabric API `0.162.0+26.3`, Architectury API `22.0.5`, and NeoForge `26.3.0.66-beta`. Preserve the existing 26.1.2 and 26.2 variants.
+- **Paper 26.3**: extend the tested compatibility range to 1.21.5–26.3 with checksum-pinned Paper build 169 (Beta), while retaining the existing compile API and minimum `api-version`.
+
+### Changed
+
+- **Build and release**: verify all six mod combinations and eleven Paper builds; publish one Paper/Folia artifact and six mod artifacts with matching dependencies and version names.
+- **Beta channels**: explicitly opt in to the pinned Paper 26.3 Beta test and mark the NeoForge 26.3 Modrinth variant as Beta.
+- **26.3 verification**: adapt registry test initialization and server command-output checks; document NeoForge's new permission-handler configuration path.
+
 ## 0.3.6
 
 ### Added
