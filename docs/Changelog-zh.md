@@ -7,6 +7,17 @@
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，
 并遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/) 版本规范。
 
+## 0.3.8
+
+### 修复
+
+- **Moonrise 兼容性**：通过当前原生空间索引查询实体，避免读取被 Moonrise 替换的原版 `entityManager`。保留区块归属、未加载区块检查，以及建筑高度之外的实体统计与清理。
+
+### 变更
+
+- **运行依赖**：Fabric 与 NeoForge 改用各自原生的生命周期、命令、tick 和玩家事件。所有受支持游戏版本的 EClean 均无需 Architectury API，保留 Architectury 多模块构建；Fabric 仍需 Fabric API。
+- **兼容性验证**：新增两种加载器的 26.2 + Moonrise `1.1.2+151ce65` 真实服务端测试并固定 SHA-256，保留原有六组模组与十一组 Paper 服务端回归，同步安装说明与 Modrinth 发布依赖。
+
 ## 0.3.7
 
 ### 新增

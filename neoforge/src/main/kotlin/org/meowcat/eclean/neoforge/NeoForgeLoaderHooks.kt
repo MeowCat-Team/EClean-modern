@@ -9,6 +9,11 @@ import net.neoforged.bus.api.SubscribeEvent
 import net.neoforged.fml.ModContainer
 import net.neoforged.fml.loading.FMLPaths
 import net.neoforged.neoforge.event.ServerChatEvent
+import net.neoforged.neoforge.event.RegisterCommandsEvent
+import net.neoforged.neoforge.event.entity.player.PlayerEvent
+import net.neoforged.neoforge.event.server.ServerStartedEvent
+import net.neoforged.neoforge.event.server.ServerStoppingEvent
+import net.neoforged.neoforge.event.tick.ServerTickEvent
 import net.neoforged.neoforge.event.entity.item.ItemExpireEvent
 import net.neoforged.neoforge.server.permission.PermissionAPI
 import net.neoforged.neoforge.server.permission.events.PermissionGatherEvent
@@ -34,9 +39,31 @@ class NeoForgeLoaderHooks(container: ModContainer) : ModLoaderHooks {
         chatInput = handler
     }
 
+    @SubscribeEvent
+    fun registerCommands(event: RegisterCommandsEvent) = ECleanMod.registerCommands(event.dispatcher)
+
+    @SubscribeEvent
+    fun serverStarted(event: ServerStartedEvent) = ECleanMod.serverStarted(event.server, this)
+
+    @SubscribeEvent
+    fun serverStopping(event: ServerStoppingEvent) = ECleanMod.serverStopping(event.server)
+
+    @SubscribeEvent
+    fun serverPostTick(event: ServerTickEvent.Post) = ECleanMod.serverPostTick(event.server)
+
+    @SubscribeEvent
+    fun playerJoined(event: PlayerEvent.PlayerLoggedInEvent) {
+        (event.entity as? ServerPlayer)?.let(ECleanMod::playerJoined)
+    }
+
+    @SubscribeEvent
+    fun playerQuit(event: PlayerEvent.PlayerLoggedOutEvent) {
+        (event.entity as? ServerPlayer)?.let(ECleanMod::playerQuit)
+    }
+
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     fun onChat(event: ServerChatEvent) {
-        // Architectury RECEIVED exposes the decorated component; search needs the original text.
+        // Menu search uses the original text, before decoration and public broadcast.
         if (chatInput?.invoke(event.player, event.rawText) == false) event.isCanceled = true
     }
 

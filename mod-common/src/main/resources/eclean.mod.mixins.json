@@ -6,7 +6,6 @@
   "server": [
     "ChunkMapAccessor",
     "ServerLevelAccessor",
-    "PersistentEntitySectionManagerAccessor",
     "MinecraftServerPauseMixin"
   ],
   "injectors": {

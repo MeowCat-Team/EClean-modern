@@ -7,6 +7,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.3.8
+
+### Fixed
+
+- **Moonrise compatibility**: query entities through the active native spatial index instead of vanilla's `entityManager`, which Moonrise replaces. Preserve chunk ownership, unloaded-chunk checks, and entities above or below build height.
+
+### Changed
+
+- **Runtime dependencies**: Fabric and NeoForge use their native lifecycle, command, tick, and player events. EClean no longer requires Architectury API on any supported game version; the Architectury multi-module build remains. Fabric still requires Fabric API.
+- **Compatibility verification**: add checksum-pinned Moonrise `1.1.2+151ce65` real-server tests for both loaders on 26.2, alongside the existing six mod and eleven Paper server profiles. Update installation guides and Modrinth release dependencies.
+
 ## 0.3.7
 
 ### Added

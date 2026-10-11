@@ -1,0 +1,18 @@
+{
+  "moonrise": {
+    "26.2": {
+      "fabric": {
+        "version": "1.1.2+151ce65",
+        "filename": "Moonrise-Fabric-1.1.2+151ce65.jar",
+        "url": "https://cdn.modrinth.com/data/KOHu7RCS/versions/72EQ5QZf/Moonrise-Fabric-1.1.2%2B151ce65.jar",
+        "sha256": "134e45ffb1cfb3b356c53a5ff0eaa04d87d585c8b5c75f2ec253feab3786c369"
+      },
+      "neoforge": {
+        "version": "1.1.2+151ce65",
+        "filename": "Moonrise-NeoForge-1.1.2+151ce65.jar",
+        "url": "https://cdn.modrinth.com/data/KOHu7RCS/versions/Qgdb48eq/Moonrise-NeoForge-1.1.2%2B151ce65.jar",
+        "sha256": "119af57d17dfd050f4423b223853c1c51dbc5099433f33ab087623c13a79b4a9"
+      }
+    }
+  }
+}

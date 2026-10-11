@@ -134,9 +134,17 @@ jobs:
       - name: Build and test server mod
         run: ./gradlew :common:check :mod-common:check :${{ matrix.loader }}:build -PminecraftVersion=${{ matrix.minecraft }}
 
+      - name: Test production fixture integrity guards
+        run: python3 -m unittest discover -s .github/scripts -p 'test_*.py'
+
       - name: Smoke test packaged server mod
         timeout-minutes: 10
         run: python3 .github/scripts/mod-smoke.py ${{ matrix.loader }} ${{ matrix.minecraft }}
+
+      - name: Smoke test Moonrise compatibility
+        if: matrix.minecraft == '26.2'
+        timeout-minutes: 10
+        run: python3 .github/scripts/mod-smoke.py ${{ matrix.loader }} ${{ matrix.minecraft }} --moonrise
 
       - name: Upload server mod smoke logs and report
         if: always()
@@ -147,6 +155,9 @@ jobs:
             .local/${{ matrix.loader }}-smoke/${{ matrix.minecraft }}/smoke-console.log
             .local/${{ matrix.loader }}-smoke/${{ matrix.minecraft }}/smoke-report.json
             .local/${{ matrix.loader }}-smoke/${{ matrix.minecraft }}/logs/latest.log
+            .local/${{ matrix.loader }}-moonrise-smoke/${{ matrix.minecraft }}/smoke-console.log
+            .local/${{ matrix.loader }}-moonrise-smoke/${{ matrix.minecraft }}/smoke-report.json
+            .local/${{ matrix.loader }}-moonrise-smoke/${{ matrix.minecraft }}/logs/latest.log
           include-hidden-files: true
           if-no-files-found: ignore
 

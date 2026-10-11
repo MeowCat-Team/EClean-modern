@@ -4,13 +4,17 @@
 
 EClean 支持 Minecraft **26.1.2、26.2 和 26.3** 的 Fabric 独立服务端。三个版本分别构建，模组声明精确的 Minecraft 依赖，请只安装与服务器版本匹配的一份。
 
-| Minecraft | 文件 | 最低 Fabric API 版本 | Architectury API |
-| --- | --- | --- | --- |
-| 26.1.2 | `EClean-Modern-0.3.7-fabric-mc26.1.2.jar` | `0.155.3+26.1.2` | `20.1.16` |
-| 26.2 | `EClean-Modern-0.3.7-fabric-mc26.2.jar` | `0.161.0+26.2` | `21.1.11` |
-| 26.3 | `EClean-Modern-0.3.7-fabric-mc26.3.jar` | `0.162.0+26.3` | `22.0.5` |
+| Minecraft | 文件 | 最低 Fabric API 版本 |
+| --- | --- | --- |
+| 26.1.2 | `EClean-Modern-0.3.8-fabric-mc26.1.2.jar` | `0.155.3+26.1.2` |
+| 26.2 | `EClean-Modern-0.3.8-fabric-mc26.2.jar` | `0.161.0+26.2` |
+| 26.3 | `EClean-Modern-0.3.8-fabric-mc26.3.jar` | `0.162.0+26.3` |
 
-三个版本均需 Java 25、Fabric Loader 0.19.5 或更新版本。将 EClean、Fabric API，以及匹配游戏版本的 [Architectury API](https://modrinth.com/mod/architectury-api) Fabric 版放入服务器的 `mods/` 后启动。模组已包含 Kotlin 与配置库，无需 Fabric Language Kotlin；菜单使用原版箱子协议，客户端无需安装模组。Fabric 与 [NeoForge](NeoForge-zh.md) 通过 `mod-common` 共用原生服务端实现。
+三个版本均需 Java 25、Fabric Loader 0.19.5 或更新版本。将匹配游戏版本的 EClean 与 Fabric API 放入服务器的 `mods/` 后启动。模组已包含 Kotlin 与配置库，无需 Fabric Language Kotlin；菜单使用原版箱子协议，客户端无需安装模组。Fabric 与 [NeoForge](NeoForge-zh.md) 通过 `mod-common` 共用原生服务端实现。
+
+## Moonrise 兼容性
+
+EClean 从 0.3.8 起无需 Architectury API。Minecraft 26.2 已使用 Moonrise `1.1.2+151ce65` 在 Fabric 与 NeoForge 上验证统计、预览、清理、保护规则与自然消失回收。实体查询使用当前空间索引，不再读取被替换的原版 `entityManager`。升级时，如果其他模组也不需要 Architectury API，可以移除其 JAR。
 
 ## 配置与命令
 
@@ -49,4 +53,4 @@ EClean 支持 Minecraft **26.1.2、26.2 和 26.3** 的 Fabric 独立服务端。
 
 可用 `python .github/scripts/mod-smoke.py fabric 26.1.2` 或 `fabric 26.2` / `fabric 26.3` 启动最终产物的服务端测试。测试仅监听本机地址，在 `.local/fabric-smoke/` 创建专用世界和配置，并验证最终产物、外部 API 依赖、保护规则、预览、物品回收、重载与空服 Tick。CI 与 Release 都会执行，保存日志与 JSON 报告；`fabric-smoke.py` 保留为共用测试的兼容入口。
 
-产物位于 `fabric/build/<minecraftVersion>/libs/`。安装包含领域代码、转换后的模组代码、资源与内置依赖的最终 `EClean-Modern-*-fabric-mc*.jar`，`dev` JAR 仅用于开发。Release 会分别发布 Fabric Modrinth 版本，标注精确的游戏版本，以及必需的 Fabric API 与 Architectury API。
+产物位于 `fabric/build/<minecraftVersion>/libs/`。安装包含领域代码、转换后的模组代码、资源与内置依赖的最终 `EClean-Modern-*-fabric-mc*.jar`，`dev` JAR 仅用于开发。Release 会分别发布 Fabric Modrinth 版本，标注精确的游戏版本，以及必需的 Fabric API。

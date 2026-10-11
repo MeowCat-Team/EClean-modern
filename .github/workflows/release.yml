@@ -146,6 +146,17 @@ jobs:
         timeout-minutes: 10
         run: python3 .github/scripts/mod-smoke.py neoforge 26.3
 
+      - name: Test production fixture integrity guards
+        run: python3 -m unittest discover -s .github/scripts -p 'test_*.py'
+
+      - name: Test Moonrise compatibility on Fabric 26.2
+        timeout-minutes: 10
+        run: python3 .github/scripts/mod-smoke.py fabric 26.2 --moonrise
+
+      - name: Test Moonrise compatibility on NeoForge 26.2
+        timeout-minutes: 10
+        run: python3 .github/scripts/mod-smoke.py neoforge 26.2 --moonrise
+
       - name: Upload server mod test logs and reports
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -158,6 +169,12 @@ jobs:
             .local/neoforge-smoke/*/smoke-console.log
             .local/neoforge-smoke/*/smoke-report.json
             .local/neoforge-smoke/*/logs/latest.log
+            .local/fabric-moonrise-smoke/*/smoke-console.log
+            .local/fabric-moonrise-smoke/*/smoke-report.json
+            .local/fabric-moonrise-smoke/*/logs/latest.log
+            .local/neoforge-moonrise-smoke/*/smoke-console.log
+            .local/neoforge-moonrise-smoke/*/smoke-report.json
+            .local/neoforge-moonrise-smoke/*/logs/latest.log
           include-hidden-files: true
           if-no-files-found: ignore
 
@@ -244,36 +261,33 @@ jobs:
             version-type: release
             dependencies: |
               fabric-api(required)
-              architectury-api(required)
           - loader: fabric
             label: Fabric
             minecraft: '26.2'
             version-type: release
             dependencies: |
               fabric-api(required)
-              architectury-api(required)
           - loader: fabric
             label: Fabric
             minecraft: '26.3'
             version-type: release
             dependencies: |
               fabric-api(required)
-              architectury-api(required)
           - loader: neoforge
             label: NeoForge
             minecraft: '26.1.2'
             version-type: release
-            dependencies: 'architectury-api(required)'
+            dependencies: ''
           - loader: neoforge
             label: NeoForge
             minecraft: '26.2'
             version-type: release
-            dependencies: 'architectury-api(required)'
+            dependencies: ''
           - loader: neoforge
             label: NeoForge
             minecraft: '26.3'
             version-type: beta
-            dependencies: 'architectury-api(required)'
+            dependencies: ''
     steps:
       - name: Download server mod release artifact
         env:

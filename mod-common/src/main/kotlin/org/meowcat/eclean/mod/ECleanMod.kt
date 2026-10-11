@@ -1,12 +1,11 @@
 package org.meowcat.eclean.mod
 
 import com.mojang.brigadier.arguments.StringArgumentType
-import dev.architectury.event.events.common.CommandRegistrationEvent
-import dev.architectury.event.events.common.LifecycleEvent
-import dev.architectury.event.events.common.PlayerEvent
-import dev.architectury.event.events.common.TickEvent
+import com.mojang.brigadier.CommandDispatcher
+import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.Commands
 import net.minecraft.server.MinecraftServer
+import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.item.ItemEntity
 import org.slf4j.LoggerFactory
 
@@ -19,45 +18,51 @@ object ECleanMod {
 
     @Synchronized
     fun initialize(hooks: ModLoaderHooks) {
-        if (initialized) return
-        initialized = true
-        CommandRegistrationEvent.EVENT.register { dispatcher, _, _ ->
-            val root = dispatcher.register(Commands.literal("eclean")
-                .executes { active?.commands?.execute(it.source, "") ?: 0 }
-                .then(Commands.argument("arguments", StringArgumentType.greedyString())
-                    .suggests { context, builder ->
-                        active?.commands?.suggest(context.source, builder) ?: builder.buildFuture()
-                    }
-                    .executes { active?.commands?.execute(it.source, StringArgumentType.getString(it, "arguments")) ?: 0 }))
-            dispatcher.register(Commands.literal("ecl").redirect(root)
-                .executes { active?.commands?.execute(it.source, "") ?: 0 })
+    if (initialized) return
+    initialized = true
+    hooks.registerChatInput { player, message ->
+        val runtime = active?.takeIf { it.server === player.level().server }
+        runtime?.menus?.handleChat(player, message) ?: true
+    }
+    }
+
+    fun registerCommands(dispatcher: CommandDispatcher<CommandSourceStack>) {
+        val root = dispatcher.register(Commands.literal("eclean")
+            .executes { active?.commands?.execute(it.source, "") ?: 0 }
+            .then(Commands.argument("arguments", StringArgumentType.greedyString())
+                .suggests { context, builder ->
+                    active?.commands?.suggest(context.source, builder) ?: builder.buildFuture()
+                }
+                .executes { active?.commands?.execute(it.source, StringArgumentType.getString(it, "arguments")) ?: 0 }))
+        dispatcher.register(Commands.literal("ecl").redirect(root)
+            .executes { active?.commands?.execute(it.source, "") ?: 0 })
+    }
+
+    fun serverStarted(server: MinecraftServer, hooks: ModLoaderHooks) {
+        check(active == null) { "EClean already owns an active server runtime" }
+        active = ModRuntime(server, hooks.configDirectory.resolve("eclean"), hooks).also { it.load() }
+    }
+
+    fun serverStopping(server: MinecraftServer) {
+        active?.takeIf { it.server === server }?.let { runtime ->
+            try { runtime.shutdown() }
+            finally { active = null }
         }
-        LifecycleEvent.SERVER_STARTED.register { server ->
-            check(active == null) { "EClean already owns an active server runtime" }
-            active = ModRuntime(server, hooks.configDirectory.resolve("eclean"), hooks).also { it.load() }
-        }
-        LifecycleEvent.SERVER_STOPPING.register { server ->
-            active?.takeIf { it.server === server }?.let { runtime ->
-                try { runtime.shutdown() }
-                finally { active = null }
-            }
-        }
-        TickEvent.SERVER_POST.register { server ->
-            active?.takeIf { it.server === server }?.tick()
-        }
-        PlayerEvent.PLAYER_JOIN.register { player ->
-            active?.takeIf { it.server === player.level().server }?.temporaryReturns?.handleJoin(player)
-        }
-        PlayerEvent.PLAYER_QUIT.register { player ->
-            active?.takeIf { it.server === player.level().server }?.let { runtime ->
-                runtime.temporaryReturns.handleQuit(player)
-                runtime.menus.onDisconnect(player.uuid)
-                runtime.debuggers.remove(player.uuid.toString())
-            }
-        }
-        hooks.registerChatInput { player, message ->
-            val runtime = active?.takeIf { it.server === player.level().server }
-            runtime?.menus?.handleChat(player, message) ?: true
+    }
+
+    fun serverPostTick(server: MinecraftServer) {
+        active?.takeIf { it.server === server }?.tick()
+    }
+
+    fun playerJoined(player: ServerPlayer) {
+        active?.takeIf { it.server === player.level().server }?.temporaryReturns?.handleJoin(player)
+    }
+
+    fun playerQuit(player: ServerPlayer) {
+        active?.takeIf { it.server === player.level().server }?.let { runtime ->
+            runtime.temporaryReturns.handleQuit(player)
+            runtime.menus.onDisconnect(player.uuid)
+            runtime.debuggers.remove(player.uuid.toString())
         }
     }
 

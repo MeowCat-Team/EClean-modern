@@ -8,12 +8,6 @@ plugins {
 apply(from = rootProject.file("gradle/convention/eclean-mod.gradle"))
 
 val minecraftVersion = providers.gradleProperty("minecraftVersion").getOrElse("26.1.2")
-val architecturyApiVersion = when (minecraftVersion) {
-    "26.1.2" -> libs.versions.architectury.api.mc2612.get()
-    "26.2" -> libs.versions.architectury.api.mc262.get()
-    "26.3" -> libs.versions.architectury.api.mc263.get()
-    else -> error("Unsupported Minecraft version: $minecraftVersion")
-}
 
 architectury {
     common("fabric", "neoforge")
@@ -22,8 +16,7 @@ architectury {
 dependencies {
     minecraft("com.mojang:minecraft:$minecraftVersion")
     api(project(":common"))
-    api("dev.architectury:architectury:$architecturyApiVersion")
-    // Architectury's common development annotations and Mixin API, never loader implementation code.
+    // Compile-only Mixin API; no loader implementation or Architectury API is required at runtime.
     compileOnly(libs.fabric.loader)
     api(libs.adventure.text.serializer.gson) {
         exclude(group = "com.google.code.gson", module = "gson")

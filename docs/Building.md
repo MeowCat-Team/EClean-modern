@@ -16,7 +16,7 @@ Both mod loaders also support 26.2 and 26.3 from the same source. Select the tar
 
 The pinned Paper compile API does not determine runtime compatibility. The exact tested builds and checksums are recorded in [`paper/compatibility.json`](../paper/compatibility.json); see the [Paper guide](Paper.md) for the 1.21.5–26.3 range and Java 25 requirement. Build CI runs the packaged plugin on every listed Paper version in addition to its unit tests.
 
-Architectury transforms `mod-common` for the selected loader. Each final mod contains the domain code, transformed native implementation, common resources, and shaded Kotlin/configuration libraries. Architectury API remains an external dependency on both loaders; Fabric API is additionally required on Fabric. The production smoke verifies the actual packaged mod and matching runtime dependencies.
+Architectury transforms `mod-common` for the selected loader. Each final mod contains the domain code, transformed native implementation, common resources, and shaded Kotlin/configuration libraries. Architectury remains a build tool; EClean 0.3.8 and later use native loader events and do not require Architectury API at runtime. Fabric requires Fabric API. The production smoke verifies the actual packaged mod and matching runtime dependencies.
 
 To update dependencies, first edit the version catalog, then explicitly generate candidate locks and verification metadata. Review artifact sources and checksum changes before committing them. Normal CI builds do not regenerate these files.
 
@@ -30,7 +30,7 @@ To update dependencies, first edit the version catalog, then explicitly generate
 
 The manually dispatched `Release` workflow builds and tests the `architectury` branch. Before creating a tag, it runs the packaged Paper plugin on every version in the compatibility manifest and the six Fabric/NeoForge artifacts on real servers. It reads the version from `build.gradle.kts` and extracts release notes from `docs/Changelog.md`. The GitHub Release contains one Paper/Folia JAR, three Fabric JARs, and three NeoForge JARs. Separate jobs publish those same artifacts and notes to [EClean-Modern on Modrinth](https://modrinth.com/plugin/ecl-modern).
 
-Configure the repository Actions secret `MODRINTH_TOKEN` with a Modrinth token that can create versions for project `VW7EmMIj` (`ecl-modern`). The workflow checks that the secret is present before creating a tag. Paper/Folia game metadata uses the full tested list from the compatibility manifest, with historical Alpha and the 26.3 Beta builds explicitly enabled for tests. The NeoForge 26.3 variant is published as Beta; the other mod variants remain Release. Mod versions use their exact game and loader metadata and require Architectury API; Fabric also requires Fabric API.
+Configure the repository Actions secret `MODRINTH_TOKEN` with a Modrinth token that can create versions for project `VW7EmMIj` (`ecl-modern`). The workflow checks that the secret is present before creating a tag. Paper/Folia game metadata uses the full tested list from the compatibility manifest, with historical Alpha and the 26.3 Beta builds explicitly enabled for tests. The NeoForge 26.3 variant is published as Beta; the other mod variants remain Release. Mod versions use their exact game and loader metadata; Fabric requires Fabric API. Architectury API is not a runtime or Modrinth dependency.
 
 Modrinth version numbers and display names identify the platform and supported games:
 

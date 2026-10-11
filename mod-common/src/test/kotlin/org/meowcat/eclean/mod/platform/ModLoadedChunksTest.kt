@@ -1,16 +1,77 @@
 package org.meowcat.eclean.mod.platform
 
 import net.minecraft.core.BlockPos
+import net.minecraft.core.SectionPos
 import net.minecraft.resources.Identifier
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.level.entity.EntityAccess
+import net.minecraft.world.level.entity.EntityInLevelCallback
+import net.minecraft.world.level.entity.EntityLookup
+import net.minecraft.world.level.entity.EntitySectionStorage
+import net.minecraft.world.level.entity.LevelEntityGetterAdapter
+import net.minecraft.world.level.entity.Visibility
 import net.minecraft.world.level.ChunkPos
+import net.minecraft.world.phys.AABB
 import org.meowcat.eclean.platform.execution.ChunkRef
 import java.util.Locale
+import java.util.UUID
 import java.util.stream.Stream
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class ModLoadedChunksTest {
+    @Test
+    fun `native spatial index finds both extreme heights and filters overlapping neighbour boxes`() {
+        val ref = ChunkRef("minecraft:overworld", -1, -2)
+        val sections = EntitySectionStorage(TestEntity::class.java) { Visibility.TRACKED }
+        val entities = listOf(
+            TestEntity(1, BlockPos(-16, 900, -32)),
+            TestEntity(2, BlockPos(-16, -900, -32)),
+            TestEntity(3, BlockPos(-17, 900, -32), 1.0),
+        )
+        entities.forEach { sections.getOrCreateSection(SectionPos.of(it.blockPosition()).asLong()).add(it) }
+        val getter = LevelEntityGetterAdapter(EntityLookup<TestEntity>(), sections)
+        val selected = readLoadedChunkEntities(ref, { true }, {
+            val candidates = mutableListOf<TestEntity>()
+            getter.get(chunkEntityBounds(ref), candidates::add)
+            assertTrue(candidates.any { it.getId() == 3 }, "Neighbour box should overlap the query")
+            candidates.stream()
+        }) { entity ->
+            ChunkPos.containing(entity.blockPosition()).let { ChunkRef(ref.world, it.x(), it.z()) }
+        }
+        assertEquals(listOf(1, 2), selected.map { it.getId() }.sorted())
+    }
+
+    private class TestEntity(
+        private val entityId: Int, private val position: BlockPos, private val radius: Double = 0.0,
+    ) : EntityAccess {
+        override fun getId() = entityId
+        override fun getUUID() = UUID(0, entityId.toLong())
+        override fun isRemoved() = false
+        override fun blockPosition() = position
+        override fun getBoundingBox() = AABB(
+            position.x - radius, position.y - radius, position.z - radius,
+            position.x + radius, position.y + radius, position.z + radius,
+        )
+        override fun setLevelCallback(callback: EntityInLevelCallback) = Unit
+        override fun getSelfAndPassengers(): Stream<TestEntity> = Stream.of(this)
+        override fun getPassengersAndSelf(): Stream<TestEntity> = Stream.of(this)
+        override fun setRemoved(reason: Entity.RemovalReason) = Unit
+        override fun shouldBeSaved() = false
+        override fun isAlwaysTicking() = false
+    }
+
+    @Test
+    fun `spatial query includes boundary markers and entities outside build height`() {
+        val bounds = chunkEntityBounds(ChunkRef("minecraft:overworld", -1, -2))
+        for (y in listOf(-900.0, 0.0, 900.0)) {
+            assertTrue(bounds.intersects(AABB(-16.0, y, -32.0, -16.0, y, -32.0)))
+        }
+        assertTrue(bounds.minY > Int.MIN_VALUE.toDouble())
+        assertTrue(bounds.maxY < Int.MAX_VALUE.toDouble())
+    }
+
     @Test
     fun `visible proto chunks and unloaded holders never become scan refs`() {
         val positions = longArrayOf(ChunkPos.pack(-3, -2), ChunkPos.pack(0, 0), ChunkPos.pack(2, 3))

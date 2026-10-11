@@ -16,17 +16,37 @@ import sys
 import threading
 import time
 import tomllib
+import urllib.request
 import xml.etree.ElementTree as ET
 import zipfile
 
 
 LABELS = {"fabric": "Fabric", "neoforge": "NeoForge"}
-FATAL = re.compile(r"Exception executing command|An unexpected error occurred (?:while )?trying to execute that command|Mixin apply failed|NoSuch(?:Method|Field)Error|AbstractMethodError|NoClassDefFoundError|IncompatibleClassChangeError|VerifyError")
+FATAL = re.compile(r"Exception executing command|An unexpected error occurred (?:while )?trying to execute that command|Mixin apply (?:failed|for mod .* failed)|Scheduled EClean task failed|NoSuch(?:Method|Field)Error|AbstractMethodError|NoClassDefFoundError|IncompatibleClassChangeError|VerifyError")
 
 
 def digest(path: Path, algorithm: str = "sha256") -> str:
     with path.open("rb") as source:
         return hashlib.file_digest(source, algorithm).hexdigest()
+
+
+def moonrise_mod(root: Path, loader: str, minecraft: str) -> tuple[Path, dict]:
+    manifest = json.loads((root / ".github/mod-compatibility.json").read_text(encoding="utf-8"))
+    pin = manifest["moonrise"][minecraft][loader]
+    if Path(pin["filename"]).name != pin["filename"] or not re.fullmatch(r"[a-f0-9]{64}", pin["sha256"]):
+        raise RuntimeError("Invalid Moonrise compatibility pin")
+    path = root / ".local/compatibility-mods" / pin["filename"]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if not path.is_file():
+        request = urllib.request.Request(pin["url"], headers={"User-Agent": "EClean-compatibility-smoke"})
+        with urllib.request.urlopen(request, timeout=90) as response:
+            payload = response.read()
+        if hashlib.sha256(payload).hexdigest() != pin["sha256"]:
+            raise RuntimeError("Downloaded Moonrise differs from its compatibility pin")
+        path.write_bytes(payload)
+    if digest(path) != pin["sha256"]:
+        raise RuntimeError("Moonrise compatibility artifact checksum mismatch")
+    return path, pin
 
 
 def gradle_checksums(root: Path) -> dict[tuple[str, str, str, str], set[str]]:
@@ -115,7 +135,8 @@ def installer_libraries(installer: Path, minecraft: str, neoforge: str) -> tuple
 
 def verify_production(root: Path, run_dir: Path, gradle_home: Path, loader: str,
                       minecraft: str, artifact: Path, bundle: Path, versions: dict,
-                      *, loaded_mods: list[Path] | None = None, expected_artifact_sha256: str | None = None) -> dict:
+                      *, loaded_mods: list[Path] | None = None, expected_artifact_sha256: str | None = None,
+                      compatibility_mods: dict[str, str] | None = None) -> dict:
     checksums = gradle_checksums(root)
     actual_artifact_sha256 = digest(artifact)
     if expected_artifact_sha256 is not None and actual_artifact_sha256 != expected_artifact_sha256:
@@ -133,7 +154,7 @@ def verify_production(root: Path, run_dir: Path, gradle_home: Path, loader: str,
     if artifact.name not in mod_paths or digest(mod_paths[artifact.name]) != actual_artifact_sha256:
         raise RuntimeError("Production mods directory does not contain the exact packaged EClean artifact")
     game_key = {"26.1.2": "mc2612", "26.2": "mc262", "26.3": "mc263"}[minecraft]
-    dependencies = [("dev.architectury", f"architectury-{loader}", versions[f"architectury-api-{game_key}"])]
+    dependencies = []
     if loader == "fabric":
         dependencies.append(("net.fabricmc.fabric-api", "fabric-api", versions[f"fabric-api-{game_key}"]))
     verified_mods = {artifact.name: actual_artifact_sha256}
@@ -143,6 +164,10 @@ def verify_production(root: Path, run_dir: Path, gradle_home: Path, loader: str,
             raise RuntimeError(f"Production mod dependency is missing: {filename}")
         verified_mods[filename] = require_pinned(mod_paths[filename],
                                                 (group, name, version, filename), checksums)
+    for filename, wanted in (compatibility_mods or {}).items():
+        if filename in verified_mods or filename not in mod_paths or digest(mod_paths[filename]) != wanted:
+            raise RuntimeError("Production compatibility mod differs from its pinned artifact")
+        verified_mods[filename] = wanted
     if set(mod_paths) != set(verified_mods):
         raise RuntimeError("Unexpected mod JARs in the isolated production fixture")
     libraries = run_dir / "libraries"
@@ -215,9 +240,13 @@ def main() -> None:
     parser.add_argument("--gradle", type=Path)
     parser.add_argument("--gradle-user-home", type=Path)
     parser.add_argument("--offline", action="store_true")
+    parser.add_argument("--moonrise", action="store_true", help="Add the pinned Moonrise 26.2 compatibility fixture")
     args = parser.parse_args()
+    if args.moonrise and args.minecraft != "26.2":
+        parser.error("The pinned Moonrise compatibility fixture targets Minecraft 26.2")
     root = Path(__file__).resolve().parents[2]
-    run_dir = root / ".local" / f"{args.loader}-smoke" / args.minecraft
+    suffix = "-moonrise" if args.moonrise else ""
+    run_dir = root / ".local" / f"{args.loader}{suffix}-smoke" / args.minecraft
     run_dir.mkdir(parents=True, exist_ok=True)
     (run_dir / "smoke-console.log").write_text("", encoding="utf-8")
     report = {"loader": args.loader, "minecraft": args.minecraft, "passed": False,
@@ -242,6 +271,11 @@ def exercise(args: argparse.Namespace, root: Path, run_dir: Path, report: dict) 
     report["artifact"] = artifact.relative_to(root).as_posix()
     report["artifact_sha256"] = digest(artifact)
     versions = tomllib.loads((root / "gradle/libs.versions.toml").read_text(encoding="utf-8"))["versions"]
+    compatibility_mods = {}
+    if args.moonrise:
+        moonrise, pin = moonrise_mod(root, args.loader, args.minecraft)
+        compatibility_mods[moonrise.name] = pin["sha256"]
+        report["compatibility"] = {"mod": "moonrise", **pin}
     # Keep downloaded libraries between runs, but each assertion needs a fresh disposable world.
     for name in ("smoke-world", "mods"):
         disposable = (run_dir / name).resolve()
@@ -303,6 +337,8 @@ def exercise(args: argparse.Namespace, root: Path, run_dir: Path, report: dict) 
         command.extend(("-g", str(args.gradle_user_home.resolve())))
     if args.offline:
         command.append("--offline")
+    if args.moonrise:
+        command.append(f"-PcompatibilityMod={moonrise.resolve().as_posix()}")
     creation = {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP} if os.name == "nt" else {"start_new_session": True}
     process = subprocess.Popen(command, cwd=root, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                stderr=subprocess.STDOUT, text=True, encoding="utf-8", errors="replace", **creation)
@@ -356,7 +392,8 @@ def exercise(args: argparse.Namespace, root: Path, run_dir: Path, report: dict) 
         report["production"] = verify_production(root, run_dir, gradle_home, args.loader,
                                                   args.minecraft, artifact, server_bundle, versions,
                                                   loaded_mods=fabric_mod_paths(transcript) if args.loader == "fabric" else None,
-                                                  expected_artifact_sha256=report["artifact_sha256"])
+                                                  expected_artifact_sha256=report["artifact_sha256"],
+                                                  compatibility_mods=compatibility_mods)
         report["checks"].append("packaged_artifact_and_pinned_dependencies")
         # No clients connect. Automatic cleanup must keep the native game ticking after the
         # configured one-second empty-server pause threshold has elapsed.
@@ -518,6 +555,31 @@ def exercise(args: argparse.Namespace, root: Path, run_dir: Path, report: dict) 
         send("eclean reload")
         wait_for(r"Configuration and language files reloaded")
         report["checks"].append("rejected_reload_preserves_active_revision")
+        # Frozen game ticks keep below-world entities alive while console work still runs.
+        # The public spatial query must include all heights and zero-size boundary markers,
+        # and must attribute boxes overlapping adjacent chunks exactly once.
+        send("tick freeze")
+        wait_for(r"(?i)frozen")
+        for y in (900, -900):
+            send(f'summon minecraft:item 0.0 {y} 0.0 {{Item:{{id:"minecraft:stone",count:1}},Tags:["eclean_height"],NoGravity:1b}}')
+            wait_for(r"Summoned new")
+        send('summon minecraft:armor_stand 0.0 900 0.0 {Tags:["eclean_boundary"],Marker:1b,NoGravity:1b}')
+        wait_for(r"Summoned new")
+        send("eclean entity minecraft:armor_stand minecraft:overworld 0 0")
+        wait_for(r"ARMOR_STAND @|minecraft:armor_stand @")
+        send("eclean entity minecraft:item minecraft:overworld 0 0")
+        wait_for(r"(?:ITEM|minecraft:item) @ 0\.0, -900\.0, 0\.0")
+        send("eclean clean drop minecraft:overworld --preview")
+        wait_cleanup(2, preview=True)
+        send("eclean clean drop minecraft:overworld")
+        wait_cleanup(2)
+        send("execute unless entity @e[tag=eclean_height] run say ECLEAN_SMOKE_HEIGHT_REMOVED")
+        wait_for(r"ECLEAN_SMOKE_HEIGHT_REMOVED")
+        send("eclean clean trash --preview")
+        wait_for(r"The trash can contains 2 items")
+        send("tick unfreeze")
+        wait_for(r"(?i)running normally")
+        report["checks"].append("outside_build_height_boundary_markers_and_unique_chunk_ownership")
         send("stop")
         wait_for(rf"EClean Modern {label} stopped")
         process.wait(timeout=90)

@@ -16,12 +16,6 @@ val neoforgeVersion = when (minecraftVersion) {
     "26.3" -> libs.versions.neoforge.mc263.get()
     else -> error("Unsupported Minecraft version: $minecraftVersion")
 }
-val architecturyApiVersion = when (minecraftVersion) {
-    "26.1.2" -> libs.versions.architectury.api.mc2612.get()
-    "26.2" -> libs.versions.architectury.api.mc262.get()
-    "26.3" -> libs.versions.architectury.api.mc263.get()
-    else -> error("Unsupported Minecraft version: $minecraftVersion")
-}
 
 architectury {
     platformSetupLoomIde()
@@ -53,7 +47,6 @@ configurations.named("developmentNeoForge") { extendsFrom(sharedMod) }
 dependencies {
     minecraft("com.mojang:minecraft:$minecraftVersion")
     neoForge("net.neoforged:neoforge:$neoforgeVersion")
-    implementation("dev.architectury:architectury-neoforge:$architecturyApiVersion")
     implementation(project(":common"))
     sharedMod(project(path = ":mod-common", configuration = "apiElements"))
     bundledLibraries(project(path = ":mod-common", configuration = "transformProductionNeoForge")) {
@@ -61,7 +54,6 @@ dependencies {
     }
     bundledLibraries(project(":common"))
     bundledLibraries(libs.adventure.text.serializer.gson)
-    productionMods("dev.architectury:architectury-neoforge:$architecturyApiVersion")
     productionInstaller("net.neoforged:neoforge:$neoforgeVersion:installer")
     testImplementation(libs.kotlin.test)
 }
@@ -94,10 +86,11 @@ val installProductionServer = tasks.register<JavaExec>("installProductionServer"
 val prepareProductionMods = tasks.register<Copy>("prepareProductionMods") {
     dependsOn(tasks.shadowJar)
     from(tasks.shadowJar.flatMap { it.archiveFile }, productionMods)
+    providers.gradleProperty("compatibilityMod").orNull?.let { from(file(it)) }
     into(productionRunDirectory.map { it.dir("mods") })
 }
 tasks.register<Exec>("prodServer") {
-    description = "Runs the packaged EClean NeoForge mod and Architectury API on the production server."
+    description = "Runs the packaged EClean NeoForge mod on the production server."
     dependsOn(installProductionServer, prepareProductionMods)
     standardInput = System.`in`
     doFirst {
@@ -120,16 +113,10 @@ tasks {
             "version" to project.version,
             "minecraftVersion" to minecraftVersion,
             "neoforgeVersion" to neoforgeVersion,
-            "architecturyApiVersion" to architecturyApiVersion,
             "neoforgeVersionRange" to "[$neoforgeVersion,${when (minecraftVersion) {
                 "26.1.2" -> "26.1.3"
                 "26.2" -> "26.3"
                 else -> "26.4"
-            }})",
-            "architecturyApiVersionRange" to "[$architecturyApiVersion,${when (minecraftVersion) {
-                "26.1.2" -> "21"
-                "26.2" -> "22"
-                else -> "23"
             }})",
         )
         inputs.properties(properties)

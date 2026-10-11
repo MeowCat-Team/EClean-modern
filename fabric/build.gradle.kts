@@ -16,12 +16,6 @@ val fabricApiVersion = when (minecraftVersion) {
     "26.3" -> libs.versions.fabric.api.mc263.get()
     else -> error("Unsupported Minecraft version: $minecraftVersion")
 }
-val architecturyApiVersion = when (minecraftVersion) {
-    "26.1.2" -> libs.versions.architectury.api.mc2612.get()
-    "26.2" -> libs.versions.architectury.api.mc262.get()
-    "26.3" -> libs.versions.architectury.api.mc263.get()
-    else -> error("Unsupported Minecraft version: $minecraftVersion")
-}
 
 architectury {
     platformSetupLoomIde()
@@ -51,7 +45,6 @@ dependencies {
     minecraft("com.mojang:minecraft:$minecraftVersion")
     implementation(libs.fabric.loader)
     implementation("net.fabricmc.fabric-api:fabric-api:$fabricApiVersion")
-    implementation("dev.architectury:architectury-fabric:$architecturyApiVersion")
     implementation(project(":common"))
     sharedMod(project(path = ":mod-common", configuration = "apiElements"))
     bundledLibraries(project(path = ":mod-common", configuration = "transformProductionFabric")) {
@@ -60,7 +53,6 @@ dependencies {
     bundledLibraries(project(":common"))
     bundledLibraries(libs.adventure.text.serializer.gson)
     productionMods("net.fabricmc.fabric-api:fabric-api:$fabricApiVersion")
-    productionMods("dev.architectury:architectury-fabric:$architecturyApiVersion")
     testImplementation(libs.kotlin.test)
 }
 
@@ -68,6 +60,7 @@ tasks.register<net.fabricmc.loom.task.prod.ServerProductionRunTask>("prodServer"
     description = "Runs the packaged EClean Fabric mod and required APIs on the production launcher."
     installerVersion.set(libs.versions.fabric.installer)
     mods.setFrom(tasks.shadowJar.flatMap { it.archiveFile }, productionMods)
+    providers.gradleProperty("compatibilityMod").orNull?.let { mods.from(file(it)) }
     runDir.set(providers.gradleProperty("fabricRunDirectory")
         .map { layout.projectDirectory.dir(it) }
         .orElse(layout.projectDirectory.dir("run/production-$minecraftVersion")))
@@ -86,7 +79,6 @@ tasks {
             "minecraftVersion" to minecraftVersion,
             "fabricLoaderVersion" to libs.versions.fabric.loader.get(),
             "fabricApiVersion" to fabricApiVersion,
-            "architecturyApiVersion" to architecturyApiVersion,
         )
         inputs.properties(properties)
         filesMatching("fabric.mod.json") { expand(properties) }

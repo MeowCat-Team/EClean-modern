@@ -24,7 +24,6 @@ import org.meowcat.eclean.common.api.CommonLocation
 import org.meowcat.eclean.common.api.CommonWorld
 import org.meowcat.eclean.common.api.WorldAccess
 import org.meowcat.eclean.mod.mixin.ChunkMapAccessor
-import org.meowcat.eclean.mod.mixin.PersistentEntitySectionManagerAccessor
 import org.meowcat.eclean.mod.mixin.ServerLevelAccessor
 import org.meowcat.eclean.platform.execution.ChunkRef
 import java.util.Locale
@@ -75,11 +74,12 @@ class ModCommonChunk(override val ref: ChunkRef, private val level: ServerLevel)
 
     private fun nativeEntities(): List<Entity> {
         check(level.server.isSameThread) { "Chunk entities must be read on the server thread" }
-        // Entity sections include entities above/below build height and avoid bounding-box overlap duplicates.
+        // Query the active spatial index without accessing vanilla's replaceable entity manager.
+        // Ownership filtering prevents adjacent bounding boxes from being counted twice.
         return readLoadedChunkEntities(ref, { level.chunkSource.getChunkNow(ref.x, ref.z) != null }, {
-            val manager = (level as ServerLevelAccessor).ecleanEntityManager()
-            val storage = (manager as PersistentEntitySectionManagerAccessor).ecleanEntitySections()
-            storage.getExistingSectionsInChunk(ChunkPos.pack(ref.x, ref.z)).flatMap { it.entities }
+            val entities = mutableListOf<Entity>()
+            (level as ServerLevelAccessor).ecleanEntityGetter().get(chunkEntityBounds(ref), entities::add)
+            entities.stream()
         }) { entity ->
             if (entity.isRemoved || entity.level() !== level) null
             else entity.chunkPosition().let { ChunkRef(ref.world, it.x(), it.z()) }

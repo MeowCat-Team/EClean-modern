@@ -19,7 +19,7 @@ project(":neoforge").extensions.extraProperties["loom.platform"] = "neoforge"
 
 allprojects {
     group = "org.meowcat"
-    version = "0.3.7"
+    version = "0.3.8"
 
     repositories {
         mavenCentral()

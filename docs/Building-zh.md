@@ -16,7 +16,7 @@ Windows 使用 `gradlew.bat build`。
 
 Paper 编译 API 的固定版本不代表运行兼容范围。已测试的具体构建与校验值记录在 [`paper/compatibility.json`](../paper/compatibility.json)，1.21.5–26.3 的范围及 Java 25 要求见 [Paper 文档](Paper-zh.md)。Build CI 除单元测试外，还会在清单中的每个 Paper 版本上验证最终插件 JAR。
 
-Architectury 根据目标加载器转换 `mod-common`。最终模组包含领域代码、转换后的原生实现、共用资源，以及内置 Kotlin/配置库。两种加载器都需另外安装 Architectury API，Fabric 还需 Fabric API。生产 smoke 会核对实际运行的最终模组与匹配的运行依赖。
+Architectury 根据目标加载器转换 `mod-common`。最终模组包含领域代码、转换后的原生实现、共用资源，以及内置 Kotlin/配置库。Architectury 仍用于构建；EClean 从 0.3.8 起改用加载器原生事件，运行时无需 Architectury API。Fabric 需要 Fabric API。生产 smoke 会核对实际运行的最终模组与匹配的运行依赖。
 
 更新依赖时先修改版本目录，再显式生成候选锁与校验数据，审查下载来源和校验差异后提交，日常 CI 不自动刷新这些文件：
 
@@ -30,7 +30,7 @@ Architectury 根据目标加载器转换 `mod-common`。最终模组包含领域
 
 手动触发的 `Release` 工作流会构建并测试 `architectury` 分支，创建 tag 前使用 Paper 最终插件验证兼容清单中的每个版本，并使用六份 Fabric/NeoForge 产物分别启动真实服务端。工作流从 `build.gradle.kts` 读取版本号，从 `docs/Changelog.md` 提取更新日志。GitHub Release 包含一份 Paper/Folia JAR、三份 Fabric JAR 和三份 NeoForge JAR，之后分别发布同一份产物和日志到 [Modrinth 的 EClean-Modern 项目](https://modrinth.com/plugin/ecl-modern)。
 
-请在仓库的 Actions secrets 中配置 `MODRINTH_TOKEN`，使用有权为项目 `VW7EmMIj`（`ecl-modern`）创建版本的 Modrinth 令牌。工作流会在创建 tag 前检查令牌。Paper/Folia 使用兼容清单中的完整已测试列表，历史 Alpha 与 26.3 Beta 构建在测试时显式启用。NeoForge 26.3 以 `version-type: beta` 发布，其余模组变体仍为 Release。模组版本标注精确的游戏、加载器元数据与必需的 Architectury API，Fabric 另需 Fabric API。
+请在仓库的 Actions secrets 中配置 `MODRINTH_TOKEN`，使用有权为项目 `VW7EmMIj`（`ecl-modern`）创建版本的 Modrinth 令牌。工作流会在创建 tag 前检查令牌。Paper/Folia 使用兼容清单中的完整已测试列表，历史 Alpha 与 26.3 Beta 构建在测试时显式启用。NeoForge 26.3 以 `version-type: beta` 发布，其余模组变体仍为 Release。模组版本标注精确的游戏与加载器元数据，Fabric 需要 Fabric API；Architectury API 不再是运行时或 Modrinth 依赖。
 
 Modrinth 版本号与显示名称标注平台及支持的游戏版本：
 

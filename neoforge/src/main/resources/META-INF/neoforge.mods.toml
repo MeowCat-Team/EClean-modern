@@ -36,10 +36,3 @@ type="required"
 versionRange="${neoforgeVersionRange}"
 ordering="NONE"
 side="SERVER"
-
-[[dependencies.eclean]]
-modId="architectury"
-type="required"
-versionRange="${architecturyApiVersionRange}"
-ordering="AFTER"
-side="SERVER"
